@@ -33,7 +33,7 @@ const fromNumber = function (m) {
 
 const parseNumber = function (m) {
   const terms = m.docs[0]
-  let num = null //eslint-disable-line no-useless-assignment
+  let num = null
   let prefix = ''
   let suffix = ''
   let hasComma = false

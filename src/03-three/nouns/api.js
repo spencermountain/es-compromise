@@ -47,7 +47,7 @@ const api = function (View) {
       const methods = this.methods.two.transform.noun
       return getNth(this, n).map(m => {
         const str = m.text()
-        if (m.has('#PluralNoun')) {
+        if (m.has('#Plural')) {
           return {
             plural: str,
             singular: methods.toSingular(str)
@@ -60,7 +60,7 @@ const api = function (View) {
       }, [])
     }
     isPlural(n) {
-      return getNth(this, n).if('#PluralNoun')
+      return getNth(this, n).if('#Plural')
     }
     toPlural(n) {
       const methods = this.methods.two.transform.noun

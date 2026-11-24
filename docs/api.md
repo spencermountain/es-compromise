@@ -189,6 +189,8 @@ Se escriben para cada idioma, así que las disponibles aquí no son las mismas q
 - **`.numbers()`** — devuelve los números, escritos con cifras o con palabras
 - **`.values()`** — alias de .numbers()
 - **`.numbers().get()`** — devuelve el valor numérico de cada número
+- **`.numbers().parse()`** — devuelve la interpretación de cada número
+- **`.numbers().json(n?)`** — devuelve el json de cada número, o solo el del número n, con sus datos numéricos
 - **`.numbers().units()`** — devuelve la unidad que sigue a cada número
 - **`.numbers().toNumber()`** — escribe los números con cifras (`40`)
 - **`.numbers().toText()`** — escribe los números con palabras (`cuarenta`)
@@ -200,9 +202,9 @@ Se escriben para cada idioma, así que las disponibles aquí no son las mismas q
 - **`.numbers().greaterThan(n)`** — devuelve solo los números mayores que n
 - **`.numbers().lessThan(n)`** — devuelve solo los números menores que n
 - **`.numbers().between(min, max)`** — devuelve solo los números entre min y max
-- **`.numbers().set(n)`** — sustituye cada número por n
-- **`.numbers().add(n)`** — suma n a cada número
-- **`.numbers().subtract(n)`** — resta n a cada número
+- **`.numbers().set(n)`** — sustituye cada número por n, dado como número o como texto (`12`, `'doce'`)
+- **`.numbers().add(n)`** — suma n a cada número (número o texto)
+- **`.numbers().subtract(n)`** — resta n a cada número (número o texto)
 - **`.numbers().increment()`** — suma 1 a cada número
 - **`.numbers().decrement()`** — resta 1 a cada número
 
@@ -211,7 +213,6 @@ Se escriben para cada idioma, así que las disponibles aquí no son las mismas q
 _(se llaman sobre el objeto `nlp` importado, no sobre una vista)_
 
 - **`nlp.tokenize(text, lexicon?)`** — analiza el texto sin ejecutar el etiquetador
-<!-- - **`nlp.lazy(text, match?)`** — recorre el texto con un análisis mínimo -->
 - **`nlp.plugin(plugin)`** — incorpora un plugin de compromise
 - **`nlp.extend(plugin)`** — alias de nlp.plugin()
 - **`nlp.addWords(words, isFrozen?)`** — añade palabras nuevas al léxico interno

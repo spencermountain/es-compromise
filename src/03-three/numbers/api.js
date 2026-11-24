@@ -5,6 +5,28 @@ import format from './format/index.js'
 // return the nth elem of a doc
 export const getNth = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc)
 
+// turn a number, or a string like 'doce' or '12', into a number (or null)
+const toNumber = function (view, n) {
+  if (typeof n === 'number') {
+    return Number.isFinite(n) ? n : null
+  }
+  if (typeof n !== 'string' || !n.trim()) {
+    return null
+  }
+  const str = n.trim()
+  // plain digits, like '12' or '-2.5'
+  if (/^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$/.test(str)) {
+    return Number(str)
+  }
+  // a written-out number, like 'doce'
+  const m = view.fromText(str).numbers()
+  if (m.length !== 1 || m.text('normal') !== m.all().text('normal')) {
+    return null
+  }
+  const num = parse(m.eq(0)).num
+  return typeof num === 'number' && Number.isFinite(num) ? num : null
+}
+
 const api = function (View) {
   /**   */
   class Numbers extends View {
@@ -13,15 +35,17 @@ const api = function (View) {
       this.viewType = 'Numbers'
     }
     parse(n) {
-      return getNth(this, n).map(parse)
+      return getNth(this, n).map(parse, [])
     }
     get(n) {
-      return getNth(this, n).map(parse).map(o => o.num)
+      return getNth(this, n).map(parse, []).map(o => o.num)
     }
     json(n) {
+      // a number selects the nth match, anything else is json options
+      const opts = typeof n === 'number' ? undefined : n
       const doc = getNth(this, n)
       return doc.map(p => {
-        const json = p.toView().json(n)[0]
+        const json = p.toView().json(opts)[0]
         const parsed = parse(p)
         json.number = {
           prefix: parsed.prefix,
@@ -160,8 +184,9 @@ const api = function (View) {
       if (n === undefined) {
         return this // don't bother
       }
-      if (typeof n === 'string') {
-        n = parse(n).num
+      n = toNumber(this, n)
+      if (n === null) {
+        return this // not a number
       }
       const m = this
       const res = m.map((val) => {
@@ -190,11 +215,9 @@ const api = function (View) {
       return new Numbers(res.document, res.pointer)
     }
     add(n) {
+      n = toNumber(this, n)
       if (!n) {
         return this // don't bother
-      }
-      if (typeof n === 'string') {
-        n = parse(n).num
       }
       const m = this
       const res = m.map((val) => {
@@ -218,16 +241,20 @@ const api = function (View) {
       return new Numbers(res.document, res.pointer)
     }
     /** decrease each number by n*/
-    subtract(n, agree) {
-      return this.add(n * -1, agree)
+    subtract(n) {
+      n = toNumber(this, n)
+      if (!n) {
+        return this // don't bother
+      }
+      return this.add(n * -1)
     }
     /** increase each number by 1 */
-    increment(agree) {
-      return this.add(1, agree)
+    increment() {
+      return this.add(1)
     }
     /** decrease each number by 1 */
-    decrement(agree) {
-      return this.add(-1, agree)
+    decrement() {
+      return this.add(-1)
     }
     // overloaded - keep Numbers class
     update(pointer) {
