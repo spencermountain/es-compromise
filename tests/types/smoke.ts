@@ -26,8 +26,11 @@ const participle: string = conj[0].perfecto
 const sets: ConjugationSet[] = [conj[0].presentTense, conj[0].futureTense, conj[0].conditional, conj[0].imperative]
 verbs.conjugate(0)
 doc.verbs(0)
-// @ts-expect-error tense-conversion is not implemented in spanish
-verbs.toPastTense()
+const pastVerbs: Verbs = verbs.toPastTense()
+const presentVerbs: Verbs = verbs.toPresentTense(0)
+const futureVerbs: Verbs = pastVerbs.toFutureTense()
+futureVerbs.conjugate()
+presentVerbs.text()
 
 // nouns
 const nouns: Nouns = doc.nouns()

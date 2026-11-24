@@ -265,6 +265,27 @@ doc.has('{tirar} nuestros {zapato}')
 <img height="85px" src="https://user-images.githubusercontent.com/399657/68221862-17ceb980-ffb8-11e9-87d4-7b30b6488f16.png"/>
 
 
+### Tiempos verbales
+puede cambiar el tiempo de los verbos, manteniendo la persona
+```js
+let doc = nlp('yo hablo español y ella come pan')
+doc.verbs().toPastTense()
+doc.text()
+// 'yo hablé español y ella comió pan'
+
+doc.verbs().toFutureTense()
+doc.text()
+// 'yo hablaré español y ella comerá pan'
+
+doc.verbs().toPresentTense()
+doc.text()
+// 'yo hablo español y ella come pan'
+```
+`.toPastTense()` usa el pretérito - los verbos en imperfecto o en pretérito perfecto ya están en pasado, y no cambian.
+
+<!-- spacer -->
+<img height="85px" src="https://user-images.githubusercontent.com/399657/68221862-17ceb980-ffb8-11e9-87d4-7b30b6488f16.png"/>
+
 ### Contribuyendo
 únete para ayudar! - please join to help!
 

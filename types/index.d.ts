@@ -58,6 +58,12 @@ export interface ParsedNumber {
 export interface Verbs extends View {
   /** get all conjugated forms of these verbs - 'como', 'comí', 'comeré' .. */
   conjugate(n?: number): VerbConjugation[]
+  /** re-write these verbs in the past-tense (pretérito) - 'ella habla' -> 'ella habló' */
+  toPastTense(n?: number): Verbs
+  /** re-write these verbs in the present-tense - 'ella habló' -> 'ella habla' */
+  toPresentTense(n?: number): Verbs
+  /** re-write these verbs in the future-tense - 'ella habla' -> 'ella hablará' */
+  toFutureTense(n?: number): Verbs
 }
 
 export interface Nouns extends View {
