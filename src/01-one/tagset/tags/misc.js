@@ -1,9 +1,7 @@
-const anything = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Value', 'QuestionWord']
-
+// only our own tags, and what differs from the shared tagset - see ../plugin.js
 export default {
   Adjective: {
     aliases: [null, 'Adjetivo'],
-    not: ['Noun', 'Verb', 'Adverb', 'Value'],
   },
   FemaleAdjective: {
     aliases: [null, 'AdjetivoFemenino'],
@@ -26,48 +24,40 @@ export default {
     not: ['PluralAdjective'],
   },
   Comparable: {
-    is: 'Adjective',
   },
   Comparative: {
     aliases: [null, 'Comparativo'],
-    is: 'Adjective',
   },
   Superlative: {
     aliases: [null, 'Superlativo'],
-    is: 'Adjective',
-    not: ['Comparative'],
   },
   NumberRange: {
     aliases: [null, 'RangoNumérico'],
   },
   Adverb: {
     aliases: [null, 'Adverbio'],
-    not: ['Noun', 'Verb', 'Adjective', 'Value'],
   },
-
   Determiner: {
     aliases: [null, 'Determinante', 'Artículo'],
-    not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'QuestionWord', 'Conjunction'], //allow 'a' to be a Determiner/Value
   },
   Conjunction: {
     aliases: [null, 'Conjunción'],
-    not: anything,
+    is: undefined,
+    not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'Value', 'QuestionWord'],
   },
   Preposition: {
     aliases: [null, 'Preposición'],
+    is: undefined,
     not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'QuestionWord'],
   },
   QuestionWord: {
     aliases: [null, 'Interrogativo'],
-    not: ['Determiner'],
   },
   Currency: {
     aliases: [null, 'Moneda'],
-    is: 'Noun',
   },
   Expression: {
     aliases: [null, 'Interjección'],
-    not: ['Noun', 'Adjective', 'Verb', 'Adverb'],
   },
   Abbreviation: {
     aliases: [null, 'Abreviatura'],
@@ -79,10 +69,10 @@ export default {
     aliases: [null, 'Teléfono'],
     not: ['HashTag', 'Verb', 'Adjective', 'Value', 'AtMention', 'Email'],
   },
-  HashTag: {},
+  HashTag: {
+  },
   AtMention: {
     aliases: [null, 'Mención'],
-    is: 'Noun',
     not: ['HashTag', 'Email'],
   },
   Emoji: {
@@ -102,6 +92,6 @@ export default {
   },
   Condition: {
     aliases: [null, 'Condición'],
-    not: ['Verb', 'Adjective', 'Noun', 'Value'],
+    is: undefined,
   },
 }

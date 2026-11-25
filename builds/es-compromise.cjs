@@ -97,7 +97,7 @@
     return this.update(this.fullPointer.filter(wrap$3(this, cb)))
   };
 
-  const find = function (cb) {
+  const find$6 = function (cb) {
     const found = this.fullPointer.find(wrap$3(this, cb));
     if (found === undefined) {
       return this.update([])
@@ -120,7 +120,7 @@
     ptrs = ptrs.slice(r, r + n);
     return this.update(ptrs)
   };
-  var loops = { forEach, map, filter, find, some: some$1, random };
+  var loops = { forEach, map, filter, find: find$6, some: some$1, random };
 
   // small helpers shared by the View class and its methods
 
@@ -1463,16 +1463,16 @@
     }
   };
 
-  const pairs$2 = { '(': ')', '[': ']', '"': '"', '“': '”', '‘': '’' };
+  const pairs$3 = { '(': ')', '[': ']', '"': '"', '“': '”', '‘': '’' };
 
   // a quote or bracket that opens and closes on the removed words leaves with them - '(loudly)'
   const dropPairs = function (terms, start, end) {
     const first = terms[start];
     const last = terms[end - 1];
-    Object.keys(pairs$2).forEach(open => {
-      if (first.pre.includes(open) && last.post.includes(pairs$2[open])) {
+    Object.keys(pairs$3).forEach(open => {
+      if (first.pre.includes(open) && last.post.includes(pairs$3[open])) {
         first.pre = first.pre.replace(open, '');
-        last.post = last.post.replace(pairs$2[open], '');
+        last.post = last.post.replace(pairs$3[open], '');
       }
     });
   };
@@ -1939,7 +1939,7 @@
   };
 
   // one 'word:out words' per line - decoded once into { [key]: word, out: [...] }
-  const parse$3 = (str, key) =>
+  const parse$4 = (str, key) =>
     str
       .trim()
       .split('\n')
@@ -1952,7 +1952,7 @@
     // that's and let's are decided here, before any tagging
     // (step 1 of the 's decision - the list is in 2-two/contraction-two/compute/index.js)
     // simple mappings
-    ...parse$3(
+    ...parse$4(
       `
 @:at
 arent:are not
@@ -1996,7 +1996,7 @@ o'er:over
       'word'
     ),
     // contraction-part mappings
-    ...parse$3(
+    ...parse$4(
       `
 ll:will
 ve:have
@@ -2006,7 +2006,7 @@ m:am
       'after'
     ),
     // french contractions - t'aime
-    ...parse$3(
+    ...parse$4(
       `
 c:ce
 m:me
@@ -2018,7 +2018,7 @@ t:tu
       'before'
     ),
     // missing apostrophes, apostrophe-d
-    ...parse$3(
+    ...parse$4(
       `
 shouldnt:should not
 couldnt:could not
@@ -2430,7 +2430,7 @@ er
 
   var compute$4 = { contractions: contractions$1 };
 
-  const plugin = {
+  const plugin$1 = {
     model: model$5,
     compute: compute$4,
     hooks: ['contractions'],
@@ -2835,7 +2835,7 @@ er
     return view.update(results)
   };
 
-  function api$6 (View) {
+  function api$e (View) {
 
     /** find all matches in this document */
     View.prototype.lookup = function (input, opts = {}) {
@@ -2892,7 +2892,7 @@ er
   lib$4.compile = lib$4.buildTrie;
 
   var lookup$1 = {
-    api: api$6,
+    api: api$e,
     lib: lib$4
   };
 
@@ -5318,7 +5318,7 @@ er
   };
   // console.log(md5('food-safety'))
 
-  const defaults$2 = {
+  const defaults$3 = {
     text: true,
     terms: true,
   };
@@ -5366,7 +5366,7 @@ er
     if (typeof option === 'string') {
       option = {};
     }
-    option = { ...defaults$2, ...option };
+    option = { ...defaults$3, ...option };
     // run any necessary upfront steps
     if (option.offset) {
       view.compute('offset');
@@ -6339,7 +6339,7 @@ er
     }
   };
 
-  const api$5 = function (View) {
+  const api$d = function (View) {
 
     /** speedy match a sequence of matches */
     View.prototype.sweep = function (net, opts = {}) {
@@ -6525,7 +6525,7 @@ er
     return { wants, count }
   };
 
-  const parse$2 = function (matches, world) {
+  const parse$3 = function (matches, world) {
     const parseMatch = world.methods.one.parseMatch;
     matches.forEach(obj => {
       resolveAliases(obj, world.model.one.tagAliases);
@@ -6602,7 +6602,7 @@ er
   // do some indexing on the list of matches
   const buildNet = function (matches, world) {
     // turn match-syntax into json
-    matches = parse$2(matches, world);
+    matches = parse$3(matches, world);
 
     // collect by wants and needs
     const hooks = {};
@@ -6848,7 +6848,7 @@ er
   // is this tag consistent with the tags they already have?
   const canBe = (terms, tag, model) => terms.every(term => canBe$1(term, tag, model.one.tagSet));
 
-  const tagger$1 = function (list, document, world) {
+  const tagger$2 = function (list, document, world) {
     const { model, methods } = world;
     const { getDoc, setTag, unTag } = methods.one;
     const looksPlural = methods.two.looksPlural;
@@ -6907,12 +6907,12 @@ er
   var methods$5 = {
     buildNet,
     bulkMatch: sweep$1,
-    bulkTagger: tagger$1
+    bulkTagger: tagger$2
   };
 
   var sweep = {
     lib: lib$2,
-    api: api$5,
+    api: api$d,
     methods: {
       one: methods$5,
     }
@@ -7736,7 +7736,7 @@ er
   // (some marks open a quote in one language, and close it in another)
   // a third mark means 'not an opener, when that one is around'
   // don't support single-quotes for multi-sentences
-  const pairs$1 = [
+  const pairs$2 = [
     ['\u0022', '\u0022'], // straight
     ['\uFF02', '\uFF02'], // wide
     ['\u201C', '\u201D', '\u201E'], // english (but it closes a german one)
@@ -7769,7 +7769,7 @@ er
 
   // is there a quotation here, that hasn't closed yet?
   const isOpen = function (str) {
-    return pairs$1.some(([open, close, unless]) => {
+    return pairs$2.some(([open, close, unless]) => {
       const n = count$1(str, open);
       if (n === 0 || (unless && str.includes(unless))) {
         return false
@@ -7814,18 +7814,18 @@ er
 
   // support unicode variants?
   // https://stackoverflow.com/questions/13535172/list-of-all-unicodes-open-close-brackets
-  const hasOpen = /[(\uFF08]/g;
-  const hasClosed = /[)\uFF09]/g;
+  const hasOpen$2 = /[(\uFF08]/g;
+  const hasClosed$2 = /[)\uFF09]/g;
   const mergeParens = function (splits) {
     const arr = [];
     for (let i = 0; i < splits.length; i += 1) {
       const split = splits[i];
-      const m = split.match(hasOpen);
+      const m = split.match(hasOpen$2);
       if (m !== null && m.length === 1) {
         // look at next sentence, for closing parenthesis
         if (splits[i + 1] && splits[i + 1].length < MAX_LEN) {
-          const m2 = splits[i + 1].match(hasClosed);
-          if (m2 !== null && m.length === 1 && !hasOpen.test(splits[i + 1])) {
+          const m2 = splits[i + 1].match(hasClosed$2);
+          if (m2 !== null && m.length === 1 && !hasOpen$2.test(splits[i + 1])) {
             // merge in 2nd sentence
             splits[i] += splits[i + 1];
             arr.push(splits[i]);
@@ -8203,7 +8203,7 @@ er
   };
 
   // turn a string input into a 'document' json format
-  const parse$1 = function (input, world) {
+  const parse$2 = function (input, world) {
     const { methods, model } = world;
     const { splitSentences, splitTerms, splitWhitespace } = methods.one.tokenize;
     input ||= '';
@@ -8271,12 +8271,12 @@ er
         isSentence,
         splitTerms: splitWords,
         splitWhitespace: parseTerm$1,
-        fromString: parse$1,
+        fromString: parse$2,
       },
     },
   };
 
-  const aliases = {
+  const aliases$1 = {
     '&': 'and',
     '@': 'at',
     '%': 'percent',
@@ -8289,7 +8289,7 @@ er
   // pl=plural, pp=pages, qt=quarter, fr=french, nee=given name at birth, ss=ship or sections,
   // ver=version, fem/masc, eng=engineering/english, adj/vb/rb/inf=grammar, situ/vivo/vitro=in situ..
   // wr=world record
-  var misc$1 = toList(`
+  var misc$3 = toList(`
 approx
 apt
 bc
@@ -8344,7 +8344,7 @@ wr
 `);
 
   // (not miss, misses)
-  var honorifics = toList(`
+  var honorifics$1 = toList(`
 adj
 adm
 adv
@@ -8405,7 +8405,7 @@ nov
 dec
 `);
 
-  var nouns$2 = toList(`
+  var nouns$3 = toList(`
 ad
 al
 arc
@@ -8526,10 +8526,10 @@ yb
 
   // add our abbreviation list to our lexicon
   const list$1 = [
-    [misc$1],
+    [misc$3],
     [units, 'Unit'],
-    [nouns$2, 'Noun'],
-    [honorifics, 'Honorific'],
+    [nouns$3, 'Noun'],
+    [honorifics$1, 'Honorific'],
     [months, 'Month'],
     [organizations, 'Organization'],
     [places, 'Place'],
@@ -8662,7 +8662,7 @@ designate
 
   var model$3 = {
     one: {
-      aliases,
+      aliases: aliases$1,
       abbreviations: abbreviations$1,
       prefixes,
       suffixes: suffixes$1,
@@ -8674,7 +8674,7 @@ designate
     },
   };
 
-  const hasSlash = /\//;
+  const hasSlash$1 = /\//;
   const hasDomain = /[a-z]\.[a-z]/i;
   const isMath = /[0-9]/;
   // const hasSlash = /[a-z\u00C0-\u00FF] ?\/ ?[a-z\u00C0-\u00FF]/
@@ -8689,8 +8689,8 @@ designate
       term.alias.push(aliases[str]);
     }
     // support slashes as aliases
-    if (hasSlash.test(str) && !hasDomain.test(str) && !isMath.test(str)) {
-      const arr = str.split(hasSlash);
+    if (hasSlash$1.test(str) && !hasDomain.test(str) && !isMath.test(str)) {
+      const arr = str.split(hasSlash$1);
       // don't split urls and things
       if (arr.length <= 3) {
         arr.forEach(word => {
@@ -8855,7 +8855,7 @@ designate
     return this
   };
 
-  const api$4 = function (View) {
+  const api$c = function (View) {
     View.prototype.autoFill = autoFill;
   };
 
@@ -8897,14 +8897,14 @@ designate
     return index
   };
 
-  const defaults$1 = {
+  const defaults$2 = {
     safe: true,
     min: 3,
   };
 
   const prepare = function (words = [], opts = {}) {
     const model = this.model();
-    opts = { ...defaults$1, ...opts };
+    opts = { ...defaults$2, ...opts };
     if (isObject$1(words)) {
       Object.assign(model.one.lexicon, words);
       words = Object.keys(words);
@@ -8933,7 +8933,7 @@ designate
   };
   var typeahead = {
     model: model$2,
-    api: api$4,
+    api: api$c,
     lib,
     compute,
     hooks: ['typeahead']
@@ -8945,7 +8945,7 @@ designate
   nlp.extend(match); //10kb
   nlp.extend(pointers); //2kb
   nlp.extend(tag); //2kb
-  nlp.plugin(plugin); //~6kb
+  nlp.plugin(plugin$1); //~6kb
   nlp.extend(tokenize); //7kb
   nlp.extend(freeze); //
   nlp.plugin(cache$3); //~1kb
@@ -8953,6 +8953,1252 @@ designate
   nlp.extend(typeahead); //1kb
   nlp.extend(lexicon$3); //1kb
   nlp.extend(sweep); //1kb
+
+  const getWords = function (net) {
+    return Object.keys(net.hooks).filter(w => !w.startsWith('#') && !w.startsWith('%'))
+  };
+
+  const maybeMatch = function (doc, net) {
+    // must have *atleast* one of these words
+    const words = getWords(net);
+    if (words.length === 0) {
+      return doc
+    }
+    if (!doc._cache) {
+      doc.cache();
+    }
+    const cache = doc._cache;
+    // return sentences that have one of our needed words
+    return doc.filter((_m, i) => {
+      return words.some(str => cache[i].has(str))
+    })
+  };
+
+  // tokenize first, then only tag sentences required
+  const lazy = function (input, reg) {
+    let net = reg;
+    if (typeof reg === 'string') {
+      net = this.buildNet([{ match: reg }]);
+    }
+    const doc = this.tokenize(input);
+    const m = maybeMatch(doc, net);
+    if (m.found) {
+      m.compute(['index', 'tagger']);
+      return m.match(reg)
+    }
+    return doc.none()
+  };
+
+  var lazy$1 = {
+    lib: {
+      lazy,
+    },
+  };
+
+  // Preferred alias identifiers holding canonical tag names.
+  // NN is the umbrella noun tag; Sing is specifically singular.
+  const NN = 'Noun';
+  const Sing = 'Singular';
+  const Plur = 'Plural';
+  const Prop = 'ProperNoun';
+  const Pron = 'Pronoun';
+
+  const Adj = 'Adjective';
+  const Comp = 'Comparative';
+  const Adv = 'Adverb';
+  const Det = 'Determiner';
+
+  const Vb = 'Verb';
+  const Inf = 'Infinitive';
+  const Past = 'PastTense';
+  const Ger = 'Gerund';
+  const Pres = 'PresentTense';
+  const Fut = 'FutureTense';
+
+  const Cop = 'Copula';
+  const Phrasal = 'PhrasalVerb';
+  const Conj = 'Conjunction';
+  const Prep = 'Preposition';
+  const Expr = 'Expression';
+  const QW = 'QuestionWord';
+
+  const Pers = 'Person';
+  const Place = 'Place';
+  const Org = 'Organization';
+  const First = 'FirstName';
+  const Last = 'LastName';
+  const MaleName = 'MaleName';
+  const FemaleName = 'FemaleName';
+  const Uncountable = 'Uncountable';
+  const SportsTeam = 'SportsTeam';
+  const Country = 'Country';
+  const City = 'City';
+  const Region = 'Region';
+
+  const Val = 'Value';
+  const Card = 'Cardinal';
+  const Ord = 'Ordinal';
+  const TxtNum = 'TextValue';
+  const Numeric = 'NumericValue';
+  const RomanNumeral = 'RomanNumeral';
+  const Frac = 'Fraction';
+
+  const Date = 'Date';
+  const WeekDay = 'WeekDay';
+  const Year = 'Year';
+  const FinancialQuarter = 'FinancialQuarter';
+  const Season = 'Season';
+  const Time = 'Time';
+  const Timezone = 'Timezone';
+
+  const Connector = 'Connector';
+  const Abbr = 'Abbreviation';
+  const Acronym = 'Acronym';
+  const HashTag = 'HashTag';
+  const AtMention = 'AtMention';
+
+  const Emoji = 'Emoji';
+  const Emoticon = 'Emoticon';
+  const SlashedTerm = 'SlashedTerm';
+  const Email = 'Email';
+  const PhoneNumber = 'PhoneNumber';
+  const Url = 'Url';
+
+  const entity = [Pers, Place, Org];
+
+  var nouns$2 = {
+    Noun: {
+      aliases: [null, 'NN'],
+      not: [Vb, Adj, Adv, Val, Det],
+    },
+    Singular: {
+      aliases: [null, 'Sing', 'SG', 'NN1'],
+      is: NN,
+      not: [Plur, Uncountable],
+    },
+    // 'Canada'
+    ProperNoun: {
+      aliases: ['Prop', 'NNP', 'PROPN', 'NP0'],
+      is: NN,
+    },
+    Person: {
+      aliases: [null, 'Pers'],
+      is: Sing,
+      also: [Prop],
+      not: [Place, Org, Date],
+    },
+    FirstName: {
+      aliases: [null, 'First'],
+      is: Pers,
+    },
+    MaleName: {
+      is: First,
+      not: [FemaleName, Last],
+    },
+    FemaleName: {
+      is: First,
+      not: [MaleName, Last],
+    },
+    LastName: {
+      aliases: [null, 'Last'],
+      is: Pers,
+      not: [First],
+    },
+    // 'dr.'
+    Honorific: {
+      aliases: ['Hon'],
+      is: Pers,
+      not: [First, Last, Val],
+    },
+    Place: {
+      is: Sing,
+      not: [Pers, Org],
+    },
+    Country: {
+      is: Place,
+      also: [Prop],
+      not: [City],
+    },
+    City: {
+      is: Place,
+      also: [Prop],
+      not: [Country],
+    },
+    // 'california'
+    Region: {
+      is: Place,
+      also: [Prop],
+    },
+    Address: {
+      aliases: ['Addr'],
+      // is: 'Place',
+    },
+    Organization: {
+      aliases: ['Org'],
+      is: Prop,
+      not: [Pers, Place],
+    },
+    SportsTeam: {
+      aliases: [null, 'Team'],
+      is: Org,
+    },
+    School: {
+      is: Org,
+    },
+    Company: {
+      is: Org,
+    },
+    Plural: {
+      aliases: [null, 'Plur', 'NNS', 'PL', 'NN2'],
+      is: NN,
+      not: [Sing, Uncountable],
+    },
+    // 'gravity'
+    Uncountable: {
+      is: NN,
+    },
+    // 'it'
+    Pronoun: {
+      aliases: [null, 'Pron', 'PRP', 'PRON'],
+      is: NN,
+      not: entity,
+    },
+    // 'swimmer'
+    Actor: {
+      is: NN,
+      not: [Place, Org],
+    },
+    // walking
+    Activity: {
+      is: NN,
+      not: [Pers, Place],
+    },
+    // kilometres
+    Unit: {
+      is: NN,
+      not: entity,
+    },
+    // canadian
+    Demonym: {
+      aliases: [null, 'Dem'],
+      is: NN,
+      also: [Prop],
+      not: entity,
+    },
+    // [spencer's] hat
+    Possessive: {
+      aliases: ['Poss'],
+      is: NN,
+    },
+    // 'yourself'
+    Reflexive: {
+      aliases: [null, 'Refl'],
+      is: Pron,
+    },
+  };
+
+  var verbs$2 = {
+    Verb: {
+      aliases: ['Vb', 'V', 'VB'],
+      not: [NN, Adj, Adv, Val, Expr],
+    },
+    // 'he [walks]'
+    PresentTense: {
+      aliases: ['Pres', 'PRS'],
+      is: Vb,
+      not: [Past, Fut],
+    },
+    // 'will [walk]'
+    Infinitive: {
+      aliases: ['Inf', 'VVI'],
+      is: Pres,
+      not: [Ger],
+    },
+    // '[walk] now!'
+    Imperative: {
+      aliases: ['Imp'],
+      is: Vb,
+      not: [Past, Ger, Cop],
+    },
+    // walking
+    Gerund: {
+      aliases: ['Ger', 'VBG'],
+      is: Pres,
+      not: [Cop],
+    },
+    // walked
+    PastTense: {
+      aliases: ['Past', 'VBD', 'PST'],
+      is: Vb,
+      not: [Pres, Ger, Fut],
+    },
+    // will walk
+    FutureTense: {
+      aliases: ['Fut'],
+      is: Vb,
+      not: [Pres, Past],
+    },
+    // is/was
+    Copula: {
+      aliases: [null, 'Cop'],
+      is: Vb,
+    },
+    // '[could] walk'
+    Modal: {
+      aliases: [null, 'Mod', 'MD'],
+      is: Vb,
+      not: [Inf],
+    },
+    // 'awaken'
+    Participle: {
+      aliases: [null, 'VBN'],
+      is: Past,
+    },
+    // '[will have had] walked'
+    Auxiliary: {
+      aliases: ['Aux'],
+      is: Vb,
+      not: [Past, Pres, Ger, Conj],
+    },
+    // 'walk out'
+    PhrasalVerb: {
+      aliases: ['Phrasal', 'PhrV'],
+      is: Vb,
+    },
+    // 'walk [out]'
+    Particle: {
+      aliases: [null, 'RP'],
+      is: Phrasal,
+      not: [Past, Pres, Cop, Ger],
+    },
+    // 'walked by'
+    Passive: {
+      aliases: [null, 'Pass'],
+      is: Vb,
+    },
+  };
+
+  // Written format is independent of quantity types such as Fraction or Money.
+  var values$1 = {
+    Value: {
+      aliases: ['Val', 'Num'],
+      not: [Vb, Adj, Adv],
+    },
+    Ordinal: {
+      aliases: [null, 'Ord'],
+      is: Val,
+      not: [Card],
+    },
+    Cardinal: {
+      aliases: [null, 'Card', 'CD'],
+      is: Val,
+      not: [Ord],
+    },
+    Fraction: {
+      aliases: [null, 'Frac'],
+      is: Val,
+      not: [NN],
+    },
+    Multiple: {
+      aliases: [null, 'Mult'],
+      is: TxtNum,
+    },
+    RomanNumeral: {
+      aliases: [null, 'RomNum'],
+      is: Card,
+    },
+    TextValue: {
+      aliases: [null, 'TxtNum'],
+      is: Val,
+      not: [Numeric, RomanNumeral],
+    },
+    NumericValue: {
+      aliases: ['Numeric'],
+      is: Val,
+      not: [RomanNumeral],
+    },
+    Money: {
+      is: Card,
+    },
+    Percent: {
+      aliases: [null, 'Perc', 'Pct'],
+      is: Val,
+    },
+  };
+
+  // Calendar/clock components are distinct. Holiday and Duration describe spans
+  // that can overlap components or one another (for example, 'Christmas Day').
+  // Each exclusion pair is declared once; the tag compiler supplies reciprocity.
+  var dates$2 = {
+    Date: {
+      not: [Vb, Adv, Adj],
+    },
+    Month: {
+      is: Date,
+      also: [NN],
+      not: [WeekDay, Year, FinancialQuarter, Season, Time, Timezone],
+    },
+    WeekDay: {
+      is: Date,
+      also: [NN],
+      not: [Year, FinancialQuarter, Season, Time, Timezone],
+    },
+    Year: {
+      is: Date,
+      not: [RomanNumeral, FinancialQuarter, Season, Time, Timezone],
+    },
+    FinancialQuarter: {
+      is: Date,
+      aliases: [null, 'Quarter'],
+      not: [Frac, Season, Time, Timezone],
+    },
+    // 'easter'
+    Holiday: {
+      is: Date,
+      also: [NN],
+    },
+    // 'summer'
+    Season: {
+      is: Date,
+      not: [Time, Timezone],
+    },
+    Timezone: {
+      is: Date,
+      aliases: [null, 'Tz'],
+      also: [NN],
+      not: [Prop],
+    },
+    Time: {
+      is: Date,
+      not: [AtMention, Timezone],
+    },
+    // 'months'
+    Duration: {
+      aliases: [null, 'Dur'],
+      is: Date,
+      also: [NN],
+    },
+  };
+
+  const anything = [NN, Vb, Adj, Adv, Val, QW];
+
+  var misc$2 = {
+    Adjective: {
+      aliases: ['Adj', 'JJ', 'ADJ', 'AJ0'],
+      not: [NN, Vb, Adv, Val],
+    },
+    Comparable: {
+      is: Adj,
+    },
+    Comparative: {
+      aliases: [null, 'Comp', 'JJR', 'AJC'],
+      is: Adj,
+    },
+    Superlative: {
+      aliases: [null, 'Sup', 'JJS', 'AJS'],
+      is: Adj,
+      not: [Comp],
+    },
+    NumberRange: {
+      aliases: [null, 'NumRange'],
+    },
+    Adverb: {
+      aliases: ['Adv', 'RB', 'ADV'],
+      not: [NN, Vb, Adj, Val],
+    },
+
+    Determiner: {
+      aliases: ['Det', 'DT', 'DET'],
+      not: [NN, Vb, Adj, Adv, QW, Conj], //allow 'a' to be a Determiner/Value
+    },
+    Connector: {
+      not: [NN, Vb, Adj, Adv, QW, Det],
+    },
+    Conjunction: {
+      aliases: ['Conj', 'CC'],
+      is: Connector,
+      not: anything.concat([Prep]),
+    },
+    Preposition: {
+      aliases: ['Prep', 'IN', 'ADP'],
+      is: Connector,
+      not: [NN, Vb, Adj, Adv, QW, Det, Conj],
+    },
+    QuestionWord: {
+      aliases: [null, 'QW'],
+      not: [Det],
+    },
+    Currency: {
+      is: NN,
+    },
+    Expression: {
+      aliases: ['Expr'],
+      not: [NN, Adj, Vb, Adv],
+    },
+    Abbreviation: {
+      aliases: ['Abbr'],
+    },
+    Url: {
+      aliases: [null, 'URL'],
+      not: [HashTag, Vb, Adj, Val, SlashedTerm, Email, PhoneNumber, AtMention, Emoji, Emoticon],
+    },
+    PhoneNumber: {
+      not: [HashTag, Vb, Adj, Val, AtMention, Emoji, Emoticon],
+    },
+    HashTag: {},
+    AtMention: {
+      is: NN,
+      not: [HashTag, Emoji, Emoticon],
+    },
+    Emoji: {
+      not: [HashTag, Vb, Adj, Val, Emoticon],
+    },
+    Emoticon: {
+      not: [HashTag, Vb, Adj, Val, SlashedTerm],
+    },
+    SlashedTerm: {
+      not: [Emoticon, Url, Val]
+    },
+    Email: {
+      not: [HashTag, Vb, Adj, Val, PhoneNumber, AtMention, Emoji, Emoticon],
+    },
+    Acronym: {
+      not: [RomanNumeral, Pron, Date],
+    },
+    Negative: {
+      aliases: [null, 'Neg'],
+      not: [NN, Adj, Val, Expr],
+    },
+    Condition: {
+      is: Connector,
+      aliases: [null, 'Cond'],
+      not: [Vb, Adj, NN, Val],
+    },
+    // existential 'there'
+    There: {
+      aliases: [null, 'EX'],
+      not: [Vb, Adj, NN, Val, Conj, Prep],
+    },
+    // 'co-wrote'
+    Prefix: {
+      not: [Abbr, Acronym, Prop],
+    },
+    // hard-nosed, bone-headed
+    Hyphenated: {},
+  };
+
+  const allTags = { ...nouns$2, ...verbs$2, ...values$1, ...dates$2, ...misc$2 };
+
+  // Some finders retain the caller's document; others use the selected view's.
+  const select = (View, find, originalDocument = false) => function (n) {
+    const matches = typeof find === 'string' ? this.match(find) : find(this);
+    const selected = matches.getNth(n);
+    return new View(originalDocument ? this.document : selected.document, selected.pointer)
+  };
+
+  // name the View subclass, and have .update() return it, sharing the match cache
+  const keepClass = (Cls, name) => {
+    Cls.prototype.viewType = name;
+    Cls.prototype.update = function (pointer) {
+      const m = new this.constructor(this.document, pointer);
+      m._cache = this._cache;
+      m.world = this.world;
+      return m
+    };
+  };
+
+  // the json of each match, plus a parsed form under one key
+  const jsonWith = (view, n, key, fn) => {
+    const opts = typeof n === 'object' ? n : {};
+    return view.getNth(n).map(p => {
+      const json = p.toView().json(opts)[0];
+      json[key] = fn(p);
+      return json
+    }, [])
+  };
+
+  const find$5 = function (doc) {
+    let m = doc.splitAfter('@hasComma');
+    m = m.match('#Hon+? #Pers+');
+    // Spencer's King - but keep 'John Smith's' together
+    const poss = m.match('#Poss+').notIf('(his|her)'); //her majesty ...
+    m = m.splitAfter(poss);
+    return m
+  };
+
+  const parse$1 = function (m) {
+    const res = {};
+    res.firstName = m.match('#First+');
+    res.lastName = m.match('#Last+');
+    res.honorific = m.match('#Hon+');
+
+    const last = res.lastName;
+    const first = res.firstName;
+    if (!first.found || !last.found) {
+      // let p = m.clone()
+      // assume 'Mr Springer', or 'Vice President Springer' is a last-name
+      if (!first.found && !last.found && m.has('^#Hon #Hon? .$')) {
+        res.lastName = m.match('.$');
+        return res
+      }
+    }
+    return res
+  };
+
+  // gendered pronouns
+  const she = '(she|her|hers)';
+
+  /*
+    Important notice - 
+    this method makes many assumptions about gender-identity, in-order to assign grammatical gender.
+    it should not be used for any other purposes, other than resolving pronouns in english
+  */
+  const m$4 = 'male';
+  const f$2 = 'female';
+
+  // known gendered honorifics
+  const honorifics = {
+    mr: m$4,
+    mrs: f$2,
+    miss: f$2,
+    madam: f$2,
+
+    // british stuff
+    king: m$4,
+    queen: f$2,
+    duke: m$4,
+    duchess: f$2,
+    baron: m$4,
+    baroness: f$2,
+    count: m$4,
+    countess: f$2,
+    prince: m$4,
+    princess: f$2,
+    sire: m$4,
+    dame: f$2,
+    lady: f$2,
+
+    ayatullah: m$4, //i think?
+
+    congressman: m$4,
+    congresswoman: f$2,
+    'first lady': f$2,
+
+    // marked as non-binary
+    mx: null,
+  };
+
+  const predictGender = function (parsed, person) {
+    const { firstName, honorific } = parsed;
+    // use first-name as signal-signal
+    if (firstName.has('#FemaleName')) {
+      return f$2
+    }
+    if (firstName.has('#MaleName')) {
+      return m$4
+    }
+    // use honorics as gender-signal
+    if (honorific.found) {
+      let hon = honorific.text('normal');
+      hon = hon.replace(/\./g, ''); //clean it up a bit
+      if (Object.hasOwn(honorifics, hon)) {
+        return honorifics[hon]
+      }
+      // her excelency
+      if (/^her /.test(hon)) {
+        return f$2
+      }
+      if (/^his /.test(hon)) {
+        return m$4
+      }
+    }
+    // offer used-pronouns as a signal
+    const after = person.after();
+    if (!after.has('#Pers') && after.has('#Pron')) {
+      const pro = after.match('#Pron');
+      // manual use of gender-neutral
+      if (pro.has('(they|their)')) {
+        return null
+      }
+      const hasMasc = pro.has('(he|his)');
+      const hasFem = pro.has(she);
+      if (hasMasc && !hasFem) {
+        return m$4
+      }
+      if (hasFem && !hasMasc) {
+        return f$2
+      }
+    }
+    return null
+  };
+
+  const addMethod = function (View) {
+    /**
+     *
+     */
+    class People extends View {
+      parse(n) {
+        return this.getNth(n).map(parse$1, [])
+      }
+      json(n) {
+        return jsonWith(this, n, 'person', p => {
+          // read the names from a copy, without its possessive - "Biden's" → 'biden'
+          const tmp = p.clone();
+          tmp.possessives().strip();
+          const parsed = parse$1(tmp);
+          return {
+            firstName: parsed.firstName.text('normal'),
+            lastName: parsed.lastName.text('normal'),
+            honorific: parsed.honorific.text('normal'),
+            presumed_gender: predictGender(parsed, p),
+          }
+        })
+      }
+      // used for co-reference resolution only
+      presumedMale() {
+        return this.filter(m => {
+          return m.has('(#MaleName|mr|mister|sr|jr|king|pope|prince|sir)')//todo configure these in .world
+        })
+      }
+      presumedFemale() {
+        return this.filter(m => {
+          return m.has('(#FemaleName|mrs|miss|queen|princess|madam)')
+        })
+      }
+    }
+    keepClass(People, 'People');
+
+    View.prototype.people = select(People, find$5, true);
+  };
+
+  const find$4 = function (doc) {
+    let m = doc.match('(#Place|#Address)+');
+
+    // split all commas except for 'paris, france'
+    let splits = m.match('@hasComma');
+    splits = splits.filter(c => {
+      // split 'europe, china'
+      if (c.has('(asia|africa|europe|america)$')) {
+        return true
+      }
+      // don't split 'paris, france'
+      if (c.has('(#City|#Region|#Prop)$') && c.after('^(#Country|#Region)').found) {
+        return false
+      }
+      return true
+    });
+    m = m.splitAfter(splits);
+    return m
+  };
+
+  //combine them with .topics() method
+  const find$3 = function (n) {
+    // builds without the chunker have no .clauses()
+    const r = this.clauses ? this.clauses() : this;
+    // Find entities and acronyms without duplicating acronyms inside entities.
+    let m = r.people();
+    m = m.concat(r.places());
+    m = m.concat(r.organizations());
+    m = m.concat(r.match('#Acronym').ifNo(m));
+    m = m.not('(someone|man|woman|mother|brother|sister|father)');
+    //return them to normal ordering
+    m = m.sort('seq');
+    // m = m.unique()
+    m = m.getNth(n);
+    return m
+  };
+
+  const api$b = function (View) {
+    View.prototype.topics = find$3;
+  };
+
+  const api$a = function (View) {
+    addMethod(View);
+
+    View.prototype.places = function (n) {
+      const m = find$4(this);
+      return m.getNth(n)
+    };
+    View.prototype.organizations = function (n) {
+      const m = this.match('#Org+');
+      return m.getNth(n)
+    };
+    api$b(View);
+  };
+  var topics = { api: api$a };
+
+  // key order is the order they are redacted in
+  const defaults$1 = {
+    people: true,
+    places: true,
+    organizations: true,
+    emails: true,
+    money: true,
+    percentages: true,
+    fractions: true,
+    phoneNumbers: true,
+    atMentions: true,
+    acronyms: true,
+    urls: true,
+    // off by default
+    properNouns: false,
+    dates: false,
+    numbers: false,
+    pronouns: false,
+  };
+
+  // remove these specific tags when redacting, which may leak information
+  const hideTags = {
+    people: [MaleName, FemaleName, First, Last],
+    places: [City, 'State', Country, Region],
+    organizations: [SportsTeam, 'Company', 'School'],
+  };
+  hideTags.pronouns = [...hideTags.people, ...hideTags.places, ...hideTags.organizations];
+
+  // replace text with blockStr but keep tags
+  const redactMatch = function (m, blockStr, keep = true) {
+    m = m.notIf('#Redacted');
+    m.replaceWith(blockStr, keep);
+    m.tag('Redacted');
+    return m
+  };
+
+  const redact = function (opts = {}, blockStr = '██████████', keep = true) {
+    opts = { ...defaults$1, ...opts };
+    // each key is also the View method that finds them
+    Object.keys(defaults$1).forEach(k => {
+      // skip finders that this build or language does not have
+      if (opts[k] !== false && this[k]) {
+        const m = redactMatch(this[k](), blockStr, keep);
+        if (hideTags[k]) {
+          m.unTag(hideTags[k]);
+        }
+      }
+    });
+    return this
+  };
+
+  const plugin = {
+    model: {
+      one: {
+        tagSet: {
+          Redacted: true
+        }
+      }
+    },
+    api: function (View) {
+      View.prototype.redact = redact;
+    }
+  };
+
+  // remove a regex match from the text of each term
+  const stripper = reg => view => {
+    eachTerm(view.docs, term => {
+      term.text = term.text.replace(reg, '');
+      term.normal = term.normal.replace(reg, '');
+    });
+    return view
+  };
+
+  const strip$4 = stripper(/\./g);
+
+  const api$9 = function (View) {
+
+    class Acronyms extends View {
+      strip() {
+        return strip$4(this)
+      }
+      addPeriods() {
+        strip$4(this);
+        eachTerm(this.docs, term => {
+          // Reuse the sentence period so strip() still preserves punctuation.
+          const ending = term.post.startsWith('.') ? '' : '.';
+          term.text = term.text.split('').join('.') + ending;
+          term.normal = term.normal.split('').join('.') + ending;
+        });
+        return this
+      }
+    }
+    Acronyms.prototype.viewType = 'Acronyms';
+
+    View.prototype.acronyms = select(Acronyms, '#Acronym');
+  };
+
+  // select spans wrapped by paired punctuation held in term.pre / term.post
+  const findPairs = (hasOpen, findEnd) => doc => {
+    const ptrs = [];
+    doc.docs.forEach(terms => {
+      for (let i = 0; i < terms.length; i += 1) {
+        const term = terms[i];
+        if (term.pre && hasOpen.test(term.pre)) {
+          const end = findEnd(terms, i);
+          if (end !== null) {
+            const [n, start] = terms[i].index;
+            // i and end are relative to this view, but start is not
+            ptrs.push([n, start, start + end - i + 1, terms[i].id]);
+            i = end;
+          }
+        }
+      }
+    });
+    return doc.update(ptrs)
+  };
+
+  // remove the opening and closing punctuation from each span
+  const stripPairs = (hasOpen, hasClosed) => m => {
+    m.docs.forEach(terms => {
+      terms[0].pre = terms[0].pre.replace(hasOpen, '');
+      const last = terms[terms.length - 1];
+      last.post = last.post.replace(hasClosed, '');
+    });
+    return m
+  };
+
+  const hasOpen$1 = /\(/;
+  const hasClosed$1 = /\)/;
+
+  const findEnd$1 = function (terms, i) {
+    for (; i < terms.length; i += 1) {
+      if (terms[i].post && hasClosed$1.test(terms[i].post)) {
+        return i
+      }
+    }
+    return null
+  };
+
+  const find$2 = findPairs(hasOpen$1, findEnd$1);
+  const strip$3 = stripPairs(hasOpen$1, hasClosed$1);
+
+  const api$8 = function (View) {
+    class Parentheses extends View {
+      strip() {
+        return strip$3(this)
+      }
+    }
+    Parentheses.prototype.viewType = 'Parentheses';
+
+    View.prototype.parentheses = select(Parentheses, find$2);
+  };
+
+  const stripS = stripper(/['’]s$/);
+  const leadApostrophe = /^['’]/;
+
+  // spencer's, spencer’s - and the flanders', whose apostrophe is in .post
+  const strip$2 = function (view) {
+    stripS(view);
+    eachTerm(view.docs, t => {
+      if (t.text.endsWith('s') && leadApostrophe.test(t.post)) {
+        t.post = t.post.replace(leadApostrophe, '');
+      }
+    });
+    return view
+  };
+
+  // #Possessive is decided upstream, in steps - the list is in 2-two/contraction-two/compute/index.js
+  const find$1 = function (doc) {
+    let m = doc.match('#Poss+');
+    // expand it to include 'john smith's'
+    if (m.has('#Pers')) {
+      m = m.growLeft('#Pers+');
+    }
+    if (m.has('#Place')) {
+      m = m.growLeft('#Place+');
+    }
+    if (m.has('#Org')) {
+      m = m.growLeft('#Org+');
+    }
+    return m
+  };
+
+
+  const api$7 = function (View) {
+
+    class Possessives extends View {
+      strip() {
+        return strip$2(this)
+      }
+    }
+    Possessives.prototype.viewType = 'Possessives';
+
+    View.prototype.possessives = select(Possessives, find$1);
+  };
+
+  /* eslint-disable regexp/no-dupe-characters-character-class */
+
+  const pairs$1 = {
+    '\u0022': '\u0022', // 'StraightDoubleQuotes'
+    '\uFF02': '\uFF02', // 'StraightDoubleQuotesWide'
+    '\u0027': '\u0027', // 'StraightSingleQuotes'
+    '\u201C': '\u201D', // 'CommaDoubleQuotes'
+    '\u2018': '\u2019', // 'CommaSingleQuotes'
+    '\u201F': '\u201D', // 'CurlyDoubleQuotesReversed'
+    '\u201B': '\u2019', // 'CurlySingleQuotesReversed'
+    '\u201E': '\u201D', // 'LowCurlyDoubleQuotes'
+    '\u2E42': '\u201D', // 'LowCurlyDoubleQuotesReversed'
+    '\u201A': '\u2019', // 'LowCurlySingleQuotes'
+    '\u00AB': '\u00BB', // 'AngleDoubleQuotes' «, »
+    '\u2039': '\u203A', // 'AngleSingleQuotes'
+    // Prime 'non quotation'
+    '\u2035': '\u2032', // 'PrimeSingleQuotes'
+    '\u2036': '\u2033', // 'PrimeDoubleQuotes'
+    '\u2037': '\u2034', // 'PrimeTripleQuotes'
+    // Prime 'quotation' variation
+    '\u301D': '\u301E', // 'PrimeDoubleQuotes'
+    '\u0060': '\u00B4', // 'PrimeSingleQuotes'
+    '\u301F': '\u301E', // 'LowPrimeDoubleQuotesReversed'
+  };
+
+  const hasOpen = RegExp('[' + Object.keys(pairs$1).join('') + ']');
+  const hasClosed = RegExp('[' + Object.values(pairs$1).join('') + ']');
+
+  const findEnd = function (terms, i) {
+    const have = terms[i].pre.match(hasOpen)[0] || '';
+    if (!have || !pairs$1[have]) {
+      return null
+    }
+    const want = pairs$1[have];
+    for (; i < terms.length; i += 1) {
+      if (terms[i].post && terms[i].post.match(want)) {
+        return i
+      }
+    }
+    return null
+  };
+
+  const find = findPairs(hasOpen, findEnd);
+  const strip$1 = stripPairs(hasOpen, hasClosed);
+
+  const api$6 = function (View) {
+
+    class Quotations extends View {
+      text(fmt) {
+        if (!fmt || fmt === 'text') {
+          return super.text({ keepEndPunct: true })
+        }
+        if (typeof fmt === 'object') {
+          return super.text({ keepEndPunct: true, ...fmt })
+        }
+        return super.text(fmt)
+      }
+      strip() {
+        strip$1(this);
+      }
+    }
+    Quotations.prototype.viewType = 'Quotations';
+
+    View.prototype.quotations = select(Quotations, find);
+  };
+
+  /** return anything tagged as a phone number */
+  const phoneNumbers = function (n) {
+    let m = this.splitAfter('@hasComma');
+    m = m.match('#PhoneNumber+');
+    m = m.getNth(n);
+    return m
+  };
+
+  /** return anything tagged as an address */
+  const addresses = function (n) {
+    let m = this.match('#Address+');
+    m = m.getNth(n);
+    return m
+  };
+
+  // setup easy helper methods
+  const selections = [
+    ['hyphenated', '@hasHyphen .'],
+    ['hashTags', '#HashTag'],
+    ['emails', '#Email'],
+    ['emoji', '#Emoji'],
+    ['emoticons', '#Emoticon'],
+    ['atMentions', '#AtMention'],
+    ['urls', '#Url'],
+    // ['pronouns', '#Pronoun'],
+    ['conjunctions', '#Conj'],
+    ['prepositions', '#Prep'],
+    ['abbreviations', '#Abbr'],
+    ['honorifics', '#Hon'],
+  ];
+
+  // aliases
+  const aliases = [
+    ['emojis', 'emoji'],
+    ['atmentions', 'atMentions'],
+  ];
+
+  const addMethods = function (View) {
+    // add a list of new helper methods
+    selections.forEach(a => {
+      View.prototype[a[0]] = function (n) {
+        const m = this.match(a[1]);
+        return typeof n === 'number' ? m.get(n) : m
+      };
+    });
+    View.prototype.phoneNumbers = phoneNumbers;
+    View.prototype.addresses = addresses;
+    // add aliases
+    aliases.forEach(a => {
+      View.prototype[a[0]] = View.prototype[a[1]];
+    });
+  };
+
+  const hasSlash = /\//;
+
+  const api$5 = function (View) {
+
+    class Slashes extends View {
+      split() {
+        return this.map((m) => {
+          const str = m.text();
+          const arr = str.split(hasSlash);
+          m = m.replaceWith(arr.join(' '));
+          return m.growRight('(' + arr.join('|') + ')+')
+        })
+      }
+    }
+    Slashes.prototype.viewType = 'Slashes';
+
+    View.prototype.slashes = select(Slashes, '#SlashedTerm');
+  };
+
+  var misc$1 = {
+    api: function (View) {
+      api$9(View);
+      api$8(View);
+      api$7(View);
+      api$6(View);
+      addMethods(View);
+      api$5(View);
+    }
+  };
+
+  // a comma, but not a clause break
+  const notClause = [
+    '@hasComma @hasComma', //fun, cool...
+    '(#City && @hasComma) #Country', //'toronto, canada'
+    '(#WeekDay && @hasComma) #Date', //'tuesday, march 2nd'
+    '(#Date+ && @hasComma) #Val', //'july 6, 1992'
+    '(#Adj && @hasComma) #Adj', //nice, pretty
+  ];
+
+  const byComma = function (doc, rules) {
+    const skip = notClause.concat(rules.notClause || []);
+    let commas = doc.match('@hasComma');
+    // remove any non-clause uses
+    commas = commas.filter(m => {
+      // don't split the first word
+      if (m.growLeft('.').wordCount() === 1) {
+        return false
+      }
+      // don't split the last word
+      if (m.growRight('. .').wordCount() === 1) {
+        return false
+      }
+      const more = m.grow('.'); // grow by 1 word in either direction
+      return !skip.some(str => more.has(str))
+    });
+    return doc.splitAfter(commas)
+  };
+
+  // should we split-out a clause (in brackets)?
+  const splitParentheses = function (doc) {
+    // from the misc plugin
+    if (!doc.parentheses) {
+      return doc
+    }
+    let matches = doc.parentheses();
+    matches = matches.filter(m => {
+      return m.wordCount() >= 3 && m.has('#Verb') && m.has('#NN')
+    });
+    return doc.splitOn(matches)
+  };
+
+  // split-out a long quotion, but not 'inline quotes'.
+  const splitQuotes = function (doc) {
+    // from the misc plugin
+    if (!doc.quotations) {
+      return doc
+    }
+    let matches = doc.quotations();
+    matches = matches.filter(m => {
+      return m.wordCount() >= 3 && m.has('#Verb') && m.has('#NN')
+    });
+    return doc.splitOn(matches)
+  };
+
+  const clauses$2 = function (n) {
+    let found = this;
+    // word-rules, like 'but' and 'until', are in the model
+    const rules = this.model.three?.clauses || {};
+
+    found = splitParentheses(found);
+    found = splitQuotes(found);
+
+    found = byComma(found, rules);
+
+    found = found.splitAfter('(@hasEllipses|@hasSemicolon|@hasDash|@hasColon)');
+
+    // each language's own rules
+    const { splitAfter = [], splitBefore = [], splitBeforeGroup = [] } = rules;
+    splitAfter.forEach(str => {
+      found = found.splitAfter(str);
+    });
+    splitBefore.forEach(str => {
+      found = found.splitBefore(str);
+    });
+    splitBeforeGroup.forEach(str => {
+      const m = found.match(str, 0);
+      if (m.found) {
+        found = found.splitBefore(m);
+      }
+    });
+
+    // // misc clause partitions
+    // found = found.splitBefore('as well as .')
+    // found = found.splitBefore('such as .')
+    // found = found.splitBefore('in addition to .')
+
+    // // semicolons, dashes
+    // found = found.splitAfter('@hasSemicolon')
+    // found = found.splitAfter('@hasDash')
+
+    // //
+    // found = found.splitBefore('which (were|are|will)')
+
+    // // he said [...]
+    // found = found.splitAfter('#Noun (said|say|says)')
+
+    // passive voice verb - '.. which was robbed is empty'
+    // let passive = found.match('#Noun (which|that) (was|is) #Adverb? #PastTense #Adverb?')
+    // if (passive.found) {
+    //   found = found.splitAfter(passive)
+    // }
+    // //which the boy robbed
+    // passive = found.match('#Noun (which|that) the? #Noun+ #Adverb? #PastTense #Adverb?')
+    // if (passive.found) {
+    //   found = found.splitAfter(passive)
+    // }
+    // does there appear to have relative/subordinate clause still?
+    // let tooLong = found.filter(d => d.wordCount() > 5 && d.match('#Verb+').length >= 2)
+    // if (tooLong.found) {
+    //   // and after the ..
+    //   found = found.splitBefore('#Conjunction #Preposition')
+
+    //   // let m = tooLong.splitAfter('#Noun .* #Verb .* #Noun+')
+    //   // found = found.splitOn(m.eq(0))
+    // }
+    if (typeof n === 'number') {
+      found = found.get(n);
+    }
+    return found
+  };
+
+  const api$4 = function (View) {
+    View.prototype.clauses = clauses$2;
+  };
+
+  // .clauses() with only its punctuation rules - a language adds its own model.three.clauses
+  var clauses$1 = { api: api$4 };
 
   // a leading '-', or the real minus-sign, or one after a symbol - '$-5'
   const minus = /^\s*[-−]|\P{L}[-−]$/u;
@@ -8983,8 +10229,9 @@ designate
     return out.join(mark)
   };
 
-  // floating-point noise - 0.1 + 0.2
-  const tidy = num => Number(num.toPrecision(15));
+  // floating-point noise - 0.1 + 0.2. a whole number is already exact,
+  // and rounding it to 15 digits would corrupt a 16-digit one
+  const tidy$2 = num => (Number.isInteger(num) ? num : Number(num.toPrecision(15)));
 
   // compile each ordinal-ending once
   const cache$2 = {};
@@ -9142,7 +10389,7 @@ designate
     if (typeof num !== 'number' || !isFinite(num)) {
       return ''
     }
-    num = tidy(num);
+    num = tidy$2(num);
     let str = String(Math.abs(num));
     // leave '1e+21' alone
     if (/^[0-9]+(?:\.[0-9]+)?$/.test(str)) {
@@ -9781,12 +11028,12 @@ designate
       "thirdPlural": "2drían:enir,alir|2irían:ír~0ían:r|3rían:acer{f,h}|2drían:ner,aler|2rían:er{od,er,ab}~3:arían{nf,ch}|5ír:irían{e,o}|5ir:drían{ven,sal}~4irían:decir"
     },
     "subjunctive": {
-      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3zcas:cir|4igas:ecir|2igas:ír~2as:ir,trever|3zcas:cer|2yas:uir|3yas:haber|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:negar|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:volar|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3gir:ijas{ir,fl,x}|3ger:jas{e,o}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
-      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír~2amos:er|3zcamos:cer|2yamos:uir|3yamos:haber|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:prever|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,l,b,n}|4er:amos{et,ol,eb}|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}~1amos:ver,ser|2vayamos:ir",
-      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír~2áis:er|3zcáis:cer|2yáis:uir|3yáis:haber|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:prever|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,l,b,n}|3er:áis{et,ol,eb}|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}~2eis:dar|1áis:ver,ser|2vayáis:ir",
-      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír~2an:ir,trever|3zcan:cer|2yan:uir|3yan:haber|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:negar|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3gir:ijan{ir,fl,x}|3ger:jan{e,o}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
+      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3era:irir|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:egar{n,c}|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:olar{v,s}|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3rir:uiera|4erir:equiera|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3eras:irir|3zcas:cir|4igas:ecir|2igas:ír~2as:ir,trever|3zcas:cer|2yas:uir|3yas:haber|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:egar{n,c}|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ieves:nevar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:olar{v,s}|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|4rir:uieras|5erir:equieras|3gir:ijas{ir,fl,x}|3ger:jas{e,o}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
+      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3era:irir|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:egar{n,c}|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:olar{v,s}|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3rir:uiera|4erir:equiera|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír~2amos:er|3zcamos:cer|2yamos:uir|3yamos:haber|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:prever|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,r{f,qui{d,n},b,ur},uñ,iv,l,b,n}|4er:amos{et,ol,eb}|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}~1amos:ver,ser|2vayamos:ir",
+      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír~2áis:er|3zcáis:cer|2yáis:uir|3yáis:haber|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:prever|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,r{f,qui{d,n},b,ur},uñ,iv,l,b,n}|3er:áis{et,ol,eb}|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}~2eis:dar|1áis:ver,ser|2vayáis:ir",
+      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3eran:irir|3zcan:cir|4igan:ecir|2igan:ír~2an:ir,trever|3zcan:cer|2yan:uir|3yan:haber|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:egar{n,c}|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:olar{v,s}|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|4rir:uieran|5erir:equieran|3gir:ijan{ir,fl,x}|3ger:jan{e,o}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
     },
     "imperfectSubjunctive": {
       "first": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir,llir|4iñera:eñir~3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|2iera:dar",
@@ -9798,8 +11045,8 @@ designate
     },
     "imperative": {
       "first": "~~~",
-      "second": "1:r{,e{c{ya,e{en,aman,or,fr,bl,aqu},n},vend,pond},a{nt{gu,me,se,a},amin}}|2as:ter,rer|4iere:erer|2es:ar{t{is,n,van,osi,mi,vi,o,bor,epor,nsul,fal,pe},prepar,min,scin,m{afir,nfor,er,a,asti},cu}|3úa:ectuar|4ige:egir|3zcas:cir~2e:ir{duc{n,a},fr,scubr,curr,um,v,ud,ad,it,insist,mbat,g,l,hib,gu}|4ice:edecir|4uere:orir|4iere:uerir|4iñe:eñir|5uerme:ormir|4ueve:lover|5ierve:hervir|5iende:ender{nc,t}|4ite:mpetir|5iente:entir|5iste:estir|5ierte:ertir|3íe:eír|2ye:r{í,ui{h,nstr,b,fl}}|5igue:eguir|4e:haber|1:ar{g{ti,pe,ve,ra},t,r{mo,do,dmi,aspi,espi,p,r,a,ju,ig,nt,eb},z{ra,ha,ti,oli,van},c{e,i{t,l,if{er,ur,s},r},lo,ovo,ar,ta},pañ,bañ,d{ra,fa,abor,uar,u,in,ue,i},j{a,i,o,se},goci,uci,vi,l{uil,r,g,ña,i,gu,ab,ve},us,ns,cas,m,en,in,uch,ech,e{c,s,t,pl},ab,iv,preserv,ev,y,gu}|4iega:negar|5uesta:ostar|5ienta:lentar|5uenta:contar|4ieta:apretar|5ierra:errar|6uestra:ostrar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|4ueña:oñar|5uerda:ecordar|5ienda:endar|4uela:volar|3ía:iar{r,ac,nv}|4uena:sonar|3úa:uar|4ueva:ovar|4ieva:nevar|2as:r{i,e{p,d,om,le}}|2yas:uir|3zcas:cer|4itas:etir|5iertas:nvertir|5ientas:sentir|4uedas:oder|5iendas:ender{nt,c,ef}|4idas:edir|5ierdas:erder|2gas:r{ne,detene,le,eni}|3as:stinguir|4igas:ecir|5igas:rseguir|2igas:caer|4ieras:erir|5uelvas:olver|5irvas:ervir|4uevas:over|4uelas:oler|3jas:oger|4iñas:reñir|4íbas:ohibir|3ías:nreír|3zas:rcer|5uerzas:orcer|2es:ar|5uestes:costar|5iertes:ertar|2ues:gar|4uegues:ogar|5uelgues:olgar|3ques:car|6uentres:ontrar|4üeres:gorar|3íes:iar{u,ar,f}|5iernes:ernar|3ces:zar|5iences:enzar|4úses:husar|4ieses:esar{v,f}|5ienses:ensar|5uerdes:cordar|3úes:tuar|4uebes:probar|4ón:poner{u,ro}|4én:ener|3z:acer{h,f}|2é:ever|2:alir~0r:e,ege|3egir:ige{rr,el}|4cir:uzcas|2er:etas,rras|2ir:cidas,urras~2gas:tener|1:r{dura,unta,e{parec,nac,v,cog}}|4huelas:oler|4ide:pedir|4ueba:probar|5igas:seguir|2á:estar|4ieles:helar|2:poner|4iegues:regar|2e:escribir|4iere:querer|5ientes:sentar|1as:ser|5yerres:errar|2vayas:ir|3ega:jugar|5iente:sentir|6uestres:mostrar|4ijas:regir",
-      "secondPlural": "1d:r{e{ec{d,aman,r,al,j},orr,evolv,ov,scog},a{g{esti,ne,pe,ve,a,r},t{,es,vis,cos,men,esi,xpor},r{o{m,g,ll,d},ti,pi,bor,a,su,nt,eb},z{e,i{ir,eal,vil,an},u,r,ha,ca,lan},iv,nev,ov,c{e,ivo,i{t,epl,apl,if{or,ur,c,s},ed,p,n,r},r,us,sa,u},pañ,bañ,nseñ,ap,d{fa,uar,u,ren,lvi},i{gu,c{go,e,anun,i},r,ud,op,iv},j,n{e,do,io,i{cam,rm,oc,e,t}},m{ir,asti,u,l,s},l{zc,r,he,ve,ga,ña,i,gu,vo,io},us,pres,is,e,ch{du,cu,e},u,y},i{nsegu,onsist,ed,ñad,eprim,produc,educ,edec}}|3zcáis:ecer{sagrad,apar,fr}|2éis:ar{t{s,n{gu,e,ca,o},si,ci,vi,vo,ra,por,p},prepar,yud,iaj,uj,re,ele,nu}|3quéis:aticar|4igáis:ecir~1d:r|2yáis:uir{estr,l}|2áis:r{e{p,omet,em,d{ven,ten,con,r},re,r,ñ,lv,tos,sol,deb},i{dmit,ist,mbat,m,d,br,uñ,pl,ub}}|5quepáis:caber|4epáis:saber|3zcáis:cir,ecer,enacer|4itáis:retir|5irtáis:onvertir|5urmáis:ormir|4idáis:medir|1áis:ver|4ijáis:regir|3jáis:xigir,rgir,oger|4iráis:erir{g,u}|4iñáis:reñir|3áis:guir|2gáis:r{eni,e{nten,deten,mpon,al}}|5igáis:eguir|2igáis:aer|5irváis:servir|3záis:cer{or,nven}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar~5ecir:digáis~1d:r{a{reserv,pas,d{,bor,agra,an},am,alent,gust},trae}|2gáis:oponer|3iais:reír|2áis:escribir|1ais:ser|2vayáis:ir|5intáis:sentir",
+      "second": "1:r,cuar,guar|4én:ener|4iere:erer|2ve:ir|2e:cir~4ice:ecir|5uerce:orcer|2ye:ír,uir|2e:ir{t,d,r,ñ,m,v,g,l,gu,b,n}|4ite:etir|5iente:entir|5iste:estir|5ierte:ertir|4uede:oder|5iende:ender{t,c,ef}|4ide:edir|5ierde:erder|4iere:erir|4uere:orir|4iñe:eñir|5uerme:ormir|5uelve:olver|5irve:ervir|5ierve:hervir|4ueve:over|4ige:egir|4uele:oler|5igue:eguir|3íe:eír|4íbe:ohibir|4e:haber|4iega:negar|4uega:ogar|5uelga:olgar|5uesta:ostar|5ienta:lentar|5uenta:contar|5ierta:ertar|4ieta:apretar|5ierra:errar|6uestra:ostrar|6uentra:ontrar|4üera:gorar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|5ienza:enzar|4ueva:ovar|4ieva:nevar|4ueña:oñar|5uerda:cordar|5ienda:endar|3ía:iar{u,r,f,ac,nv}|5ierna:ernar|4uena:sonar|4uela:volar|5iensa:ensar|4úsa:husar|4iesa:esar{v,f}|3úa:uar|4ueba:probar|4ón:oner|4én:enir|3z:acer{h,f}|2é:ever|2:alir~0r:e{,et,ed,nd,arr,orr,añ,em,om,og,eg,al,ab,eb},a|1ir:e{uc,mit,sist,cid,ig{ir,fl,x}}|2ener:tén~2:tener,poner,venir|4huele:oler|4i:decir|2á:estar|4iela:helar|1:ver|4iega:regar|4iere:querer|5ienta:sentar|2é:ser|5yerra:errar|3ega:jugar",
+      "secondPlural": "~1d:r~~",
       "firstPlural": "~~~",
       "third": "2a:er|2ga:ner,ler|4iera:erer|3ja:ger|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir|3zca:cer|2ya:uir|3ya:haber|4epa:aber|5quepa:caber|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|4ueda:oder|5ienda:ender{t,c,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|4iña:eñir|5uerma:ormir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|3a:guir|2ga:enir,alir|3ga:acer{h,f}|5iga:eguir|2iga:aer|1a:ver|3ja:gir|4ija:egir|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|4iegue:negar|4uegue:ogar|5uelgue:olgar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|5ierre:errar|6uestre:ostrar|6uentre:ontrar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|5uerde:cordar|5iende:endar|3íe:iar{u,r,f,ac,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|1er:a{p,et,ed,nd,rr,añ,em,om,e,s,eb}|1ir:a{mit,sist,cid,urr}|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|2gir:ija{ir,fl,x}|2ger:oja,eja~4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|4iera:querer|5iente:sentar|1a:ser|5yerre:errar|2vaya:ir|3egue:jugar",
       "thirdPlural": "2an:er|2gan:ner,ler|4ieran:erer|3jan:ger|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír~2an:ir|3zcan:cer|2yan:uir|3yan:haber|4epan:aber|5quepan:caber|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|4uedan:oder|5iendan:ender{t,c,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|4iñan:eñir|5uerman:ormir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|3an:guir|2gan:enir,alir|3gan:acer{h,f}|5igan:eguir|2igan:aer|1an:ver|3jan:gir|4ijan:egir|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|4ieguen:negar|4ueguen:ogar|5uelguen:olgar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|5ierren:errar|6uestren:ostrar|6uentren:ontrar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|5uerden:cordar|5ienden:endar|3íen:iar{u,r,f,ac,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|2er:an{p,et,ed,nd,rr,añ,em,om,e,s,eb}|2ir:an{mit,sist,cid,urr}|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|3gir:ijan{ir,fl,x}|3ger:jan{o,e}~4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|4ieran:querer|5ienten:sentar|1an:ser|5yerren:errar|2vayan:ir|3eguen:jugar"
@@ -9906,8 +11153,33 @@ designate
     }
   };
   const toConditional$1 = (str) => doEach(str, conditional$1);
+  // the short 'tú' commands, and the verbs built on them - 'pon', 'supón', 'ten', 'mantén', 'haz', 'sal', 'di', 'ven'
+  const shortCommand = /(p[oó]n|t[eé]n|v[eé]n|haz|sal|satisfaz)$/;
+  // .. a longer verb takes an accent, to keep its stress - 'convén', 'detén', 'compón' - but 'rehaz', 'sobresal'
+  const compounds = /^(.+)(venir|tener|poner|hacer|salir)$/;
+  const shortForms = { venir: 'vén', tener: 'tén', poner: 'pón', hacer: 'haz', salir: 'sal' };
+  const ownCommand = { ir: 've', ser: 'sé', haber: 'he', decir: 'di' };
+
   const toImperative$1 = (str) => {
     const obj = doEach(str, imperative$1);
+    str = plain$1(str);
+    // the model is only sure of the verbs it has seen - the rest follow from the other tenses:
+    // 'tú' is the third-person present - 'habla'
+    const compound = str.match(compounds);
+    if (ownCommand.hasOwnProperty(str)) {
+      obj.second = ownCommand[str];
+    } else if (compound) {
+      // 'intervenir' is 'intervén', as 'venir' is 'ven'
+      obj.second = compound[1] + shortForms[compound[2]];
+    } else if (!shortCommand.test(obj.second || '')) {
+      obj.second = toPresent$1(str).third || obj.second;
+    }
+    // 'usted' and 'ustedes' are the subjunctive - 'hable', 'hablen'
+    const subj = toSubjunctive$1(str);
+    obj.third = subj.third || obj.third;
+    obj.thirdPlural = subj.thirdPlural || obj.thirdPlural;
+    // 'vosotros' is the infinitive, with a 'd' - 'hablad'
+    obj.secondPlural = /r$/.test(str) ? str.replace(/r$/, 'd') : obj.secondPlural;
     // imperative has no first-person
     // because ...you can't tell yourself to do something.
     obj.first = '';
@@ -10441,7 +11713,7 @@ designate
   //
   // (this file is the same in each of the *-compromise libraries - the list of tenses is not)
 
-  const persons$3 = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural'];
+  const persons$4 = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural'];
 
   // tenses is a list of { name, to(infinitive), from(word, person) }
   // opts.extra(word) may give more infinitives to try
@@ -10464,7 +11736,7 @@ designate
       const forms = table(inf, only);
       const hits = [];
       Object.keys(forms).forEach((tense) => {
-        persons$3.forEach((person) => {
+        persons$4.forEach((person) => {
           if (forms[tense][person] === str) {
             hits.push({ tense, person });
           }
@@ -10482,7 +11754,7 @@ designate
         roots = roots.concat(opts.extra(str) || []);
       }
       pick(only).forEach((o) => {
-        persons$3.forEach((person) => {
+        persons$4.forEach((person) => {
           // 'rad fahren' -> 'fahren'
           const inf = (o.from(str, person) || '').split(' ').pop();
           if (inf && inf !== str && shape.test(inf)) {
@@ -10840,7 +12112,7 @@ designate
     return str
   };
 
-  const persons$2 = {
+  const persons$3 = {
     FirstPerson: 'first',
     SecondPerson: 'second',
     ThirdPerson: 'third',
@@ -10862,10 +12134,10 @@ designate
   // the subjunctive is often person-ambiguous ('hable' is 1st or 3rd)
   // so try each person, and keep an infinitive that conjugates back to our word
   const fromSubjunctive = function (str, form, verb) {
-    const order = [form].concat(Object.keys(persons$2)).filter((s) => s);
+    const order = [form].concat(Object.keys(persons$3)).filter((s) => s);
     for (let i = 0; i < order.length; i += 1) {
       const inf = verb.fromSubjunctive(str, order[i]);
-      if (inf && inf !== str && verb.toSubjunctive(inf)[persons$2[order[i]]] === str) {
+      if (inf && inf !== str && verb.toSubjunctive(inf)[persons$3[order[i]]] === str) {
         return inf
       }
     }
@@ -10900,24 +12172,25 @@ designate
 
   // the infinitive of a command with pronouns attached - the tagger has left its stem in 'machine'
   // 'levántate' is 'levanta' + 'te', and 'siéntese' is 'siente' + 'se'
-  const fromCommand = function (term, world) {
+  const fromCommand = function (term, world, word) {
     const verb = world.methods.two.transform.verb;
     const lexicon = world.model.one.lexicon;
     const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive');
-    const stem = term.machine;
+    const stem = word || term.machine;
     // the 'tú' command is the present-tense - 'levanta'
     const present = verb.candidates(stem, ['present']).filter((o) => isVerb(o.root) && o.hits.some((h) => h.person === 'third' || h.person === 'firstPlural'));
     // the 'usted' command is the subjunctive - 'levante'
     let formal = null;
-    const tags = ['ThirdPerson', 'ThirdPersonPlural'];
+    // .. and so is every negative one - 'no hables', 'no habléis'
+    const tags = ['ThirdPerson', 'ThirdPersonPlural', 'SecondPerson', 'SecondPersonPlural', 'FirstPersonPlural'];
     for (let i = 0; i < tags.length && !formal; i += 1) {
       const inf = (verb.fromSubjunctive(stem, tags[i]) || '').replace(/([aeií]r)se$/, '$1');
-      if (inf && isVerb(inf) && verb.toSubjunctive(inf)[persons$2[tags[i]]] === stem) {
+      if (inf && isVerb(inf) && verb.toSubjunctive(inf)[persons$3[tags[i]]] === stem) {
         formal = inf;
       }
     }
     // '-se' is only for 'usted' - 'siéntese' is 'sentar', but 'siéntete' is 'sentir'
-    const isFormal = /se$/.test(term.normal);
+    const isFormal = word ? present.length === 0 : /se$/.test(term.normal);
     const informal = present.length > 0 ? present[0].root : null;
     return isFormal ? formal || informal : informal || formal
   };
@@ -10962,7 +12235,8 @@ designate
             // an indicative tense - 'hablo', 'habló', 'hablaba', 'hablará', 'hablaría'
             const from = tenses$2.find((o) => term.tags.has(o[0]));
             if (!from && term.tags.has('Imperative')) {
-              term.root = verb.fromImperative(str, form);
+              // 'no hables' is a subjunctive, and 'habla' a present-tense
+              term.root = fromCommand(term, view.world, str) || verb.fromImperative(str, form);
             } else {
               // .. or a guess
               term.root = checkRoot(str, verb[(from || tenses$2[1])[1]](str, form), view.world);
@@ -11322,7 +12596,7 @@ designate
   const deAccent = (str) => str.replace(/[áéíóú]/g, (c) => accents[c]);
 
   const isGerund = /(ando|iendo|yendo)$/;
-  const isInfinitive$4 = /(ar|er|ir)$/;
+  const isInfinitive$5 = /(ar|er|ir)$/;
 
   const verbish = ['Imperative', 'PresentTense', 'Infinitive', 'Verb', 'Copula', 'Subjunctive'];
   const isVerb = function (entry) {
@@ -11341,7 +12615,7 @@ designate
     }
     // 'quemarme', 'mezclarlo' - verify against the lexicon,
     // or accept a long-enough infinitive shape ('bloguearlo')
-    if (isInfinitive$4.test(plain)) {
+    if (isInfinitive$5.test(plain)) {
       if (isVerb(lexicon[plain]) || plain.length >= 5) {
         return { tags: ['Infinitive'], stem: plain }
       }
@@ -11826,7 +13100,7 @@ designate
 
   const tenses$1 = { present: 'PresentTense', past: 'PastTense', imperfect: 'Imperfect', future: 'FutureTense' };
 
-  const isInfinitive$3 = function (str, lexicon) {
+  const isInfinitive$4 = function (str, lexicon) {
     if (!lexicon.hasOwnProperty(str)) {
       return false
     }
@@ -11851,7 +13125,7 @@ designate
     const verb = world.methods.two.transform.verb;
     const lexicon = world.model.one.lexicon;
     // it has to be a known verb, that conjugates back to this word
-    const res = verb.lookup(term.normal, { isVerb: (inf) => isInfinitive$3(inf, lexicon), known: true, tenses: Object.keys(tenses$1) });
+    const res = verb.lookup(term.normal, { isVerb: (inf) => isInfinitive$4(inf, lexicon), known: true, tenses: Object.keys(tenses$1) });
     const hit = res ? res.hits.find((o) => o.person === form) : null;
     if (hit) {
       world.methods.one.setTag([term], ['Verb', tenses$1[hit.tense], tag], world, false, '3-subject-verb');
@@ -11876,7 +13150,7 @@ designate
     'no', 'nunca', 'ya', 'también', 'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
   ]);
 
-  const persons$1 = [
+  const persons$2 = [
     ['ThirdPerson', 'third'],
     ['FirstPerson', 'first'],
     ['SecondPerson', 'second'],
@@ -11885,7 +13159,7 @@ designate
     ['ThirdPersonPlural', 'thirdPlural'],
   ];
 
-  const isInfinitive$2 = function (str, lexicon) {
+  const isInfinitive$3 = function (str, lexicon) {
     if (!lexicon.hasOwnProperty(str)) {
       return false
     }
@@ -11940,13 +13214,13 @@ designate
     const lexicon = world.model.one.lexicon;
     const str = term.normal;
     // prefer the person it already has
-    const order = persons$1.filter((a) => term.tags.has(a[0])).concat(persons$1.filter((a) => !term.tags.has(a[0])));
+    const order = persons$2.filter((a) => term.tags.has(a[0])).concat(persons$2.filter((a) => !term.tags.has(a[0])));
     for (let k = 0; k < order.length; k += 1) {
       const [tag, form] = order[k];
       const inf = verb.fromSubjunctive(str, tag);
-      if (inf && inf !== str && isInfinitive$2(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
+      if (inf && inf !== str && isInfinitive$3(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
         const { setTag, unTag } = world.methods.one;
-        const old = ['PresentTense', 'Imperative'].concat(persons$1.map((a) => a[0]));
+        const old = ['PresentTense', 'Imperative'].concat(persons$2.map((a) => a[0]));
         old.forEach((t) => unTag([term], t, world.model.one.tagSet));
         setTag([term], ['Verb', 'Subjunctive', tag], world, false, '3-que-subjunctive');
         return
@@ -12063,7 +13337,7 @@ designate
   // 'trabajo [de] noche' - but 'trabajo de equipo' is a noun-phrase
   const deWords = new Set(['día', 'noche', 'tarde', 'mañana', 'nuevo', 'prisa', 'vez', 'pie']);
   const tenses = { present: 'PresentTense', past: 'PastTense', imperfect: 'Imperfect', future: 'FutureTense' };
-  const persons = {
+  const persons$1 = {
     first: 'FirstPerson',
     second: 'SecondPerson',
     third: 'ThirdPerson',
@@ -12073,7 +13347,7 @@ designate
   };
   const nonFinite = ['Infinitive', 'Gerund', 'Perfecto', 'Participle'];
 
-  const isInfinitive$1 = function (str, lexicon) {
+  const isInfinitive$2 = function (str, lexicon) {
     const tags = lexicon.hasOwnProperty(str) ? lexicon[str] : null;
     return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
   };
@@ -12096,7 +13370,7 @@ designate
   const homographVerbs = function (terms, world) {
     const lexicon = world.model.one.lexicon;
     const verb = world.methods.two.transform.verb;
-    const isVerb = (inf) => isInfinitive$1(inf, lexicon);
+    const isVerb = (inf) => isInfinitive$2(inf, lexicon);
     const lookup = function (term, i) {
       const tags = term.tags;
       // 'me [visto]' is 'vestir' - a participle needs its auxiliary before it
@@ -12116,7 +13390,7 @@ designate
     };
     const tag = function (term, hit, reason) {
       term.tags.clear();
-      world.methods.one.setTag([term], ['Verb', tenses[hit.tense], persons[hit.person]], world, false, reason);
+      world.methods.one.setTag([term], ['Verb', tenses[hit.tense], persons$1[hit.person]], world, false, reason);
     };
     // is there a verb already, in this part of the sentence? - 'trabajo de día | y estudio de noche'
     const hasVerb = function (i) {
@@ -12172,6 +13446,67 @@ designate
       if (hit) {
         tag(term, hit, '3-homograph-verb');
         person = hit.person;
+      }
+    }
+  };
+
+  // a negative command is the subjunctive - 'no vengas', 'no te vayas', 'no lo toques'
+  // some of these are also the present-tense of another verb:
+  // 'vengas' is 'venir' here, and not 'tú vengas' from 'vengar'
+
+  // object-pronouns go between 'no' and the verb
+  const clitics$2 = new Set(['me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os']);
+  // the persons that can be told what to do
+  const persons = [
+    ['SecondPerson', 'second'],
+    ['ThirdPerson', 'third'],
+    ['SecondPersonPlural', 'secondPlural'],
+    ['ThirdPersonPlural', 'thirdPlural'],
+    ['FirstPersonPlural', 'firstPlural'],
+  ];
+  // their subjunctive is more likely than the present-tense of the verb it looks like:
+  // 'vengas' (vengar), 'sientas' (sentar), 'creas' (crear), 'mientas' (mentar)
+  const preferred = new Set(['venir', 'sentir', 'creer', 'mentir']);
+  const old = ['PresentTense', 'Subjunctive', 'FirstPerson', 'SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural'];
+
+  const isInfinitive$1 = function (str, lexicon) {
+    const tags = lexicon.hasOwnProperty(str) ? lexicon[str] : null;
+    return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
+  };
+
+  const negativeCommand = function (terms, world) {
+    if (!terms[0] || terms[0].normal !== 'no') {
+      return
+    }
+    let n = 1;
+    while (terms[n] && clitics$2.has(terms[n].normal)) {
+      n += 1;
+    }
+    const term = terms[n];
+    if (!term || !term.tags.has('Verb') || term.tags.has('Imperative') || term.tags.has('Infinitive')) {
+      return
+    }
+    // a statement has its subject - 'no vengas tú', but 'no viene nadie'
+    const isSubjunctive = term.tags.has('Subjunctive');
+    if (!isSubjunctive && !term.tags.has('PresentTense')) {
+      return
+    }
+    const verb = world.methods.two.transform.verb;
+    const lexicon = world.model.one.lexicon;
+    const str = term.normal;
+    for (let k = 0; k < persons.length; k += 1) {
+      const [tag, form] = persons[k];
+      const inf = (verb.fromSubjunctive(str, tag) || '').replace(/([aeií]r)se$/, '$1');
+      // it has to be the subjunctive of a verb that we know
+      if (inf && inf !== str && isInfinitive$1(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
+        // 'no paras de hablar' is the present of 'parar' - only these verbs win over a present-tense
+        if (!isSubjunctive && !preferred.has(inf)) {
+          continue
+        }
+        const { setTag, unTag } = world.methods.one;
+        old.forEach((t) => unTag([term], t, world.model.one.tagSet));
+        setTag([term], ['Verb', 'Imperative', tag], world, false, '3-negative-command');
+        return
       }
     }
   };
@@ -12242,7 +13577,7 @@ designate
     }
   };
 
-  const tagger = function (view) {
+  const tagger$1 = function (view) {
     const world = view.world;
     view.docs.forEach((terms) => {
       firstPass(terms, world);
@@ -12250,6 +13585,7 @@ designate
       thirdPass(terms, world);
       fourthPass(terms, world);
       homographVerbs(terms, world);
+      negativeCommand(terms, world);
     });
     return view
   };
@@ -12794,7 +14130,7 @@ designate
 
   var preTagger = {
     compute: {
-      preTagger: tagger
+      preTagger: tagger$1
     },
     model: {
       two: model
@@ -13026,7 +14362,7 @@ designate
             terms[i].tags.clear();
             setTag([terms[i]], 'Pronoun', world, false, 'clitic-verb');
             term.tags.clear();
-            setTag([term], ['Verb', tenses[hit.tense], persons[hit.person]], world, false, 'clitic-verb');
+            setTag([term], ['Verb', tenses[hit.tense], persons$1[hit.person]], world, false, 'clitic-verb');
             continue
           }
         }
@@ -13137,7 +14473,8 @@ designate
           let found = after && (isBig$1.test(str(i + 1)) || isCurrency(terms[i + 1]) || has(terms[i + 1], 'Unit'));
           found = found || (after && joins(i + 1) && str(i + 1) === 'por' && str(i + 2) === 'ciento');
           // 'un medio', 'un tercio' - but 'un medio de transporte'
-          if (after && /^(medio|tercio)$/.test(str(i + 1)) && !(joins(i + 1) && str(i + 2) === 'de')) {
+          const isMeans = str(i + 1) === 'medio' && joins(i + 1) && str(i + 2) === 'de';
+          if (after && /^(medio|tercio)$/.test(str(i + 1)) && !isMeans) {
             found = true;
             tag(i + 1, fraction, 'un-tercio');
           }
@@ -13229,169 +14566,125 @@ designate
     return view
   };
 
+  // the whole tagging process, for re-tagging text after a change
+  const tagger = view => view.compute(['freeze', 'lexicon', 'preTagger', 'europeanNumbers', 'postTagger', 'unfreeze']);
+
   var postTagger = {
     compute: {
-      postTagger: postTagger$1
+      postTagger: postTagger$1,
+      tagger
     },
     hooks: ['postTagger']
   };
 
-  const entity = ['Person', 'Place', 'Organization'];
-
+  // only our own tags, and what differs from the shared tagset - see ../plugin.js
   var nouns$1 = {
     Noun: {
       aliases: [null, 'Sustantivo'],
-      not: ['Verb', 'Adjective', 'Adverb', 'Value', 'Determiner'],
     },
     Singular: {
-      is: 'Noun',
       not: ['Plural'],
     },
     ProperNoun: {
       aliases: [null, 'NombrePropio'],
-      is: 'Noun',
     },
     Person: {
       aliases: [null, 'Persona'],
-      is: 'Singular',
-      also: ['ProperNoun'],
-      not: ['Place', 'Organization', 'Date'],
     },
     FirstName: {
       aliases: [null, 'Nombre'],
-      is: 'Person',
     },
     MaleName: {
       aliases: [null, 'NombreMasculino'],
-      is: 'FirstName',
-      not: ['FemaleName', 'LastName'],
     },
     FemaleName: {
       aliases: [null, 'NombreFemenino'],
-      is: 'FirstName',
-      not: ['MaleName', 'LastName'],
     },
     LastName: {
       aliases: [null, 'Apellido'],
-      is: 'Person',
-      not: ['FirstName'],
     },
     Honorific: {
       aliases: [null, 'Título'],
       is: 'Noun',
-      not: ['FirstName', 'LastName', 'Value'],
     },
     Place: {
       aliases: [null, 'Lugar'],
-      is: 'Singular',
-      not: ['Person', 'Organization'],
     },
     Country: {
       aliases: [null, 'País'],
-      is: 'Place',
-      also: ['ProperNoun'],
-      not: ['City'],
     },
     City: {
       aliases: [null, 'Ciudad'],
-      is: 'Place',
-      also: ['ProperNoun'],
-      not: ['Country'],
     },
     Region: {
       aliases: [null, 'Región'],
-      is: 'Place',
-      also: ['ProperNoun'],
     },
     Address: {
       aliases: [null, 'Dirección'],
-      // is: 'Place',
     },
     Organization: {
       aliases: [null, 'Organización'],
-      is: 'ProperNoun',
-      not: ['Person', 'Place'],
     },
     SportsTeam: {
       aliases: [null, 'Equipo'],
-      is: 'Organization',
     },
     School: {
       aliases: [null, 'Escuela'],
-      is: 'Organization',
     },
     Company: {
       aliases: [null, 'Empresa'],
-      is: 'Organization',
     },
     Plural: {
-      is: 'Noun',
       not: ['Singular'],
     },
     Uncountable: {
       aliases: [null, 'Incontable'],
-      is: 'Noun',
     },
     Pronoun: {
       aliases: [null, 'Pronombre'],
-      is: 'Noun',
-      not: entity,
     },
     Actor: {
-      is: 'Noun',
-      not: entity,
+      not: ['Person', 'Place', 'Organization'],
     },
     Activity: {
       aliases: [null, 'Actividad'],
-      is: 'Noun',
-      not: ['Person', 'Place'],
     },
     Unit: {
       aliases: [null, 'Unidad'],
-      is: 'Noun',
-      not: entity,
     },
     Demonym: {
       aliases: [null, 'Gentilicio'],
-      is: 'Noun',
-      also: ['ProperNoun'],
-      not: entity,
     },
-    // a feature-tag - applies to determiners ('mi casa') and pronouns ('es mío')
     Possessive: {
       aliases: [null, 'Posesivo'],
+      is: undefined,
     },
-
     FemaleNoun: {
       aliases: [null, 'SustantivoFemenino'],
       is: 'Noun',
-      not: ['MaleNoun']
+      not: ['MaleNoun'],
     },
     MaleNoun: {
       aliases: [null, 'SustantivoMasculino'],
       is: 'Noun',
-      not: ['FemaleNoun']
+      not: ['FemaleNoun'],
     },
-
   };
 
+  // only our own tags, and what differs from the shared tagset - see ../plugin.js
   var verbs$1 = {
     Verb: {
       aliases: [null, 'Verbo'],
-      not: ['Noun', 'Adjective', 'Adverb', 'Value', 'Expression'],
     },
     PresentTense: {
       aliases: [null, 'Presente'],
-      is: 'Verb',
       not: ['PastTense'],
     },
-    // non-finite - 'hablar' is not a present-tense form in spanish
     Infinitive: {
       aliases: [null, 'Infinitivo'],
       is: 'Verb',
       not: ['PresentTense', 'PastTense', 'FutureTense', 'Gerund'],
     },
-    // non-finite - 'hablando'
     Gerund: {
       aliases: [null, 'Gerundio'],
       is: 'Verb',
@@ -13399,10 +14692,7 @@ designate
     },
     PastTense: {
       aliases: [null, 'Pasado'],
-      is: 'Verb',
-      not: ['PresentTense', 'Gerund', 'FutureTense'],
     },
-    // pretérito imperfecto - 'hablaba'
     Imperfect: {
       aliases: [null, 'Imperfecto'],
       is: 'PastTense',
@@ -13410,20 +14700,16 @@ designate
     },
     FutureTense: {
       aliases: [null, 'Futuro'],
-      is: 'Verb',
       not: ['PresentTense', 'Gerund', 'PastTense'],
     },
     Copula: {
       aliases: [null, 'Cópula'],
-      is: 'Verb',
     },
-    // a feature-tag - 'no', 'nunca' are not verbs
     Negative: {
       aliases: [null, 'Negación'],
+      not: undefined,
     },
     Modal: {
-      is: 'Verb',
-      not: ['Infinitive'],
     },
     PerfectTense: {
       aliases: [null, 'PretéritoPerfecto'],
@@ -13436,19 +14722,13 @@ designate
     },
     Participle: {
       aliases: [null, 'Participio'],
-      is: 'PastTense',
     },
     PhrasalVerb: {
-      is: 'Verb',
     },
     Particle: {
-      is: 'PhrasalVerb',
-      not: ['PastTense', 'PresentTense', 'Copula', 'Gerund'],
     },
     Auxiliary: {
       aliases: [null, 'Auxiliar'],
-      is: 'Verb',
-      not: ['PastTense', 'PresentTense', 'Gerund', 'Conjunction'],
     },
     Conditional: {
       aliases: [null, 'Condicional'],
@@ -13459,73 +14739,61 @@ designate
       aliases: [null, 'Reflexivo'],
       is: 'Verb',
     },
-    // sometimes 'pretérito'
     Perfecto: {
       is: 'Verb',
     },
-    // moods
     Imperative: {
       aliases: [null, 'Imperativo'],
-      is: 'Verb',
-      not: ['Subjunctive']
+      not: ['Subjunctive'],
     },
     Subjunctive: {
       aliases: [null, 'Subjuntivo'],
       is: 'Verb',
-      not: ['Imperative']
+      not: ['Imperative'],
     },
-
-
-    // 
     FirstPerson: {
       aliases: [null, 'PrimeraPersona'],
       is: 'Verb',
-      not: ['SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural']
+      not: ['SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural'],
     },
     SecondPerson: {
       aliases: [null, 'SegundaPersona'],
       is: 'Verb',
-      not: ['FirstPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural']
+      not: ['FirstPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural'],
     },
     ThirdPerson: {
       aliases: [null, 'TerceraPersona'],
       is: 'Verb',
-      not: ['FirstPerson', 'SecondPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural']
+      not: ['FirstPerson', 'SecondPerson', 'FirstPersonPlural', 'SecondPersonPlural', 'ThirdPersonPlural'],
     },
     FirstPersonPlural: {
       aliases: [null, 'PrimeraPersonaPlural'],
       is: 'Verb',
-      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'SecondPersonPlural', 'ThirdPersonPlural']
+      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'SecondPersonPlural', 'ThirdPersonPlural'],
     },
     SecondPersonPlural: {
       aliases: [null, 'SegundaPersonaPlural'],
       is: 'Verb',
-      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'ThirdPersonPlural']
+      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'ThirdPersonPlural'],
     },
     ThirdPersonPlural: {
       aliases: [null, 'TerceraPersonaPlural'],
       is: 'Verb',
-      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural']
+      not: ['FirstPerson', 'SecondPerson', 'ThirdPerson', 'FirstPersonPlural', 'SecondPersonPlural'],
     },
   };
 
+  // only our own tags, and what differs from the shared tagset - see ../plugin.js
   var values = {
     Value: {
       aliases: [null, 'Número'],
-      not: ['Verb', 'Adjective', 'Adverb'],
     },
     Ordinal: {
-      is: 'Value',
-      not: ['Cardinal'],
     },
     Cardinal: {
-      is: 'Value',
-      not: ['Ordinal'],
     },
     Fraction: {
       aliases: [null, 'Fracción'],
-      is: 'Value',
-      not: ['Noun'],
     },
     Multiple: {
       aliases: [null, 'Múltiplo'],
@@ -13533,33 +14801,28 @@ designate
     },
     RomanNumeral: {
       aliases: [null, 'NúmeroRomano'],
-      is: 'Cardinal',
       not: ['TextValue'],
     },
     TextValue: {
       aliases: [null, 'Numeral'],
-      is: 'Value',
       not: ['NumericValue'],
     },
     NumericValue: {
       aliases: [null, 'Numérico'],
-      is: 'Value',
       not: ['TextValue'],
     },
     Money: {
       aliases: [null, 'Dinero'],
-      is: 'Cardinal',
     },
     Percent: {
       aliases: [null, 'Porcentaje'],
-      is: 'Value',
     },
   };
 
+  // only our own tags, and what differs from the shared tagset - see ../plugin.js
   var dates = {
     Date: {
       aliases: [null, 'Fecha'],
-      not: ['Verb', 'Adverb', 'Adjective'],
     },
     Month: {
       aliases: [null, 'Mes'],
@@ -13571,40 +14834,32 @@ designate
       aliases: [null, 'DíaDeLaSemana'],
       is: 'Noun',
       also: ['Date'],
+      not: undefined,
     },
     Year: {
       aliases: [null, 'Año'],
-      is: 'Date',
       not: ['RomanNumeral'],
     },
     FinancialQuarter: {
       aliases: [null, 'Trimestre'],
-      is: 'Date',
       not: 'Fraction',
     },
-    // 'easter'
     Holiday: {
       aliases: [null, 'Festivo'],
-      is: 'Date',
-      also: ['Noun'],
     },
-    // 'summer'
     Season: {
       aliases: [null, 'Estación'],
-      is: 'Date',
+      not: undefined,
     },
     Timezone: {
       aliases: [null, 'ZonaHoraria'],
       is: 'Noun',
       also: ['Date'],
-      not: ['ProperNoun'],
     },
     Time: {
       aliases: [null, 'Hora'],
-      is: 'Date',
       not: ['AtMention'],
     },
-    // 'months'
     Duration: {
       aliases: [null, 'Duración'],
       is: 'Noun',
@@ -13612,12 +14867,10 @@ designate
     },
   };
 
-  const anything = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Value', 'QuestionWord'];
-
+  // only our own tags, and what differs from the shared tagset - see ../plugin.js
   var misc = {
     Adjective: {
       aliases: [null, 'Adjetivo'],
-      not: ['Noun', 'Verb', 'Adverb', 'Value'],
     },
     FemaleAdjective: {
       aliases: [null, 'AdjetivoFemenino'],
@@ -13640,48 +14893,40 @@ designate
       not: ['PluralAdjective'],
     },
     Comparable: {
-      is: 'Adjective',
     },
     Comparative: {
       aliases: [null, 'Comparativo'],
-      is: 'Adjective',
     },
     Superlative: {
       aliases: [null, 'Superlativo'],
-      is: 'Adjective',
-      not: ['Comparative'],
     },
     NumberRange: {
       aliases: [null, 'RangoNumérico'],
     },
     Adverb: {
       aliases: [null, 'Adverbio'],
-      not: ['Noun', 'Verb', 'Adjective', 'Value'],
     },
-
     Determiner: {
       aliases: [null, 'Determinante', 'Artículo'],
-      not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'QuestionWord', 'Conjunction'], //allow 'a' to be a Determiner/Value
     },
     Conjunction: {
       aliases: [null, 'Conjunción'],
-      not: anything,
+      is: undefined,
+      not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'Value', 'QuestionWord'],
     },
     Preposition: {
       aliases: [null, 'Preposición'],
+      is: undefined,
       not: ['Noun', 'Verb', 'Adjective', 'Adverb', 'QuestionWord'],
     },
     QuestionWord: {
       aliases: [null, 'Interrogativo'],
-      not: ['Determiner'],
     },
     Currency: {
       aliases: [null, 'Moneda'],
-      is: 'Noun',
     },
     Expression: {
       aliases: [null, 'Interjección'],
-      not: ['Noun', 'Adjective', 'Verb', 'Adverb'],
     },
     Abbreviation: {
       aliases: [null, 'Abreviatura'],
@@ -13693,10 +14938,10 @@ designate
       aliases: [null, 'Teléfono'],
       not: ['HashTag', 'Verb', 'Adjective', 'Value', 'AtMention', 'Email'],
     },
-    HashTag: {},
+    HashTag: {
+    },
     AtMention: {
       aliases: [null, 'Mención'],
-      is: 'Noun',
       not: ['HashTag', 'Email'],
     },
     Emoji: {
@@ -13716,11 +14961,25 @@ designate
     },
     Condition: {
       aliases: [null, 'Condición'],
-      not: ['Verb', 'Adjective', 'Noun', 'Value'],
+      is: undefined,
     },
   };
 
-  const tags = Object.assign({}, nouns$1, verbs$1, values, dates, misc);
+  const ours = Object.assign({}, nouns$1, verbs$1, values, dates, misc);
+
+  // start from the shared tagset, then apply our own tags and changes
+  const tags = { ...allTags };
+
+  Object.keys(ours).forEach(tag => {
+    const en = tags[tag];
+    if (!en) {
+      tags[tag] = ours[tag];
+      return
+    }
+    // our aliases lead, so the first one stays the preferred name - then the english ones, like #NN
+    const aliases = (ours[tag].aliases || [null]).concat((en.aliases || []).filter(str => str));
+    tags[tag] = { ...en, ...ours[tag], aliases };
+  });
 
   var tagset = {
     tags
@@ -13788,7 +15047,7 @@ designate
   };
 
   // 'dieciséis' is often written 'dieciseis'
-  const noAccent = str => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const noAccent = str => str.normalize('NFD').replace(/\p{M}/gu, '');
 
   // number-words, and their values
   const cardinals$1 = { cero: 0, cien: 100, un: 1, una: 1, veintiún: 21, veintiuna: 21 };
@@ -13895,23 +15154,16 @@ designate
     let total = 0; // the millions
     let section = 0; // the thousands
     let group = 0; // the hundreds, tens and ones
+    // the next word must be smaller than this - 'ciento' leaves room for 'veinte', and then for nothing
+    let room = 1000;
     let lastBig = Infinity;
     let usedMil = false;
-    // which parts of the group are full?
-    let h = false;
-    let t = false;
-    let u = false;
-    let canY = false;
     let afterY = false;
     let any = false;
     let int = null; // the whole part, before a 'coma'
     let zeros = '';
     let over = 1;
     let extra = 0;
-    const clear = () => {
-      h = t = u = canY = afterY = false;
-      group = 0;
-    };
     for (; i < terms.length; i += 1) {
       const term = terms[i];
       const w = term.normal;
@@ -13927,7 +15179,8 @@ designate
         // 'medio millón'
         if (!any) {
           group = 1 / fractions[w];
-          h = t = u = any = true;
+          room = 0;
+          any = true;
           continue
         }
         // 'dos y medio', or 'tres cuartos'
@@ -13945,7 +15198,7 @@ designate
         }
         const v = cardinals$1[next.normal];
         const isHalf = next.tags.has('Fraction') && fractions[next.normal] === 2;
-        if (isHalf || (canY && !u && v > 0 && v < 10 && !isDigit(next))) {
+        if (isHalf || (room === 10 && v > 0 && v < 10 && !isDigit(next))) {
           afterY = true;
           continue
         }
@@ -13957,8 +15210,10 @@ designate
           break
         }
         int = total + section + group;
-        total = section = 0;
-        clear();
+        total = 0;
+        section = 0;
+        group = 0;
+        room = 1000;
         continue
       }
       if (isOrd !== term.tags.has('Ordinal')) {
@@ -13966,26 +15221,20 @@ designate
       }
       const mult = isOrd ? 0 : getMult(term);
       if (mult) {
-        if (int !== null) {
+        // 'mil mil', 'dos millones tres millones'
+        if (int !== null || (mult === 1000 ? usedMil : mult >= lastBig)) {
           break
         }
         if (mult === 1000) {
-          if (usedMil) {
-            break
-          }
           section = (group || 1) * 1000;
-          usedMil = true;
         } else {
-          // 'dos millones tres millones'
-          if (mult >= lastBig) {
-            break
-          }
           total += (section + group || 1) * mult;
           section = 0;
-          usedMil = false;
           lastBig = mult;
         }
-        clear();
+        usedMil = mult === 1000;
+        group = 0;
+        room = 1000;
         any = true;
         continue
       }
@@ -13993,47 +15242,26 @@ designate
       if (v === undefined) {
         break
       }
-      if (v === 0) {
-        // 'tres coma cero cinco'
-        if (int !== null && !h && !t && !u) {
-          zeros += '0';
-          continue
-        }
-        if (any) {
-          break
-        }
-        h = t = u = true;
-      } else if (v >= 1000) {
-        // 'milésimo primero'
-        if (any) {
-          break
-        }
+      // 'tres coma cero cinco'
+      if (v === 0 && int !== null && room === 1000) {
+        zeros += '0';
+        continue
+      }
+      // 'milésimo primero'
+      if (v >= 1000 && !any) {
         total = v;
         any = true;
         continue
-      } else if (v >= 100) {
-        if (h || t || u) {
-          break
-        }
-        h = true;
+      }
+      // 'dos tres', 'cero uno', and 'treinta uno' - but 'treinta y uno', and 'vigésimo primero'
+      if (v >= room || (v === 0 && any) || (room === 10 && !afterY && !isOrd)) {
+        break
+      }
+      room = 0;
+      if (v >= 100) {
+        room = 100;
       } else if (v >= 30 || (isOrd && v % 10 === 0)) {
-        if (t || u) {
-          break
-        }
-        t = true;
-        canY = !isOrd;
-      } else if (v >= 10) {
-        if (t || u) {
-          break
-        }
-        t = u = true;
-      } else {
-        // 'treinta y uno', but 'vigésimo primero'
-        if (u || (t && !afterY && !isOrd)) {
-          break
-        }
-        u = true;
-        canY = false;
+        room = 10;
       }
       group += v;
       afterY = false;
@@ -14047,7 +15275,7 @@ designate
     if (int !== null) {
       num = Number(int + '.' + zeros + group);
     }
-    num = num / over + extra;
+    num = (num / over) + extra;
     res.num = res.neg ? num * -1 : num;
     res.end = i;
     return res
@@ -14079,6 +15307,9 @@ designate
     return view.update(ptrs)
   };
 
+  // floating-point noise - 0.1 + 0.2 - but a whole number is already exact
+  const tidy$1 = num => (Number.isInteger(num) ? num : Number(num.toPrecision(15)));
+
   // read digits with the shared european-numbers plugin - '1.234,56', '-5', '3,5%'
   const fromNumber = function (terms, m) {
     const { read } = m.methods.two.europeanNumbers;
@@ -14101,7 +15332,7 @@ designate
       res = fromNumber(terms.slice(found.digits[0], found.digits[1]), m);
       if (res.num !== null) {
         // '2,5 millones' is 2.5 * 1,000,000
-        res.num = Number((res.num * found.mult).toPrecision(15)) * (found.neg ? -1 : 1);
+        res.num = tidy$1(res.num * found.mult) * (found.neg ? -1 : 1);
       }
     }
     return {
@@ -14271,13 +15502,16 @@ designate
   });
 
   // a unit that can stand as its own word - 'km', 'kg', 'm²'
-  const isWord = /^[a-zà-ÿµ]+[²³]?$/i;
+  const isWord = /^\p{L}+[²³]?$/u;
 
   // 'cinco euros', but 'un euro'
   const unitWords = function (key, num) {
     const [single, plural] = symbols[key];
     return Math.abs(num) === 1 ? single : plural
   };
+
+  // floating-point noise - 0.1 + 0.2 - but a whole number is already exact
+  const tidy = num => (Number.isInteger(num) ? num : Number(num.toPrecision(15)));
 
   const hasDash = /[-−–]$/;
   // 'una', 'veintiuna', 'doscientas'
@@ -14682,7 +15916,7 @@ designate
             return val
           }
           // avoid float noise - 0.1 + 0.2
-          obj.num = Number((obj.num + n).toPrecision(15));
+          obj.num = tidy(obj.num + n);
           let fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal';
           if (obj.isText) {
             fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
@@ -15245,6 +16479,41 @@ designate
 
   var version = '0.3.2';
 
+  // spanish word-rules for .clauses() - the method itself comes from compromise/shared
+  const clauses = {
+    // a comma, but not a clause break
+    notClause: [
+      '@hasComma (y|e|o|u) .', // grande, y fuerte
+    ],
+    // split a clause after these
+    splitAfter: [
+      '^#Pron (dijo|dice)', // él dijo
+    ],
+    // split a clause before these
+    splitBefore: [
+      '(dijo|dice) #Prop$',
+      '. . si .{4}', // ... si fuera así
+      'y mientras',
+      'mientras que',
+      'ahora que',
+      'desde que',
+      'hasta que',
+      'aunque',
+      '(incluso|aun) (si|cuando)',
+      'como si',
+      '(cuyo|cuya|cuyos|cuyas)', // whose
+    ],
+    // split a clause before the [captured] word
+    splitBeforeGroup: [
+      '#Verb .* [pero] .* #Verb', // es bueno pero es ..
+      'si .{2,9} [entonces] .', // si es esto entonces aquello
+    ],
+  };
+
+  var clauseRules = {
+    model: { three: { clauses } },
+  };
+
   nlp.plugin(tokenizer);
   nlp.plugin(tagset);
   nlp.plugin(lexicon);
@@ -15256,6 +16525,14 @@ designate
   nlp.plugin(adjectives);
   nlp.plugin(verbs);
   nlp.plugin(numbers);
+
+  // language-neutral plugins, shared with compromise
+  nlp.plugin(lazy$1); // nlp.lazy() - only tags the sentences that may match
+  nlp.plugin(misc$1); // .parentheses(), .quotations(), .acronyms(), .emails() ...
+  nlp.plugin(clauses$1); // .clauses() - split on punctuation, and our rules below
+  nlp.plugin(clauseRules);
+  nlp.plugin(topics); // .people(), .places(), .organizations(), .topics()
+  nlp.plugin(plugin); // .redact()
 
 
   const es = function (txt, lex) {

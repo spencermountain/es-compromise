@@ -189,16 +189,16 @@ Un sustantivo invariable recibe el número de su artículo — 'los lunes' es pl
 
 ### `.numbers()`
 
-- **`.numbers()`** — devuelve los números, escritos con cifras o con palabras
+- **`.numbers()`** — devuelve los números, escritos con cifras o con palabras — 'dos mil tres' es un solo número, y 'dos, tres' son dos. 'un' y 'una' son artículos, y solo cuentan como número dentro de uno ('un millón', 'treinta y un') o ante una unidad ('un euro', 'un km')
 - **`.values()`** — alias de .numbers()
 - **`.numbers().get()`** — devuelve el valor numérico de cada número
 - **`.numbers().parse()`** — devuelve la interpretación de cada número
 - **`.numbers().json(n?)`** — devuelve el json de cada número, o solo el del número n, con sus datos numéricos
-- **`.numbers().units()`** — devuelve la unidad que sigue a cada número
-- **`.numbers().toNumber()`** — escribe los números con cifras (`40`)
-- **`.numbers().toText()`** — escribe los números con palabras (`cuarenta`)
+- **`.numbers().units()`** — devuelve la unidad que sigue a cada número (`km`, `por ciento`)
+- **`.numbers().toNumber()`** — escribe los números con cifras (`40`, `1ª`, `50 %`)
+- **`.numbers().toText()`** — escribe los números con palabras (`cuarenta`, `cinco euros`, `cincuenta por ciento`). Un decimal (`3,5`) se queda en cifras
 - **`.numbers().toCardinal()`** — los convierte en números cardinales (`cuarenta`)
-- **`.numbers().toOrdinal()`** — los convierte en números ordinales (`cuadragésimo`)
+- **`.numbers().toOrdinal()`** — los convierte en números ordinales (`cuadragésimo`, `40º`), con el género del número o de su sustantivo (`primera vez`, `primer día`). Con palabras, hasta 1999
 - **`.numbers().isCardinal()`** — devuelve solo los números cardinales
 - **`.numbers().isOrdinal()`** — devuelve solo los números ordinales
 - **`.numbers().isEqual(n)`** — devuelve solo los números iguales a n
@@ -206,7 +206,7 @@ Un sustantivo invariable recibe el número de su artículo — 'los lunes' es pl
 - **`.numbers().lessThan(n)`** — devuelve solo los números menores que n
 - **`.numbers().between(min, max)`** — devuelve solo los números entre min y max
 - **`.numbers().set(n)`** — sustituye cada número por n, dado como número o como texto (`12`, `'doce'`)
-- **`.numbers().add(n)`** — suma n a cada número (número o texto)
+- **`.numbers().add(n)`** — suma n a cada número (número o texto), y conserva su forma de escribirse (`1,5` → `2,5`, `5€` → `6€`)
 - **`.numbers().subtract(n)`** — resta n a cada número (número o texto)
 - **`.numbers().increment()`** — suma 1 a cada número
 - **`.numbers().decrement()`** — resta 1 a cada número

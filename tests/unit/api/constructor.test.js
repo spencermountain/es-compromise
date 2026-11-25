@@ -129,11 +129,11 @@ test('plugins:', function (t) {
 test('typeahead:', function (t) {
   nlp.typeahead(['chupacabras', 'ñacurutú', 'ñacurutúes'])
   // only the last word is filled-in
-  const doc = nlp('el chupa')
+  const doc = nlp('el chupac')
   t.equal(doc.match('chupacabras').found, true, here + 'a prefix matches the full word')
-  t.equal(doc.text(), 'el chupa', here + 'text is unchanged')
+  t.equal(doc.text(), 'el chupac', here + 'text is unchanged')
   t.equal(doc.autoFill().text(), 'el chupacabras', here + 'autoFill')
   t.equal(nlp('el ñacu').match('ñacurutú').found, false, here + 'an ambiguous prefix')
-  t.equal(nlp('el chupa duerme').match('chupacabras').found, false, here + 'not in the middle')
+  t.equal(nlp('el chupac duerme').match('chupacabras').found, false, here + 'not in the middle')
   t.end()
 })

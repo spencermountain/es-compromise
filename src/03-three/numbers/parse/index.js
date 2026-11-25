@@ -1,5 +1,8 @@
 import scan from './fromText.js'
 
+// floating-point noise - 0.1 + 0.2 - but a whole number is already exact
+const tidy = num => (Number.isInteger(num) ? num : Number(num.toPrecision(15)))
+
 // read digits with the shared european-numbers plugin - '1.234,56', '-5', '3,5%'
 const fromNumber = function (terms, m) {
   const { read } = m.methods.two.europeanNumbers
@@ -22,7 +25,7 @@ const parseNumber = function (m) {
     res = fromNumber(terms.slice(found.digits[0], found.digits[1]), m)
     if (res.num !== null) {
       // '2,5 millones' is 2.5 * 1,000,000
-      res.num = Number((res.num * found.mult).toPrecision(15)) * (found.neg ? -1 : 1)
+      res.num = tidy(res.num * found.mult) * (found.neg ? -1 : 1)
     }
   }
   return {

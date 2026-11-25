@@ -3,6 +3,9 @@ import parseNumber from './parse/index.js'
 import format from './format/index.js'
 import { symbols, fromWord, isWord, unitWords } from './format/symbols.js'
 
+// floating-point noise - 0.1 + 0.2 - but a whole number is already exact
+const tidy = num => (Number.isInteger(num) ? num : Number(num.toPrecision(15)))
+
 const hasDash = /[-−–]$/
 // 'una', 'veintiuna', 'doscientas'
 const femCardinal = /^(veinti)?una$|ientas$/
@@ -406,7 +409,7 @@ const api = function (View) {
           return val
         }
         // avoid float noise - 0.1 + 0.2
-        obj.num = Number((obj.num + n).toPrecision(15))
+        obj.num = tidy(obj.num + n)
         let fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal'
         if (obj.isText) {
           fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal'

@@ -569,4 +569,9 @@ export default {
   "ejercer": ["ejerza", "ejerzas", "ejerza", "ejerzamos", "ejerzáis", "ejerzan"],
   "pescar": ["pesque", "pesques", "pesque", "pesquemos", "pesquéis", "pesquen"],
   haber: ['haya', 'hayas', 'haya', 'hayamos', 'hayáis', 'hayan'],
+  "nevar": ["nieve", "nieves", "nieve", "nevemos", "nevéis", "nieven"],
+  "adquirir": ["adquiera", "adquieras", "adquiera", "adquiramos", "adquiráis", "adquieran"],
+  "inquirir": ["inquiera", "inquieras", "inquiera", "inquiramos", "inquiráis", "inquieran"],
+  "consolar": ["consuele", "consueles", "consuele", "consolemos", "consoléis", "consuelen"],
+  "cegar": ["ciegue", "ciegues", "ciegue", "ceguemos", "ceguéis", "cieguen"],
 }

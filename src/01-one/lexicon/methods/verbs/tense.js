@@ -40,8 +40,33 @@ const toImperfectSubjunctiveSe = (str) => {
   }
 }
 const toConditional = (str) => doEach(str, conditional)
+// the short 'tú' commands, and the verbs built on them - 'pon', 'supón', 'ten', 'mantén', 'haz', 'sal', 'di', 'ven'
+const shortCommand = /(p[oó]n|t[eé]n|v[eé]n|haz|sal|satisfaz)$/
+// .. a longer verb takes an accent, to keep its stress - 'convén', 'detén', 'compón' - but 'rehaz', 'sobresal'
+const compounds = /^(.+)(venir|tener|poner|hacer|salir)$/
+const shortForms = { venir: 'vén', tener: 'tén', poner: 'pón', hacer: 'haz', salir: 'sal' }
+const ownCommand = { ir: 've', ser: 'sé', haber: 'he', decir: 'di' }
+
 const toImperative = (str) => {
   const obj = doEach(str, imperative)
+  str = plain(str)
+  // the model is only sure of the verbs it has seen - the rest follow from the other tenses:
+  // 'tú' is the third-person present - 'habla'
+  const compound = str.match(compounds)
+  if (ownCommand.hasOwnProperty(str)) {
+    obj.second = ownCommand[str]
+  } else if (compound) {
+    // 'intervenir' is 'intervén', as 'venir' is 'ven'
+    obj.second = compound[1] + shortForms[compound[2]]
+  } else if (!shortCommand.test(obj.second || '')) {
+    obj.second = toPresent(str).third || obj.second
+  }
+  // 'usted' and 'ustedes' are the subjunctive - 'hable', 'hablen'
+  const subj = toSubjunctive(str)
+  obj.third = subj.third || obj.third
+  obj.thirdPlural = subj.thirdPlural || obj.thirdPlural
+  // 'vosotros' is the infinitive, with a 'd' - 'hablad'
+  obj.secondPlural = /r$/.test(str) ? str.replace(/r$/, 'd') : obj.secondPlural
   // imperative has no first-person
   // because ...you can't tell yourself to do something.
   obj.first = ''

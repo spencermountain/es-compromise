@@ -78,16 +78,17 @@ const checkRoot = function (str, guess, world) {
 
 // the infinitive of a command with pronouns attached - the tagger has left its stem in 'machine'
 // 'levántate' is 'levanta' + 'te', and 'siéntese' is 'siente' + 'se'
-const fromCommand = function (term, world) {
+const fromCommand = function (term, world, word) {
   const verb = world.methods.two.transform.verb
   const lexicon = world.model.one.lexicon
   const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive')
-  const stem = term.machine
+  const stem = word || term.machine
   // the 'tú' command is the present-tense - 'levanta'
   const present = verb.candidates(stem, ['present']).filter((o) => isVerb(o.root) && o.hits.some((h) => h.person === 'third' || h.person === 'firstPlural'))
   // the 'usted' command is the subjunctive - 'levante'
   let formal = null
-  const tags = ['ThirdPerson', 'ThirdPersonPlural']
+  // .. and so is every negative one - 'no hables', 'no habléis'
+  const tags = ['ThirdPerson', 'ThirdPersonPlural', 'SecondPerson', 'SecondPersonPlural', 'FirstPersonPlural']
   for (let i = 0; i < tags.length && !formal; i += 1) {
     const inf = (verb.fromSubjunctive(stem, tags[i]) || '').replace(/([aeií]r)se$/, '$1')
     if (inf && isVerb(inf) && verb.toSubjunctive(inf)[persons[tags[i]]] === stem) {
@@ -95,7 +96,7 @@ const fromCommand = function (term, world) {
     }
   }
   // '-se' is only for 'usted' - 'siéntese' is 'sentar', but 'siéntete' is 'sentir'
-  const isFormal = /se$/.test(term.normal)
+  const isFormal = word ? present.length === 0 : /se$/.test(term.normal)
   const informal = present.length > 0 ? present[0].root : null
   return isFormal ? formal || informal : informal || formal
 }
@@ -140,7 +141,8 @@ const root = function (view) {
           // an indicative tense - 'hablo', 'habló', 'hablaba', 'hablará', 'hablaría'
           const from = tenses.find((o) => term.tags.has(o[0]))
           if (!from && term.tags.has('Imperative')) {
-            term.root = verb.fromImperative(str, form)
+            // 'no hables' is a subjunctive, and 'habla' a present-tense
+            term.root = fromCommand(term, view.world, str) || verb.fromImperative(str, form)
           } else {
             // .. or a guess
             term.root = checkRoot(str, verb[(from || tenses[1])[1]](str, form), view.world)

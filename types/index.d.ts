@@ -49,6 +49,12 @@ export interface ParsedNumber {
   prefix: string
   num: number | null
   suffix: string
+  /** the decimal mark that was written - ',' in '3,5' */
+  decimal?: string | null
+  /** the mark between thousands - '.' in '1.000' */
+  group?: string | null
+  /** the ending of a numeric ordinal - 'º', '.ª', 'er' */
+  ordinal: string | null
   isText: boolean
   isOrdinal: boolean
   isFraction: boolean
@@ -89,19 +95,19 @@ export interface Numbers extends View {
   get(n?: number): (number | null)[]
   /** json output, with parsed number data for each match - a number returns only the nth match */
   json(n?: number | string | object): any
-  /** return the unit following each number - 'kilos' */
+  /** return the unit following each number - 'km', 'por ciento' */
   units(): View
   /** return only ordinal numbers - 'quinto' */
   isOrdinal(): Numbers
   /** return only cardinal numbers - 'cinco' */
   isCardinal(): Numbers
-  /** re-write these numbers as digits - 'cuarenta' → '40' */
+  /** re-write these numbers as digits - 'cuarenta' → '40', 'primera' → '1ª', 'cinco por ciento' → '5 %' */
   toNumber(): Numbers
-  /** re-write these numbers as words - '40' → 'cuarenta' */
+  /** re-write these numbers as words - '40' → 'cuarenta', '5€' → 'cinco euros' - a decimal is left alone */
   toText(): Numbers
   /** re-write these numbers as cardinal - 'cuadragésimo' → 'cuarenta' */
   toCardinal(): Numbers
-  /** re-write these numbers as ordinal - 'cuarenta' → 'cuadragésimo' */
+  /** re-write these numbers as ordinal - 'cuarenta' → 'cuadragésimo', '40' → '40º' - in words up to 1999 */
   toOrdinal(): Numbers
   /** return only numbers with this value */
   isEqual(n: number): Numbers
@@ -162,12 +168,62 @@ export interface EsView extends View {
   numbers(n?: number): Numbers
   /** alias of .numbers() */
   values(n?: number): Numbers
+  /** return any names of people - with .parse() and .json() */
+  people(n?: number): View
+  /** return any names of places */
+  places(n?: number): View
+  /** return any names of organizations */
+  organizations(n?: number): View
+  /** return people, places, and organizations together */
+  topics(n?: number): View
+  /** split-up sentences into their clauses */
+  clauses(n?: number): View
+  /** black-out names, places, emails and other identifying text */
+  redact(opts?: object, blockStr?: string, keep?: boolean): View
+  /** return text wrapped in (parentheses) */
+  parentheses(n?: number): View
+  /** return text wrapped in quotation-marks */
+  quotations(n?: number): View
+  /** return any acronyms - 'F.B.I.' */
+  acronyms(n?: number): View
+  /** return any words tagged as #Possessive */
+  possessives(n?: number): View
+  /** return any words tagged as #Honorific */
+  honorifics(n?: number): View
+  /** return any words tagged as #Abbreviation */
+  abbreviations(n?: number): View
+  /** return any words tagged as #Conjunction */
+  conjunctions(n?: number): View
+  /** return any words tagged as #Preposition */
+  prepositions(n?: number): View
+  /** return any words joined by a hyphen */
+  hyphenated(n?: number): View
+  /** return any terms split by a slash */
+  slashes(n?: number): View
+  /** return any #HashTag terms */
+  hashTags(n?: number): View
+  /** return any #Email terms */
+  emails(n?: number): View
+  /** return any #Url terms */
+  urls(n?: number): View
+  /** return any #AtMention terms */
+  atMentions(n?: number): View
+  /** return any #Emoji terms */
+  emoji(n?: number): View
+  /** return any #Emoticon terms */
+  emoticons(n?: number): View
+  /** return any #PhoneNumber terms */
+  phoneNumbers(n?: number): View
+  /** return any #Address terms */
+  addresses(n?: number): View
 }
 
 /** parse the given spanish text */
 declare function nlp(text?: string, lexicon?: Lexicon): EsView
 
 declare namespace nlp {
+  /** tag only the sentences that may hold this match, and return the matches */
+  export function lazy(text: string, match: string | Net): EsView
   /** interpret text without tagging */
   export function tokenize(text: string, lexicon?: Lexicon): EsView
   /** mix in a compromise-plugin */

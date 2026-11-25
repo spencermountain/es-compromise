@@ -237,7 +237,7 @@ puede analizar números escritos o numéricos
 let doc = nlp('tengo cuarenta dolares')
 doc.numbers().minus(50)
 doc.text()
-// tengo moins diez dolares
+// tengo menos diez dolares
 ```
 
 <div align="right">

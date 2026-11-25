@@ -5,6 +5,7 @@ nlp.verbose(false)
 
 const persons = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural']
 const tenses = ['presentTense', 'pastTense', 'futureTense', 'conditional', 'subjunctive']
+const keys = ['conditional', 'futureTense', 'gerund', 'imperative', 'pastTense', 'perfecto', 'presentTense', 'subjunctive']
 const conjugate = str => nlp(str).verbs().conjugate()[0]
 
 test('conjugate shape:', function (t) {
@@ -13,7 +14,8 @@ test('conjugate shape:', function (t) {
     const res = nlp(inf).verbs().conjugate()
     t.equal(res.length, 1, here + inf + ' - one result')
     const o = res[0]
-    t.equal(o.infinitive, inf, here + inf + ' - infinitive')
+    t.deepEqual(Object.keys(o).sort(), keys, here + inf + ' - keys')
+    t.deepEqual(Object.keys(o.imperative), persons, here + inf + ' - imperative persons')
     tenses.forEach(tense => {
       t.deepEqual(Object.keys(o[tense] || {}), persons, here + inf + ' - ' + tense + ' persons')
       const forms = Object.values(o[tense] || {})
@@ -72,9 +74,15 @@ test('irregular verbs:', function (t) {
   t.equal(conjugate('tener').gerund, 'teniendo', here + 'teniendo')
   t.equal(conjugate('tener').perfecto, 'tenido', here + 'tenido')
   // from a conjugated form
-  t.equal(conjugate('nosotros tenemos hambre').infinitive, 'tener', here + 'tenemos')
+  t.equal(conjugate('nosotros tenemos hambre').futureTense.first, 'tendré', here + 'tenemos')
   t.equal(conjugate('ellos tuvieron suerte').presentTense.first, 'tengo', here + 'tuvieron')
-  t.equal(conjugate('yo soy alto').infinitive, 'ser', here + 'soy')
-  t.equal(conjugate('ella va a casa').infinitive, 'ir', here + 'va')
+  t.equal(conjugate('yo soy alto').pastTense.third, 'fue', here + 'soy')
+  t.equal(conjugate('ella va a casa').presentTense.firstPlural, 'vamos', here + 'va')
+  // commands
+  t.equal(conjugate('hablar').imperative.second, 'habla', here + 'habla')
+  t.equal(conjugate('comer').imperative.secondPlural, 'comed', here + 'comed')
+  t.equal(conjugate('vivir').imperative.second, 'vive', here + 'vive')
+  t.equal(conjugate('vivir').imperative.secondPlural, 'vivid', here + 'vivid')
+  t.equal(conjugate('tener').imperative.secondPlural, 'tened', here + 'tened')
   t.end()
 })

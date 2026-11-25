@@ -20,6 +20,7 @@ import subjectVerb from './3rd-pass/subject-verb.js'
 import checkSubjunctive from './3rd-pass/subjunctive.js'
 import checkComo from './3rd-pass/como.js'
 import homographVerbs from './3rd-pass/homograph-verb.js'
+import negativeCommand from './3rd-pass/negative-command.js'
 import accentName from './2nd-pass/accent-name.js'
 
 // these methods don't care about word-neighbours
@@ -73,6 +74,7 @@ const tagger = function (view) {
     thirdPass(terms, world)
     fourthPass(terms, world)
     homographVerbs(terms, world)
+    negativeCommand(terms, world)
   })
   return view
 }
