@@ -10,7 +10,7 @@ const arr = [
   [4, 'cuatro', 'cuarto'],
   [5, 'cinco', 'quinto'],
   [6, 'seis', 'sexto'],
-  [7, 'siete', 'sétimo'],
+  [7, 'siete', 'séptimo'],
   [8, 'ocho', 'octavo'],
   [9, 'nueve', 'noveno'],
   [10, 'diez', 'décimo'],
@@ -30,7 +30,7 @@ const arr = [
   [24, 'veinticuatro', 'vigésimo cuarto'],//24th
   [25, 'veinticinco', 'vigésimo quinto'],
   [26, 'veintiséis', 'vigésimo sexto'],
-  [27, 'veintisiete', 'vigésimo sétimo'],
+  [27, 'veintisiete', 'vigésimo séptimo'],
   [28, 'veintiocho', 'vigésimo octavo'],
   [29, 'veintinueve', 'vigésimo noveno'],
   [30, 'treinta', 'trigésimo'],
@@ -47,14 +47,14 @@ const arr = [
   [500, 'quinientos', 'quingentésimo'],
   [600, 'seiscientos', 'sexcentésimo'],
   [700, 'setecientos', 'septingentésimo'],
-  [800, 'ochocientos', 'octingésimo'],
+  [800, 'ochocientos', 'octingentésimo'],
   [900, 'novecientos', 'noningentésimo'],
   [1000, 'mil', 'milésimo'],
-  [1000000, 'millón', 'millonésima'],
+  [1000000, 'un millón', 'millonésimo'],
 
-  [24, '24', '24°'],
-  [17, '17', '17°'],
-  [107, '107', '107°']
+  [24, '24', '24º'],
+  [17, '17', '17º'],
+  [107, '107', '107º']
 ]
 
 test('toOrdinal:', function (t) {
@@ -79,10 +79,10 @@ test('toCardinal:', function (t) {
 
 test('ordinal numbers:', function (t) {
   let doc = nlp('342').numbers().toOrdinal()
-  t.equal(doc.text(), '342°', here + 'num-ord')
+  t.equal(doc.text(), '342º', here + 'num-ord')
 
   doc = nlp('trescientos setenta').numbers().toNumber().toOrdinal()
-  t.equal(doc.text(), '370°', here + 'num-ord')
+  t.equal(doc.text(), '370º', here + 'num-ord')
   t.end()
 })
 

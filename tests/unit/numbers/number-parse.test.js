@@ -110,7 +110,7 @@ const arr = [
   [120, 'ciento veinte'],
   [121, 'ciento veintiuno'],
   [122, 'ciento veintidós'],
-  // [123, 'ciento veintitres'],
+  [123, 'ciento veintitrés'],
   [124, 'ciento veinticuatro'],
   [125, 'ciento veinticinco'],
   [202, 'doscientos dos'],
@@ -132,13 +132,15 @@ const arr = [
   [100000, 'cien mil'],
   [150000, 'ciento cincuenta mil'],
   [900000, 'novecientos mil'],
-  [1000000, 'millón'],
+  [1000000, 'un millón'],
   [2000000, 'dos millones'],
   [40000000, 'cuarenta millones'],
   [100000000, 'cien millones'],
-  [561000000, 'quinientos sesenta y uno millones'],
-  // [1000000000, 'mil millones'],
-  [2000000000, 'dos billones'],
+  [561000000, 'quinientos sesenta y un millones'],
+  [1000000000, 'mil millones'],
+  [2000000000, 'dos mil millones'],
+  // a 'billón' is a million millions
+  [2000000000000, 'dos billones'],
 
 
 ]
@@ -166,7 +168,8 @@ test('number-one-way:', function (t) {
   const toNum = [
     [5000000, '5 millones'],
     [59000000, '59 millones'],
-    // [5900000, '5,9 millones']
+    [5900000, '5,9 millones'],
+    [1000000, 'millón'],
   ]
   toNum.forEach(a => {
     const [num, str] = a

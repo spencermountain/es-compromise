@@ -1,108 +1,106 @@
 import data from '../data.js'
-const ones = data.ones.reverse()
-const tens = data.tens.reverse()
-const hundreds = data.hundreds.reverse()
 
-const multiples = [
-  [1000000000, 'billones', 'billones'],
-  [1000000, 'millón', 'millones'],
-  [1000, 'mil', 'mil'],
-  // [100, 'cent'],
-  [1, 'one', 'one'],
-]
+// words for each part of a number
+const cardinals = {}
+const ordinals = {}
+;[...data.ones, ...data.tens, ...data.hundreds].forEach(a => {
+  cardinals[a[0]] = a[1]
+  ordinals[a[0]] = a[2]
+})
+const bigs = data.multiples.filter(a => a[0] > 1000)
 
-//turn number into an array of magnitudes, like [[5, million], [2, hundred]]
-const getMagnitudes = function (num) {
-  let working = num
-  const have = []
-  multiples.forEach(a => {
-    if (num >= a[0]) {
-      const howmany = Math.floor(working / a[0])
-      working -= howmany * a[0]
-      if (howmany) {
-        let str = a[1]
-        if (howmany > 1) {
-          str = a[2]//use plural version
-        }
-        have.push({
-          unit: str,
-          num: howmany,
-        })
-      }
-    }
-  })
-  return have
-}
-
-const twoDigit = function (num) {
+// 1-999 - 'ciento veintiuno'
+// `one` is how a last 'uno' ends - 'uno', 'una' or 'un'
+const toGroup = function (num, fem, one) {
   const words = []
-  let addAnd = false
-  // 100-900
-  for (let i = 0; i < hundreds.length; i += 1) {
-    if (hundreds[i][0] <= num) {
-      words.push(hundreds[i][1])
-      num -= hundreds[i][0]
-      break
-    }
+  const h = Math.floor(num / 100) * 100
+  let rest = num % 100
+  if (h) {
+    const w = num === 100 ? 'cien' : cardinals[h]
+    // 'doscientas'
+    words.push(fem && h > 100 ? w.replace(/os$/, 'as') : w)
   }
-  // 30-90
-  for (let i = 0; i < tens.length; i += 1) {
-    if (tens[i][0] <= num) {
-      words.push(tens[i][1])
-      num -= tens[i][0]
-      addAnd = true
-      break
-    }
+  // 'treinta y dos'
+  if (rest > 30 && rest % 10) {
+    words.push(cardinals[rest - (rest % 10)], 'y')
+    rest = rest % 10
   }
-  if (num === 0) {
-    return words
-  }
-  // 0-29
-  for (let i = 0; i < ones.length; i += 1) {
-    if (ones[i][0] <= num) {
-      // 'y dos'
-      if (words.length > 0 && addAnd) {
-        words.push('y')
-      }
-      words.push(ones[i][1])
-      // num -= ones[i][0]
-      break
-    }
+  if (rest === 21 && one === '') {
+    words.push('veintiún')
+  } else if (rest) {
+    words.push(rest % 20 === 1 ? cardinals[rest].replace(/o$/, one) : cardinals[rest])
   }
   return words
 }
 
-const toText = function (num) {
+// under a million - 'veintiún mil doscientos'
+const toThousands = function (num, fem, one) {
+  const mil = Math.floor(num / 1000)
+  let words = []
+  if (mil > 1) {
+    words = toGroup(mil, fem, '')
+  }
+  if (mil) {
+    words.push('mil')
+  }
+  return words.concat(toGroup(num % 1000, fem, one))
+}
+
+// write a whole number as words - `opts.isFemale` is 'una', and `opts.short` is 'un', before a noun
+const toText = function (num, opts = {}) {
+  if (!Number.isSafeInteger(num)) {
+    return null
+  }
   if (num === 0) {
     return ['cero']
   }
-  if (num === 100) {
-    return ['cien']
-  }
-  let words = []
-  if (num < 0) {
-    words.push('menos')
-    num = Math.abs(num)
-  }
-  // handle multiples
-  const found = getMagnitudes(num)
-  found.forEach(obj => {
-    const res = twoDigit(obj.num)
-    words = words.concat(res)
-    if (obj.unit !== 'one') {
-      words.push(obj.unit)
+  let words = num < 0 ? ['menos'] : []
+  let rest = Math.abs(num)
+  bigs.forEach(a => {
+    const [size, single, plural] = a
+    const count = Math.floor(rest / size)
+    rest -= count * size
+    // 'un millón', 'dos millones'
+    if (count === 1) {
+      words.push('un', single)
+    } else if (count) {
+      words = words.concat(toThousands(count, false, ''), plural)
     }
   })
-  // 'uno mil' -> 'mil'
-  if (words.length > 1 && words[0] === 'uno') {
-    words = words.slice(1)
-  }
-  // 'ciento mil' -> 'cien mil'
-  if (words.length === 2 && words[0] === 'ciento') {
-    if (words[1] === 'mil' || words[1] === 'millones') {
-      words[0] = 'cien'
+  let one = opts.short ? '' : 'o'
+  one = opts.isFemale ? 'a' : one
+  return words.concat(toThousands(rest, opts.isFemale, one))
+}
+
+// 'centésimo vigésimo primero' - up to 1999, and 'millonésimo'
+const toTextOrdinal = function (num, opts = {}) {
+  let words = []
+  let rest = num
+  const big = data.multiples.find(a => a[0] === num)
+  if (big) {
+    words.push(big[3])
+  } else if (!Number.isInteger(num) || num < 1 || num >= 2000) {
+    return null
+  } else {
+    if (rest > 1000) {
+      words.push('milésimo')
+      rest -= 1000
     }
+    const parts = [rest - (rest % 100), rest % 100]
+    if (parts[1] > 20) {
+      parts.push(parts[1] % 10)
+      parts[1] -= parts[2]
+    }
+    words = words.concat(parts.filter(n => n).map(n => ordinals[n]))
+  }
+  if (opts.isFemale) {
+    return words.map(w => w.replace(/o$/, 'a'))
+  }
+  // 'primer día', 'tercer piso'
+  if (opts.short) {
+    const last = words.length - 1
+    words[last] = words[last].replace(/(primer|tercer)o$/, '$1')
   }
   return words
 }
-export default toText
+export { toText, toTextOrdinal }

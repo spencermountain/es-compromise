@@ -1,10 +1,7 @@
 export default [
   // east berlin
   { match: '[este] #Place', group: 0, tag: 'Adjective', reason: 'este-place' },
-  // hundred and two
-  { match: '#Value [y] #Value', group: 0, tag: 'TextValue', reason: 'num-y-num' },
-  // minus 8
-  { match: '[menos] #Value', group: 0, tag: 'TextValue', reason: 'minus 4' },
+  // ('treinta y dos' and 'menos cinco' are done in ./numbers.js)
   // 3 pintas de cerveza
   { match: '#Value [#PresentTense] de #Noun', group: 0, tag: 'Plural', reason: '3-pintas' },
 

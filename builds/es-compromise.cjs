@@ -924,7 +924,7 @@
     }
   };
 
-  var cache$4 = {
+  var cache$3 = {
     api: addAPI$3,
     compute: compute$6,
     methods: methods$m,
@@ -1939,7 +1939,7 @@
   };
 
   // one 'word:out words' per line - decoded once into { [key]: word, out: [...] }
-  const parse$2 = (str, key) =>
+  const parse$3 = (str, key) =>
     str
       .trim()
       .split('\n')
@@ -1952,7 +1952,7 @@
     // that's and let's are decided here, before any tagging
     // (step 1 of the 's decision - the list is in 2-two/contraction-two/compute/index.js)
     // simple mappings
-    ...parse$2(
+    ...parse$3(
       `
 @:at
 arent:are not
@@ -1996,7 +1996,7 @@ o'er:over
       'word'
     ),
     // contraction-part mappings
-    ...parse$2(
+    ...parse$3(
       `
 ll:will
 ve:have
@@ -2006,7 +2006,7 @@ m:am
       'after'
     ),
     // french contractions - t'aime
-    ...parse$2(
+    ...parse$3(
       `
 c:ce
 m:me
@@ -2018,7 +2018,7 @@ t:tu
       'before'
     ),
     // missing apostrophes, apostrophe-d
-    ...parse$2(
+    ...parse$3(
       `
 shouldnt:should not
 couldnt:could not
@@ -2811,7 +2811,7 @@ er
     return true
   };
 
-  const scan = function (view, trie, opts) {
+  const scan$1 = function (view, trie, opts) {
     let results = [];
     opts.form ||= 'normal';
     const docs = view.docs;
@@ -2846,7 +2846,7 @@ er
         input = [input];
       }
       const trie = isObject$1(input) ? input : buildTrie(input, this.world);
-      let res = scan(this, trie, opts);
+      let res = scan$1(this, trie, opts);
       res = res.settle();
       return res
     };
@@ -2982,7 +2982,7 @@ er
     return asView(this, doMatch(this, regs, group, opts, true))
   };
 
-  const has$1 = function (regs, group, opts) {
+  const has$2 = function (regs, group, opts) {
     // support view as input
     if (isView(regs)) {
       return this.intersection(regs).fullPointer.length > 0
@@ -3019,7 +3019,7 @@ er
     return view
   };
 
-  var match$2 = { matchOne, match: match$1, has: has$1, if: ifBy(true), ifNo: ifBy(false) };
+  var match$2 = { matchOne, match: match$1, has: has$2, if: ifBy(true), ifNo: ifBy(false) };
 
   // the words before (or after) each match, in its sentence
   const lookaround = function (view, isAfter, regs, group, opts) {
@@ -4079,7 +4079,7 @@ er
   const endQuote = /([\u0022\uFF02\u0027\u201D\u2019\u00BB\u203A\u2032\u2033\u2034\u301E\u00B4])/;
 
   const hasHyphen = /^[-–—]$/;
-  const hasDash$1 = / [-–—]{1,3} /;
+  const hasDash$2 = / [-–—]{1,3} /;
 
   /** search the term's 'post' punctuation  */
   const hasPost = (term, punct) => term.post.indexOf(punct) !== -1;
@@ -4108,7 +4108,7 @@ er
     /** a hyphen connects two words like-term */
     hasHyphen: term => hasHyphen.test(term.post) || hasHyphen.test(term.pre),
     /** a dash separates words - like that */
-    hasDash: term => hasDash$1.test(term.post) || hasDash$1.test(term.pre),
+    hasDash: term => hasDash$2.test(term.post) || hasDash$2.test(term.pre),
     /** is it multiple words combinded */
     hasContraction: term => Boolean(term.implicit),
     /** is it an acronym */
@@ -5733,7 +5733,7 @@ er
   };
 
   // the padded context before the match, the match, and the context after it
-  const parts = (terms, start, end) => {
+  const parts$1 = (terms, start, end) => {
     const arrs = [[], [], []]; // before, match, after
     terms.forEach((t, i) => {
       const str = (t.pre + t.text + t.post).replace(/\s+/g, ' ');
@@ -5759,7 +5759,7 @@ er
   const showHighlight = function (view) {
     const client = typeof window !== 'undefined' && window.document;
     view.fullPointer.forEach(([n, s, e]) => {
-      const [left, mid, right] = parts(view.document[n], s, e);
+      const [left, mid, right] = parts$1(view.document[n], s, e);
       if (client) {
         console.log('%c' + left + '%c' + mid + '%c' + right, 'color:grey', 'color:green', 'color:grey');
       } else {
@@ -6525,7 +6525,7 @@ er
     return { wants, count }
   };
 
-  const parse$1 = function (matches, world) {
+  const parse$2 = function (matches, world) {
     const parseMatch = world.methods.one.parseMatch;
     matches.forEach(obj => {
       resolveAliases(obj, world.model.one.tagAliases);
@@ -6602,7 +6602,7 @@ er
   // do some indexing on the list of matches
   const buildNet = function (matches, world) {
     // turn match-syntax into json
-    matches = parse$1(matches, world);
+    matches = parse$2(matches, world);
 
     // collect by wants and needs
     const hooks = {};
@@ -7166,7 +7166,7 @@ er
     }, false);
   };
 
-  const toArray$2 = function (json) {
+  const toArray$1 = function (json) {
     // The tag formatter only reads these graph-owned nodes.
     const nodes = byDepth(json);
     // should we show the root?
@@ -7199,7 +7199,7 @@ er
     // the graph's nodes, parents first
     toArray() {
       // fillDown changes properties, so the cached graph relationships still hold.
-      return toArray$2(this.json)
+      return toArray$1(this.json)
     }
   }
 
@@ -7995,7 +7995,7 @@ er
   //we have slightly different rules for start/end - like #hashtags.
   const isLetter = /\p{Letter}/u;
   const isMark = /\p{Mark}/u;
-  const isNumber$1 = /[\p{Number}\p{Currency_Symbol}]/u;
+  const isNumber = /[\p{Number}\p{Currency_Symbol}]/u;
   const hasAcronym = /^[a-z]\.([a-z]\.)+/i;
   const chillin = /[sn]['’]$/;
   // a leading apostrophe that stands for letters - 'tis, 'em, 'cause
@@ -8045,7 +8045,7 @@ er
         break//done
       }
       // start of word
-      if (isLetter.test(c) || isNumber$1.test(c)) {
+      if (isLetter.test(c) || isNumber.test(c)) {
         break //done
       }
       // keep an elided apostrophe - 'tis
@@ -8064,7 +8064,7 @@ er
         break//keep it
       }
       // start of word
-      if (isLetter.test(c) || isNumber$1.test(c)) {
+      if (isLetter.test(c) || isNumber.test(c)) {
         break //done
       }
       // Keep marks attached to letters, but not variation selectors after symbols.
@@ -8203,7 +8203,7 @@ er
   };
 
   // turn a string input into a 'document' json format
-  const parse = function (input, world) {
+  const parse$1 = function (input, world) {
     const { methods, model } = world;
     const { splitSentences, splitTerms, splitWhitespace } = methods.one.tokenize;
     input ||= '';
@@ -8271,7 +8271,7 @@ er
         isSentence,
         splitTerms: splitWords,
         splitWhitespace: parseTerm$1,
-        fromString: parse,
+        fromString: parse$1,
       },
     },
   };
@@ -8525,7 +8525,7 @@ yb
 `);
 
   // add our abbreviation list to our lexicon
-  const list = [
+  const list$1 = [
     [misc$1],
     [units, 'Unit'],
     [nouns$2, 'Noun'],
@@ -8539,7 +8539,7 @@ yb
   // add them to a future lexicon
   const lexicon$2 = {};
 
-  list.forEach(a => {
+  list$1.forEach(a => {
     a[0].forEach(w => {
       // sentence abbrevs
       abbreviations$1[w] = true;
@@ -8711,7 +8711,7 @@ designate
     return term
   };
 
-  const hasDash = /^\p{Letter}+-\p{Letter}+$/u;
+  const hasDash$1 = /^\p{Letter}+-\p{Letter}+$/u;
   // 'machine' is a normalized form that looses human-readability
   const doMachine = function (term) {
     let str = term.implicit || term.normal || term.text;
@@ -8721,7 +8721,7 @@ designate
     //lookin'->looking (make it easier for conjugation)
     str = str.replace(/([aeiou][ktrp])in'$/, '$1ing');
     //turn re-enactment to reenactment
-    if (hasDash.test(str)) {
+    if (hasDash$1.test(str)) {
       str = str.replace(/-/g, '');
     }
     //#tags, @mentions
@@ -8948,7 +8948,7 @@ designate
   nlp.plugin(plugin); //~6kb
   nlp.extend(tokenize); //7kb
   nlp.extend(freeze); //
-  nlp.plugin(cache$4); //~1kb
+  nlp.plugin(cache$3); //~1kb
   nlp.extend(lookup$1); //7kb
   nlp.extend(typeahead); //1kb
   nlp.extend(lexicon$3); //1kb
@@ -8963,7 +8963,8 @@ designate
   // a decimal-comma, unless the language's model says otherwise.
   // `ordinal` is regex-source for the ending of a numeric ordinal - '[ºª°]'
   // `loose` reads a lone decimal-mark before three digits as thousands - '7,938'
-  const defaults = { decimal: ',', group: '.', ordinal: '', loose: false };
+  // `percent` and `currencies` are the words that follow a number - 'per cento', 'euro'
+  const defaults = { decimal: ',', group: '.', ordinal: '', loose: false, percent: [], currencies: [] };
 
   // the mark that groups thousands can't also be the decimal
   const groupMark = function (group, decimal) {
@@ -8986,13 +8987,13 @@ designate
   const tidy = num => Number(num.toPrecision(15));
 
   // compile each ordinal-ending once
-  const cache$3 = {};
+  const cache$2 = {};
   const isOrdinal = function (suffix, src) {
     if (!src || !suffix) {
       return false
     }
-    cache$3[src] = cache$3[src] || new RegExp('^(?:' + src + ')$', 'iu');
-    return cache$3[src].test(suffix)
+    cache$2[src] = cache$2[src] || new RegExp('^(?:' + src + ')$', 'iu');
+    return cache$2[src].test(suffix)
   };
 
   // digits, and any mark that sits between two of them - '1.234,56', '1 000', "1'000"
@@ -9035,7 +9036,7 @@ designate
   };
 
   // '1.234,56' → 1234.56, or null for something that isn't one number - '1.2.3'
-  const toNumber$2 = function (str, marks) {
+  const toNumber = function (str, marks) {
     let int = str;
     let fraction = '';
     if (marks.decimal) {
@@ -9095,7 +9096,7 @@ designate
       prefix = prefix.slice(0, -1);
     }
     const marks = findMarks(digits, locale);
-    let num = marks ? toNumber$2(digits, marks) : null;
+    let num = marks ? toNumber(digits, marks) : null;
     if (num === null) {
       return res
     }
@@ -9167,38 +9168,103 @@ designate
   // '1.234.567,89', or '1234,5' - either mark, the reader sorts-out which is which
   const digits = "(?:[0-9]{1,3}(?:[.,'’][0-9]{3})+(?:[.,][0-9]+)?|[0-9]+(?:[.,][0-9]+)?)";
   // 'R$', 'US$', '€'
-  const symbol = '(?:[a-z]{1,2})?\\p{Sc}';
+  const symbol$1 = '(?:[a-z]{1,2})?\\p{Sc}';
 
-  const cardinal = ['Cardinal', 'NumericValue'];
-  const percent = ['Percent', 'Cardinal', 'NumericValue'];
+  const cardinal$1 = ['Cardinal', 'NumericValue'];
+  const percent$1 = ['Percent', 'Cardinal', 'NumericValue'];
   const money = ['Money', 'Value'];
 
   // build them once per language
-  const cache$2 = new WeakMap();
+  const cache$1 = new WeakMap();
 
   /**
    * tagging rules for numbers written in digits, as [regex, tags, example].
    * test them on the term's text, not its 'normal' - which has lost its commas
    */
   const regexes = function (locale = defaults) {
-    if (cache$2.has(locale)) {
-      return cache$2.get(locale)
+    if (cache$1.has(locale)) {
+      return cache$1.get(locale)
     }
     const reg = str => new RegExp('^' + str + '$', 'iu');
     const out = [
-      [reg(sign + symbol + ' ?' + sign + digits + '(?:[kmb]|bn)?\\+?'), money, '€5,30'],
-      [reg(sign + digits + ' ?' + symbol + '\\+?'), money, '5,30€'],
-      [reg(sign + digits + '\\+?'), cardinal, '1.234,56'],
-      [reg(sign + '[.,][0-9]+\\+?'), cardinal, ',5'],
-      [reg(sign + digits + ' ?[%％]\\+?'), percent, '3,5%'],
-      [reg(sign + '[.,][0-9]+[%％]'), percent, ',5%'],
+      [reg(sign + symbol$1 + ' ?' + sign + digits + '(?:[kmb]|bn)?\\+?'), money, '€5,30'],
+      [reg(sign + digits + ' ?' + symbol$1 + '\\+?'), money, '5,30€'],
+      [reg(sign + digits + '\\+?'), cardinal$1, '1.234,56'],
+      [reg(sign + '[.,][0-9]+\\+?'), cardinal$1, ',5'],
+      [reg(sign + digits + ' ?[%％]\\+?'), percent$1, '3,5%'],
+      [reg(sign + '[.,][0-9]+[%％]'), percent$1, ',5%'],
     ];
     // '2ª', '5-го', '3e'
     if (locale.ordinal) {
       out.push([reg('[0-9]+(?:' + locale.ordinal + ')'), ['Ordinal', 'NumericValue'], 'ordinal']);
     }
-    cache$2.set(locale, out);
+    cache$1.set(locale, out);
     return out
+  };
+
+  const reason$1 = 'european-number';
+  // '€', '₽', 'R$', 'US$'
+  const symbol = /^[a-z]{0,2}\p{Sc}$/iu;
+  // only in capitals - 'EUR 5', not 'eur'
+  const codes = /^(?:EUR|USD|GBP|CHF|JPY|CAD|AUD|BRL|MXN|RUB|CNY)$/;
+  const percent = /^[%％]$/;
+
+  const isValue = term => term.tags.has('Value');
+  // nothing but a space between this word and the next - not '5, euro'
+  const touches = term => /^\s*$/.test(term.post);
+
+  // do these words come next? - 'per cento'
+  const hasPhrase = function (terms, i, words) {
+    return words.every((w, o) => terms[i + o] && terms[i + o].normal === w && (o === words.length - 1 || touches(terms[i + o])))
+  };
+
+  /**
+   * a number takes its meaning from the word beside it - '5,30 €', '50 per cento', 'mille euro'.
+   * the number is tagged #Money or #Percent, and the word beside it #Currency or #Unit.
+   * the words come from the model - { percent: ['per cento'], currencies: ['euro'] }
+   */
+  const tagNeighbours = function (terms, view) {
+    const { world, model, methods } = view;
+    const { setTag, unTag } = methods.one;
+    const locale = model.two.europeanNumbers;
+    const phrases = (locale.percent || []).map(str => str.split(' '));
+    const words = new Set(locale.currencies || []);
+    const isCurrency = term => term.tags.has('Currency') || symbol.test(term.text) || words.has(term.normal);
+    const isCode = term => symbol.test(term.text) || codes.test(term.text);
+
+    for (let i = 0; i < terms.length; i += 1) {
+      if (!isValue(terms[i]) || terms[i].tags.has('Ordinal')) {
+        continue
+      }
+      // the whole number - '1 000', 'trois cent'
+      let end = i;
+      while (terms[end + 1] && isValue(terms[end + 1]) && touches(terms[end])) {
+        end += 1;
+      }
+      const run = terms.slice(i, end + 1);
+      const next = touches(terms[end]) ? terms[end + 1] : null;
+      const before = terms[i - 1];
+      const phrase = next ? phrases.find(a => hasPhrase(terms, end + 1, a)) : null;
+      if (phrase) {
+        // 'cento' is not a second number
+        const unit = terms.slice(end + 1, end + 1 + phrase.length);
+        unTag(unit, 'Value', model.one.tagSet);
+        setTag(unit, 'Unit', world, false, reason$1);
+        setTag(run, 'Percent', world, false, reason$1);
+        end += phrase.length;
+      } else if (next && percent.test(next.text)) {
+        setTag(run, 'Percent', world, false, reason$1);
+        setTag([next], 'Unit', world, false, reason$1);
+      } else if (next && (isCurrency(next) || codes.test(next.text))) {
+        setTag(run, 'Money', world, false, reason$1);
+        setTag([next], 'Currency', world, false, reason$1);
+      } else if (before && isCode(before) && touches(before)) {
+        // only a symbol goes in front - '€ 5,30', 'CHF 12'
+        setTag(run, 'Money', world, false, reason$1);
+        setTag([before], 'Currency', world, false, reason$1);
+      }
+      i = end;
+    }
   };
 
   const reason = 'european-number';
@@ -9207,7 +9273,7 @@ designate
   const skip = ['Date', 'PhoneNumber', 'NumberRange', 'Ordinal'];
 
   // tag numbers written in digits, from their raw text - '1.234,56', '3,5%', '5,30€'
-  const tagNumbers = function (view) {
+  const tagNumbers$1 = function (view) {
     const { world, model, methods } = view;
     const regs = regexes(model.two.europeanNumbers);
     const setTag = methods.one.setTag;
@@ -9221,269 +9287,31 @@ designate
           setTag([term], found[1], world, false, reason);
         }
       });
+      // '5,30 €', '50 per cento'
+      tagNeighbours(terms, view);
     });
   };
 
   /**
    * numbers written in digits, with a decimal-comma - '1.234,56', '3,5%', '5,30 €'
+   * shared across many languages
    * tags them, and adds a reader and writer:
    *   const { read, write } = doc.methods.two.europeanNumbers
    *   const locale = doc.model.two.europeanNumbers
    *   read('1.234,56', term.pre, locale).num // 1234.56
    *   write(1234.56, { hasComma: true }, locale) // '1.234,56'
    * a language sets its own marks in model.two.europeanNumbers - { group: ' ', ordinal: 'er?' }
+   * and its own words - { percent: ['per cento'], currencies: ['euro'] } - for '50 per cento', 'mille euro'
    */
   var europeanNumbers = {
-    model: { two: { europeanNumbers: { ...defaults } } },
+    model: { two: { europeanNumbers: { ...defaults, percent: [], currencies: [] } } },
     methods: { two: { europeanNumbers: { read, write: write$1, regexes } } },
-    compute: { europeanNumbers: tagNumbers },
+    compute: { europeanNumbers: tagNumbers$1 },
     hooks: ['europeanNumbers'],
   };
 
-  /* eslint-disable no-empty */
-  const BASE$1 = 36;
-  const seq$1 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-  const cache$1 = seq$1.split('').reduce(function (h, c, i) {
-    h[c] = i;
-    return h
-  }, {});
-
-  // 0, 1, 2, ..., A, B, C, ..., 00, 01, ... AA, AB, AC, ..., AAA, AAB, ...
-  const toAlphaCode$1 = function (n) {
-    if (seq$1[n] !== undefined) {
-      return seq$1[n]
-    }
-    let places = 1;
-    let range = BASE$1;
-    let s = '';
-    for (; n >= range; n -= range, places++, range *= BASE$1) {}
-    for (; places > 0; places--) {
-      const d = n % BASE$1;
-      s = String.fromCharCode((d < 10 ? 48 : 55) + d) + s;
-      n = (n - d) / BASE$1;
-    }
-    return s
-  };
-
-  const fromAlphaCode$1 = function (s) {
-    if (cache$1[s] !== undefined) {
-      return cache$1[s]
-    }
-    let n = 0;
-    let places = 1;
-    let range = BASE$1;
-    let pow = 1;
-    for (; places < s.length; n += range, places++, range *= BASE$1) {}
-    for (let i = s.length - 1; i >= 0; i--, pow *= BASE$1) {
-      let d = s.charCodeAt(i) - 48;
-      if (d > 10) {
-        d -= 7;
-      }
-      n += d * pow;
-    }
-    return n
-  };
-
-  var encoding$1 = {
-    toAlphaCode: toAlphaCode$1,
-    fromAlphaCode: fromAlphaCode$1
-  };
-
-  const symbols$1 = function (t) {
-    const reSymbol = /^([0-9A-Z]+):([0-9A-Z]+)$/;
-    for (let i = 0; i < t.nodes.length; i++) {
-      if (!t.nodes[i].includes(':')) {
-        break
-      }
-      const m = reSymbol.exec(t.nodes[i]);
-      if (!m || m[0].length !== t.nodes[i].length || encoding$1.fromAlphaCode(m[1]) !== i) {
-        throw new SyntaxError('Invalid efrt packed data: symbol definition')
-      }
-      t.syms.push(encoding$1.fromAlphaCode(m[2]));
-    }
-    t.symCount = t.syms.length;
-    t.nodes = t.nodes.slice(t.symCount);
-    if (t.nodes.length === 0 || t.syms.some((index) => !Number.isSafeInteger(index) || index >= t.nodes.length)) {
-      throw new SyntaxError('Invalid efrt packed data: symbol target')
-    }
-  };
-
-  const unescapeLabel$1 = function (text) {
-    return text.replace(/\\([\s\S]|$)/g, (match, char) => {
-      if (char === '\\') {
-        return '\\'
-      }
-      if (char >= 'a' && char <= 'j') {
-        return String(char.charCodeAt(0) - 97)
-      }
-      throw new SyntaxError('Invalid efrt packed data: label escape')
-    })
-  };
-
-  const dictionary$1 = function (trie) {
-    if (!trie.nodes[0].startsWith('!1:')) {
-      return
-    }
-    const header = trie.nodes.shift().split(':');
-    const tokens = Array.from(header[1]);
-    const fragments = (header[2] || '').split(',');
-    if (header.length !== 3 || tokens.length === 0 || tokens.length !== fragments.length ||
-      new Set(tokens).size !== tokens.length || trie.nodes.length === 0 ||
-      tokens.some((token) => token.length !== 1 || token.charCodeAt(0) < 33 ||
-        token.charCodeAt(0) > 126 || /[A-Za-z0-9,;!:|]/.test(token) ||
-        (trie.versioned && token === '\\')) ||
-      fragments.some((text) => !text || /[A-Z0-9,;!:|¦]/.test(text))) {
-      throw new SyntaxError('Invalid efrt packed data: fragment dictionary')
-    }
-    trie.dictionary = Object.create(null);
-    for (let i = 0; i < tokens.length; i++) {
-      trie.dictionary[tokens[i]] = trie.versioned ? unescapeLabel$1(fragments[i]) : fragments[i];
-    }
-  };
-
-  // References are either absolute (symbol) or relative (1 - based)
-  const indexFromRef$1 = function (trie, ref, index) {
-    const dnode = encoding$1.fromAlphaCode(ref);
-    const target = dnode < trie.symCount ? trie.syms[dnode] : index + dnode + 1 - trie.symCount;
-    // The encoder emits nodes in topological order. Every edge must point
-    // forward, which also rules out cycles before expansion starts.
-    if (!Number.isSafeInteger(target) || target <= index || target >= trie.nodes.length) {
-      throw new SyntaxError('Invalid efrt packed data: node reference')
-    }
-    return target
-  };
-
-  const parseNodes$1 = function (trie) {
-    return trie.nodes.map((node, index) => {
-      if (node === '' && trie.nodes.length !== 1) {
-        throw new SyntaxError('Invalid efrt packed data: empty node')
-      }
-      const terminal = node[0] === '!';
-      const body = terminal ? node.slice(1) : node;
-      const edges = [];
-      // Match only at the current offset. Searching later positions would
-      // repeatedly rescan a long malformed fragment before rejecting it.
-      const token = /([^A-Z0-9,;!:|¦]+)([A-Z0-9]+|,|$)/y;
-      for (let offset = 0; offset < body.length; offset = token.lastIndex) {
-        const match = token.exec(body);
-        if (!match || match.index !== offset || (match[2] === ',' && token.lastIndex === body.length)) {
-          throw new SyntaxError('Invalid efrt packed data: node syntax')
-        }
-        const ref = match[2];
-        const label = trie.versioned ? unescapeLabel$1(match[1]) : match[1];
-        const text = trie.dictionary ? Array.from(label,
-          (char) => trie.dictionary[char] || char).join('') : label;
-        edges.push({
-          text,
-          target: ref === '' || ref === ',' ? -1 : indexFromRef$1(trie, ref, index)
-        });
-      }
-      return { terminal, edges }
-    })
-  };
-
-  const toArray$1 = function (trie) {
-    const nodes = parseNodes$1(trie);
-    const all = [];
-    const stack = [{ index: 0, pref: '', edge: -1 }];
-    for (; stack.length > 0;) {
-      const frame = stack[stack.length - 1];
-      const node = nodes[frame.index];
-      if (frame.edge === -1) {
-        if (node.terminal) {
-          all.push(frame.pref);
-        }
-        frame.edge = 0;
-      }
-      if (frame.edge === node.edges.length) {
-        stack.pop();
-        continue
-      }
-      const edge = node.edges[frame.edge++];
-      const word = frame.pref + edge.text;
-      if (edge.target === -1) {
-        all.push(word);
-      } else {
-        stack.push({ index: edge.target, pref: word, edge: -1 });
-      }
-    }
-    return all
-  };
-
-  //PackedTrie - Trie traversal of the Trie packed-string representation.
-  const unpack$3 = function (str, versioned = false) {
-    const trie = {
-      nodes: str.split(';'),
-      syms: [],
-      symCount: 0,
-      versioned
-    };
-    dictionary$1(trie);
-    //process symbols, if they have them
-    if (str.match(':')) {
-      symbols$1(trie);
-    }
-    return toArray$1(trie)
-  };
-
-  const unpack$2 = function (str) {
-    if (str === '' || str === null || str === undefined) {
-      return {}
-    }
-    if (typeof str !== 'string') {
-      throw new TypeError('efrt unpack expects a string')
-    }
-    //turn the weird string into a key-value object again
-    const obj = str.split('|').reduce((h, s) => {
-      const arr = s.split('¦');
-      if (arr.length !== 2 || Object.prototype.hasOwnProperty.call(h, arr[0])) {
-        throw new SyntaxError('Invalid efrt packed data: category separator or duplicate category')
-      }
-      h[arr[0]] = arr[1];
-      return h
-    }, Object.create(null));
-    const all = {};
-    Object.keys(obj).forEach(function (cat) {
-      let data = obj[cat];
-      const versioned = data.startsWith('!2;');
-      if (versioned) {
-        data = data.slice(3);
-        if (!data || data === ':') {
-          throw new SyntaxError('Invalid efrt packed data: missing versioned trie')
-        }
-      }
-      const reversed = data[0] === ':';
-      const arr = unpack$3(reversed ? data.slice(1) : data, versioned);
-      //special case, for botched-boolean
-      if (cat === 'true') {
-        cat = true;
-      }
-      for (let i = 0; i < arr.length; i++) {
-        const k = reversed ? Array.from(arr[i]).reverse().join('') : arr[i];
-        if (Object.prototype.hasOwnProperty.call(all, k)) {
-          if (Array.isArray(all[k]) === false) {
-            if (all[k] !== cat) {
-              all[k] = [all[k], cat];
-            }
-          } else if (!all[k].includes(cat)) {
-            all[k].push(cat);
-          }
-        } else {
-          Object.defineProperty(all, k, {
-            value: cat,
-            writable: true,
-            enumerable: true,
-            configurable: true
-          });
-        }
-      }
-    });
-    return all
-  };
-
   // Generated by scripts/pack/index.js; see data/README.md for source files.
-  var packed = {
+  var properNouns = {
     "ProperNoun": "true¦aIbDc8dalhousHe7f5gosford,h4kirby,landsdowne,m2nis,r1s0wembF;herwood,paldiB;iel,othwe1;cgi0ercedes,issy;ll;intBudsB;airview,lorence,ra0;mpt9nco;lmo,uro;a1h0;arlt6es5risti;rl0talina;et4i0;ng;arb3e0;et1nt0rke0;ley;on;ie;bid,jax",
     "Organization": "true¦0:4Q;1:3Z;a3Vb3Dc2Md2Fe2Af25g1Yh1Ri1Nj1Lk1Jl1Gm13n0Ro0Op0Equ0Dr04sStIuDvAw4xiaomi,y2;amaha,mca,ou2wca;gov,tube;a5e3iki2orld trade organization;leaRpedia;lls fargo,st2;field,inghouse;l2rner bros;greens,l street journal,m1C;an halPerizon,isa,o2;dafone,l2;kswagNvo;b5kip,n3ps,s2;a today,ps;esco,i2;lever,ted nations;er,s; mobile,aco beTd bQe8gi fridays,he 4im hortons,mz,o2witter;shiba,y2;ota,s r us;b3carpen3Mdaily ma1holli0s2who;mashing pumpkins,uprem0;ea2lack eyed peas,yrds;ch boys,tl0;l3n3Us2xas instruments;co,la m1F;efonica,us;aCcBe8iemens,mirnoff,np,o6p5quare0Dt2ubaru;a2eer02;rbuc2to1;ks;eci2Cice gir5;ny,undgard2;en;a3x pisto2;ls;g1Wrs;hool1Sientology;feway,insburys,lesforce,msung;adiohead,b9e5o2yanair;man empire,yal 2;b2dutch she5;ank;a4d 2max,vlon;bu2c2Bhot chili peppers,lobster;ll;ders digest,l madrid;c,s;antas,iznos;a9bs,e6fizer,hilip5i4r2;emier 2udential;leagTo1;nk floyd,zza hut; morrCs;psi3tro2ugeot;bras,china,nas;!co;lantir,n2ypal; 3asonic,da2Q;ld navy,pec,range juli3xf2;am;us;aAb9e8fl,h7i6o2sa,vid5wa;k4minat3tre dame,vart2;is;ing1F;ia;ke,ntendo,ssan,vV;l,s;c,stle,tflix,wsweek;a,c;ndos,s3t2;o,west;a,car,daq;aDeAi7lb,o4tv,y2;spa2;ce;b1nsanto,ody blu0t2;ley cr2or0T;ue;c3t2;as,subisM;helin,rosoft;dica3rcedes benz,talli2;ca;id,re;cs milk,ttel,zda;a presse,e2g,ittle caesars; oreal,novo,x2;is,mark,us;atv,fc,kk,lm,m2odak;art;iffy lube,oy division,pmorgan2sa;! chase;bm,hop,k4n2tv;g,te2;l,rpol;ea;a7e6i4o2sbc,yundai;me dep2nda;ot;tac2zbollah;hi;althYwlett pack1V;lliburton,sbro;eneral 6hq,ithub,l5mb,o2reen day,ucci;ldman sachs,o2;dye2gle;ar;axo smith kline,encoZ;electric,m2;otors;a5bi,c barcelo4da,edex,i3leetwood mac,o2rito lay;rd,xcon;at,fa,restone;na;cebook,nnie mae;bay,sa,u5x2;ecutiveYxon2; m2m2;ob1;!rosceptics;aimler,e6isney,o5u2;nkin donu3pont,ran dur2;an;ts;j,w jon0;a,f lepp17ll,peche mode,r spiegel,stiny's chi2;ld;aObc,entrMhIiGloudflaFnn,o4r2;aigsli8eedence clearwater reviv2ossra1;al;cAinba9l7m3n2ors,stco;ferenceJgressionI;ca4merce3p2;aq; bo0Y;st;dplVg2;ate;se;a c2o chanT;ola;re;a,sco2tigroup;! systems;ev3i2;ck fil a,na daily;r2y;on;al2; committee;d3pital o2rls jr;ne;bury,ill2;ac;aFbc,eCfAl6mw,ni,o2p,rexiteeV;ei4mbardiJston 2;glo2pizza;be;ng;o3ue c2;roW;ckbuster video,omingda2;le; g2g2;oodriM;cht3e ge0rkshire hathaw2;ay;el;cardi,idu,nana republ4s2xt6y6;f,kin robbi2;ns;ic;bYcUdidTerosmith,iSlLmFnheuser busEol,ppleBr7s5u4v3y2;er;is,on;di,todesk;hland o1sociated F;il;b4g3m2;co;os;ys; compu2be0;te2;rs;ch;c,d,erican4t2;!r2;ak; ex2;pre2;ss; 6catel3ta2;ir;! lu2;ce2;nt;jazeera,qae2;da;g,rbnb;as;/dc,ademy of scienc0er,tivision2;! blizz2;ard;es;ba",
     "City": "true¦0:75;1:62;2:6H;3:6K;4:5T;5:5M;a6Ab55c4Kd4Ae46f3Yg3Jh3Bi33j2Yk2Gl24m1Nn1Do1Ap0Xq0Vr0Ps06tSuRvMwExiCyAz6;a8h6ibo,urich;a6e6ongsh0;ng3J;greb,nzibar;ang2e6okohama,unfu;katerin3Jrev0;a6n0R;m5n;arsCeBi7roclCu6;h0xi,zhou;c8n6;d6nipeg,terth4;hoek,sor;hita,klow;l65xford;aw;a9e7i6ladivostok,olgograd;en3lnius;nice,r6;o3sailles;lencia,ncouver,r3ughn;lan bator,rumqi,trecht;aGbilisi,eFheEiCoAr8u6;lsa,nis,r6;in,ku;i6ondh64;este,poli;kyo,msk,ronto,ulo6;n,uT;an6jua3l2Vmisoara,ra3;jin,shui; hague,ssaloniki;gucigalpa,hr0l aviv;briz,i7llinn,mpere,ng6rtu,shk2T;ier,sh0;an,chu1n0pei,yu0;aFeEh9kopje,oweto,t8u6;ra6zhou;baya,t;aten is57ockholm,rasbourg,uttgart;an9e7i6;jiazhua1llo1mla,y0;f52n6;ya1zh5;ghai,tou;attle,oul,v46;cramento,int DlCn6o paulo,pporo,rajevo; 8aa,t6;a 6o domingo;a3fe,m1O;antonio,diego,francisco,j6pedro,salvador;o6u0;se;em,t lake city,z27;louis,peters26;aAe9i7o6;me,stov,t5B;ga,o6yadh;! de janeiro;cife,ims,nnes,ykjavik;bat,ip4leigh,nchi,walpindi;ingdao,u6;ez2ito;aGeFhEiDoAr8u7yong6;ya1;ebla,ya1;a6etoria;gue,to;rt6zn0; 6land,o;au prince,elizabeth,said;ls5raeus,tts28;iladelphia,nom penh,oenix;ki1tah tikva;dua,lerZnaji,ris,t6;na,ras;ak46dessa,msk,r7s6ttawa;aka,lo;an,dos;a8ew6ingbo,ovosibirsk,yc; 6castle;delhi,orleans,taipei;g9irobi,n6ples,shv35tchez,v0;ch7ji1t6;es,o1;a1o1;a7o6p4;ya;no,saki;aFeDiAo7u6;mbai,nich,scat;gadishu,nt7s6;cow,ul;evideo,pellier,real;ami,l7nsk,s6;kolc,sissauga;an,waukee;cca,d6lbourne,mphis,ndoza,ssi3;an,ellin,i3;cau,drBkassar,lAn9r6shhad;aca7ib6rakesh,se2N;or;ibo,y;aus,chGdalay,ila;mo;id;aEeBi9o7u6vUy2;anNcknow,dhia3;n6s angeles;d2g beach;brev2Dege,ma6nz,sb2verpool;!ssol; mans,i6;c6pzig;ester; p7g6hore,n0Es vegas,usanne;os;az,lata;aJharHiDlaipeCoArakow,u8y6;iv,o6;to;ala lump4n6;mi1sh0;hima,lkata,pavog4si6wlo2;ce;da;ev,n7r6;kuk,ov;gst2sha6;sa;k6toum;iv;bIdu3llakurichi,mpala,n7ohsiu1ra6unas,waguchi;chi,j;d6o,p4;ahar,y;a8e7i6ohannesW;lin,n0;ddah,rusalem;ip4k6;arta;bad0mphal,nBrkutVs8taYz6;mir,tapala6;pa;fah0l7tanb6;ul;am30i2I;che2d6;ianap2Nore;aBe8o6yder2X; chi mi6ms,nolulu;nh;f7lsin6rakli2;ki;ei;ifa,lifax,mDn6rbin,va3;g9nover,oi;aGdanFenEhDiQlasgCoAraz,u6;a6jrat;dal7ng6yaquil;zhou;ajara,upe;ld coast,then6;burg;ow;ent;eva,oa;sk;lw8n6za;dhi6gtok;nagar;ay;aisal2Aes,o9r7ukuya6;ma;ankfu6esno;rt;rt6sh0; wor7ale6;za;th;d6indhov5l paso,ss5;in6mont2;bur6;gh;aCe9haka,isp4o8resd5u6;b6esseldorf,nkirk,rb0shanbe;ai,lin;ha,nggu0rtmund;hradTl7nv6troit;er;hi;donghJe7kar,l6mascus,r es salaam,ugavpiZ;i0lV;gu,je2;aKebu,hBleve0Wo6raiova,uritiba;lo8n7penhag5r6;doba,k;akLst0W;gVm6;bo;aCen9i7ongqi1ristchur6;ch;ang m8ca6ttago1;go;g7n6;ai;du,zho1;ng6ttogram;ch9sha,zhou;gliari,iAlga9mayenKn7pe town,r6tanP;acDdiff;berra,c6;un;ry;ro;aXeOhLirmingham,oKrAu6;chareUdapeUenos air8r6s0tu0;g6sa;as;es;aAis7usse6;ls;ba7t6;ol;ne;sil9tisla8zzav6;il6;le;va;ia;gota,st2;op7ubaneshw6;ar;al;iDlAng9r6;g5l6n;in;en;aluru,hazi;fa7grade,o horizon6;te;st;ji1rut;ghdad,kGnAot9r8s7yan n4;ur;el,rah;celo3i,ranquilla;ou;du1g7ja lu6;ka;alo7k6;ok;re;ng;ers6u;field;a06b03ccra,ddis ababa,gartala,hmedYizawl,lTmQnIqaba,rFsCt8uck6;la6;nd;he8l6;an6;ta;ns;h6unci2;dod,gab6;at;li6;ngt2;on;a9c6kaPtwerp;hora7o3;na;ge;h8p6;ol6;is;eim;aravati,m0s6;terd6;am; 8buquerq7eppo,giers,ma6;ty;ue;basrah al qadim6mawsil al jadid6;ah;ab6;ad;la;ba;ra;idj0u dha6;bi;an;lbo7rh6;us;rg",
@@ -9496,22 +9324,6 @@ designate
     "Person": "true¦0:1Q;a21b1Tc1Hd1Ae14f11g0Zh0Ni0Mj0Jk0Gl0Dm07n04o03pYrOsItCusain bolt,v9w4xzibit,y1;anni,oko on2uji,v1;an,es;en,o;a3ednesday adams,i2o1;lfram,ode;ll ferrell,z khalifa;lt disney,r1;hol,ren;a2i1oltaire;n diesel,rginia wo12;lentino rossi,n gogh;a4h3i2ripp,u1yra banks;lXpac shakur;mba03pper gore;eresa may,or;kashi,t1ylor;um,yana;a4carlett johanss0h3i2lobodan milosevic,noop dogg,ocrates,pider1uperman,wami; man,man;egfried,nbad;akespeare,erlock holmes,ia labeouf;ddam hussain,nt1;a claus,ig8;a9e5i4o2u1za;mi,paul;bin hood,d stew12nald1thko;inho,o;hanna,ngo starr,valdo;ese witherspo0i1mbrandt;ll2nh1;old;ey,y;chmaninoff,ffi,iIshid,y romano;a4e3i2lato,o1uff daddy;cahontas,e;lar,per;le,rX;lmer,ris hilt0;leg,prah winfrey,ra;a2e1iles crane,ostradamus; yo,l5ttie,wmL;pole0s;a5e4i2o1ubarek;by,liere,net,rrissey;randa ju1tt romney;ly;rlin,ssia9;cklemore,rkov,s0ta hari,ya angelou;ady gaga,e1iberace,u;bron james,ch wale1e;sa;anye west,e2iefer suther1obe bryant;land;ats,sha;a2effers0fk,k rowling,rr tolki1;en;ck the ripper,waharlal nehru,y z;liSnez;a7e6i4u1;lk hog2mphrey1saZ;! bog03;an;l1tler;de;dwig,nry 3;ile selassFlle ber4m3rrison1;! 1;ford;id,mond;ry;ast0iannis,o1;odwNtye;ergus0lorence nightingale,r1;an1ederic chopL;s,z;ff5m2nya,ustaTzeki1;el;eril lagasse,i1;le zatop1nem;ek;ie;a5e3i1rake;ck w1ego maradoB;olf;g1mi lovaLnzel washingt0;as;l1nGrth vadO;ai lKt0;a7h4lint0o1thulhu;n1olio;an,fuci1;us;aucIop2ristian baKy1;na;in;millo,ptain beefhe4r1;dinal wols2s0;on;ey;art;a6e3hatt,ing crosby,oFro1;ck,n1;te;ck,nazir bhut2rtil,yon1;ce;to;nksy,rack ob1;ama;l 6r3shton kutch2vril lavig9yn ra1;nd;er;chimed2istot1;le;es;capo3go2paci1;no;re;ne"
   };
 
-  // add names of people and places, but only under words the build already has
-  const mutate = function (world, nlp) {
-    const lexicon = world.model.one.lexicon;
-    const words = {};
-    Object.keys(packed).forEach(tag => {
-      Object.keys(unpack$2(packed[tag])).forEach(word => {
-        if (!Object.hasOwn(lexicon, word)) {
-          words[word] = tag;
-        }
-      });
-    });
-    nlp.addWords(words);
-  };
-
-  var names$1 = { mutate };
-
   // generated in ./lib/lexicon
   var lexData = {
     "Conjunction": "true¦:e4in,o3s0u,y;a1e0;cnotne,up;m,rtneim;!dnauc,moc,nis,rep;!uq0;!nua,rop",
@@ -9519,16 +9331,16 @@ designate
     "Preposition": "true¦:aFe2n0otpecxe,rop,sart;e,is,oc0úges;! odreuca A;d2r1tna0;!idem,rud;bos,t9;! 0s6;a6etn4o2r1s0;etna,ámeda;asep a,odeder1;dal 0jab2rtn2;la;al0e9;ed;crec,mic0reuf;ne;! 2ic1r0ts1;ap,t3;ah;etne2ot0;cepser 0nuj;noc;rf",
     "Pronoun": "true¦cuEdonde,eBleDm9n4quien,s3t2ustedFv1yo,é0;l,ste;oso5u3;e,i,uy9ú;e,uy8í;os1u0;estr6;!o0;tr0;as,os;e,í0;!a2o2;ll0sto;a0o0;!s;al0yo;!es",
     "Adverb": "true¦:!1:#$%&()*+-./<:ne,ce,is,ed,se,rt,na,ni,re,oc,at,pm;a1KeM%ac,lam,nKoA-ya,s4y3zev alIá1í0;ha,l1sa,uqa;l0z4;la;oh,um;a#pa,e4o3á0éups&;m1)a,z0;iuq;!aj,&a;jel,#m4;cnot#5t*;cop8d6g5hcum,ira)n. le4jaba,l3msim%a,)#d,sulc+,t0;*0(upus3;t0uc;! ol1;<eje0ós; rZ;eul,la;a%am&,rob0; a;! a .Vm/;/,eib,ua,éi0úa;bm/,$r;dr/,hco*,r<e%,tn0;a0Sem0;aTeHl3núm.,r0;alu1oi-t0;*,sO;citrCpN;a0icáf;col,er,ic9mro8n5pic+rp,r3t2u0;darg,gi,*,su,t0;ca,ibah,#ve;#madnBot;e0utan;#g,til;i1oi0;cida),saco;f,giro;f,n;ep(,i1#(,r0;ap;fo,+;l6t0;n1-0;uf;/7e0;i0rapa,u$rf;c0d#p&O;er,ifH;b0<%;a1%0;op;boXr&i0ton;snF;ciUdQenátlum%,h$PiMlos,rIsi$VtAu9v0;eun,i0;s5t0;a1$ps3i+f0;&;cifingZl1)si+m0;da;er;e0ulcL;c2rgoM;gitP+tn4;aidem6c4e2la,n1(up0;us;el,ujn1;l<0rcn0;.;aDe0i9;f-p,rid;+;a2eg1u0;ges,p;il;lc,r;l<a,po8ra0ve8;($n,tiroy0;am;)6;am0ipár,nufo4;e)1ixor0;pa;xe;fí$p1lbúp,móno$,nú,pít,rótsih,sáb,tcá0;rp;(;l&0tsab;!a;*;/;birra,c-c,didem *rg3eníl3ic#u$sn.3r0y,ívadot;e0oha;iuq0uf;%; #",
-    "Ordinal": "true¦:!1:#:misé;a#nQo0;dnugesNmi4nevon6re2t1vatco0;!m6;niuq4rauc1xes4;cret0mirpK;! o#giv,om3;cédHsé3t0;pés0és;!om0;iced;g6lim3nGtne0;c1gni0;nArd9tp8uq;!i2ud,x7;!ort7s0;e0od;rt;a1i8ni0o0;tco;n3rd2u0x1;cniuq,tp0;es;auc;on;!nu,oud;! o#gi0;rt,v;ollim",
-    "Cardinal": "true¦:atnPeGlFnEoAs0zL;e7i6o0értiCódiC;d,tnei0;c0niL;e2o1s0;eLiPod;hQrtP;tNvL;es,ésiB;nolli0rt;b,m;cnic1hco7nu1r0tneI;ec,tauc0;!i0;tn6;eEóll0;im;c5t0veun1;eis0n2;!i0;c1tn0;iev;eid;e3n0od,rotac;i0o;uq;e1ie0;rt;h4r3s2t2ucn1v0;on;ic;es;auc;co",
-    "Unit": "true¦bHceFeDfahrenheitIgBhertz,jouleIk8liGm6p4terEy2z1°0µs;c,f,n;b,e1;b,o0;ttA;e0ouceD;rcent,t8;eg7il0³,è9;eAlili8;elvin9ilo1m0;!/h,s;!b6gr1mètre,s;ig2r0;amme5;b,x0;ab2;lsius,ntimè0;tre1;yte0;!s",
+    "Ordinal": "true¦:!1:#:misé;a#nQo0;dnugesNmi4nevon6re2t1vatco0;!m6;niuq4rauc1xes4;cret0mirpK;! o#giv,om3;cédHsé3t0;pés0és;!om0;iced;g7lim4nGtne0;c2gni0;nArd9t0uq;co,p7;!i2ud,x6;!ort6s0;e0od;rt;a0i7otco;n3rd2u0x1;cniuq,tp0;es;auc;on;!nu,oud;! o#gi0;rt,v;ollim",
+    "Cardinal": "true¦:atnPeGlim,nDo9s0zL;e7i6o0értiBódiB;d,tnei0;c0niL;e2o1s0;eLiPod;hQrtP;tNvL;es,ésiB;no5rt;cnic1hco8nu1r0tneJ;ec,tauc0;!i0;tn7;eFó0;lli0;b,m;c5t0veun1;eis0n2;!i0;c1tn0;iev;eid;e3n0od,rotac;i0o;uq;e1ie0;rt;h4r3s2t2ucn1v0;on;ic;es;auc;co",
+    "Unit": "true¦bLceIeGfahrenheitMgEhertz,jouleMkAl9m6p4terHy2z1°0µs;c,f,n;b,e1;b,o0;ttD;e0ulgadaH;rcent,tB;e1il0³;il1laE;g8tB;itA;elvinBil1m0;!/h,s;o0ó6;!b7gr1s;ig2r0;amo6;b,x0;ab3;lsius,ntí0;met0;ro1;yte0;!s",
     "Month": "true¦:erb5lirba,o0;i2re1tsoga,y0zr0;am;ne,rbef;l0n0;uj;mei0utco;cid,tpes,von",
     "WeekDay": "true¦domingo,juev1lun1m0sábado,viern1;art0iércol0;es",
     "Copula": "true¦eAfu5s0érE;e2i1o0;is,mPn,y;do,endo;a0d,rJáis;!mMn,s;e1i0ér8;!mKsC;!r0;a0on;is,n,s;rHs0;!t0;a9emEoy,uv2á0éG;!b0is,n,s;amC;e,i0o;e3mAs2é0;r0sem9;am8em8;te5;r0se8;a7e7on;ba6do,m4r0;em3á2é1ía0;!is,m2n,s;!is;!n,s;os;a0es;!is,n,s",
     "Auxiliary": "true¦h0;a3e2ub0;e,i0o;eron,mAste8;!m9;!b2n,s,y0;a0á2;!m6n,s;er,r1é0ía2;is;em3á2é1ía0;!is,m2n,s;!is;!n,s;os",
     "Modal": "true¦:aCe6n5o4s0és;aBe5i1om0;aAe1;a9é0;b7dBlos,re4;b9d5l4r2;a6e0;b4d3l2r0;ei0;uq;eus;eup;as,ed;ír0;d1eb0;ed;op",
     "Infinitive": "true¦:!1:#$%&()*+-./<=>?@[]^_`~:er,ni,ne,ed,oc,xe,ro,la,ac,us,et,pa,re,na,os,uq,ba,om,id,me,uc,ar;0:MQ;1:MT;2:KN;3:L3;4:MR;5:M7;6:LM;7:MI;8:KV;9:M2;A:M3;B:ML;C:K1;D:L9;E:K8;F:H9;G:MM;H:IG;on],rItimov;a4De2BiKíI;#Io;!f,n?;!b22c1Wd1Hg16l10m0Vn0Sp0Qr0FtYuNvKñIügF;eIurg;r,t;ivJ=I;h,s;!#HOn0;birtJEgPh,lM$ms6rJtitsI;bCeI3nK.;!tsI;bo,&,nI;i,(2;cJfI^;!a,$;nD);esJ$tI;s6);!n0o3rB;aWeUimS%QrNsJ`I;=p5s6;evKiI;sI)AM;a,bCeHPnDrB;!#,$;apJevI`;da,#,^,nD;!#,mD;m8pEPsI;!e3n0;da,eK7^,o,rBsI;aA>A;pIrr1;#,m0;bIl;!&,m0;ap,bQdup,eNfCgen1i@MoKruItun;[,cI;#,n0o,sIM;lIm;f,(;da,$;fJgIh9T@5;^,$,.;#FE^,nDo3rKUsIG;a2`I;!%,sL;l`9murrI;/7i;ab,evJifI=BZu2;&2;!e3n0rKN;eg,iJ*d,.I;!a,#F5n0;d5rI);^,pI;eGSmDo,.,);aLepKlubmaz,oJpI;m`IR.;[,m1;#,);f,sI;!e4M;eRiPnMrIur;eI.2;mJvI;^,n0;e,.;iIu;f,rI;f7ts5;lfHUrI);e,^2;le,rAX;aTeRiOnLuI;al<,caJlI;a,e;!s;apG#,icsLuI;fIh;!^,nD;cJl0sIv6;#EC;&,$8X;m,pIrga;!mi,s1);.JvIña;e,$;^,rB;&Mrap9uI;dIl;a0YeJnDorI;p2t7;d,r,s;!~K7e3lE%b;eEIiIm`C.;cLhKrcsI;eI$,.;!d,#;o3);#,rB;a1Hb1Dc0Rd0De0Cg0Aj/,l08m07nZoYpmorA5rVsTtQvIza3ñat;!aO#NloKoI;hc,ll,mI;!#,n0o3;sJvI;!eFE%8;[,#,^;!p,ta;ce3#;emI=v;!oI;cHQrp11s;!oI;c,t;e@,rI;ab,(I;!#,?;d,r9O;/MopI;!#,mKoJrIQsI.,);^,op;!rp;i,(8;!bo,eJnIs?;am,(;d,r3I;al,/,(;av,ep5oI;!d,mISs;/o3(I=_;!a,#,se;l,rc,sop,vo3;ecTnJop,rI;a,ep,];eJoI;c9ps95;cMfLpKrpJtIv2;!a,e3%,);!a2mGD*s;&,sC;&,o;%,sI;aI&,>A;!rt;!ca,e3n0orIrI1.,);p,t5;a01eK%vDJoJrI;eje,ot;c,n7C;dWj9MlUmTnRp*t4rKtJ@I;alf4ir4;e<,noH*ma,sa[2;aMc,eLfo,oK*[,uI;csId4f4;bo,o;lf,vaf;m,p;c,lc9pI;!a9Wm0;amIeIJ;a,rB;eEH*da;aI[t4Gleb_;t*f,ve3;aIebo8>l0R;p,rga8;fsitas,h9OlpIn2y;!m0;aKeI*s[;bId;!_;c,s;c2rtI;!a,n0s6);bI1cFQdELeDOfDNgCQhcCJiBBjB1l9Nm93n7C(7p73r53s4Et1Uu1Kv17)16y14zNñI;aKeI?,uH;pmG8sI;^,%;b,d,g4pmoHrtI;%8);a0Ue0RiN+2nLoK*JuI;-4rc;f2m+;b9g,ll?,rts1;aIem0ogr4W;c+,ifa,l2va;!~4c*Gdnufo3lXmVnRrLtIvaC;aJeI>rag,onpih,*ma,uab;fo3rBWt$s;f4motua,pmis,rc]1vi3;aMeKitas,oIr/a,t-ic;g/-,+v8_m,<v,rr/a,tI;in],ua;tIvlup;c~-,u-;ilimaf,lug5;aKema,m&7oJ=I;d],t~fn0;l0mFrc$s,t$s;g2Hmuh,rg;an6iIon(e,*finu;$m,tpo,xE;aQiJoIs1`atsbo;bmis,pon];bKga,r/9tJ@DZvI;ic,];=f,u2;aIis%s;snoJtI;n0se8;ps5;cU#,gel,iSm*RnNrKtiJuIvir;div^7siv,tH;g6p-,v5;ap,eJtI;%c8uen;bil,%g;a8Bep,if,oI;icIsrB;aIutits7;n,r;f,n;cIr/E;i7?,=m0;oIsif;f,l;b-4pJrI;!&4;_,oA;c,gl&a,hc5lJ%ma,rI;[,fs6t;%,pI;a,_5s1;aIo<;ls?,rbCs4;d7>;aSeOiL+s,oKrI;esI`;bo,#9Zn0;n3Js1;hcFrJtI@9va2;ca7Ll`,nA4];&,p;lIn;e,lI;!eIn0;rb?;cIl,rgDY;!?,);cQdaPgiN+veE3nLtI;at,cJeprBiI%H;[h,s;aACefe,ulf;/a,iI;s7tn0;ca<,r2XtI;*ma,s/a;rg;ave,&a;a1Wc1Te1Mi14l0Xn09o06p04rZsMuI;biAceKf5hc,lc5pIrfs6;mIs6;a,i,(;je;aSbo,eOiLnDoKuI;gIja2sa;!&,s6;cDEpDE;lDDps1@n0vI;a,#I;!t4;!finEl],rJtI;!a,&,n0o3;!p,raI;!rF6;b,gIl<,p,rF5v1;!lE;aLeKoI;[,c0Kfn0hGpI;!a,eAKmD?,sBW);bil,cAH+,ps1s5K;cs1<;aIec12irc4o34;c,da,r;b2ciAd,lJnCXrIv;b,f,r1;ip,pG;a02eLip,oJuI;!ge3j2Y<;c8m69rI;dema,fA7<;c#HiX+WmMrf4sLtJvI;#,l?,$2;!$,sI;o,.;!a,e68o<;aPeNiLoKrJuI;a,cod,gF;ef,ota;c,f;c,lI=pG;a,pm`;lpIrc7;mD.;dnuf,lI;!g5;!c,s1;*2;c4PlJp9rbeIuga,vel;@;&a,p3Z;aMoLuI;cJm,pes,sI;#,nD;af,if6o;c9s;f,sI);!a,#;bYcVdTeSgRliPmNpMrLsK@,vI;eI$;!l;ecen,iv,>Aop1;f,g,ri;-1ice3;aAiIov;!lDB;bIcaf,m;ah2&,isop;a,^;fa;a5VeIua;!m,r24;!ap-B4#,ilJ$,=IsC.5);je,);ef,?;ah;c4jNlpm0pMrJ@Iv;ap_,ite;cJpI;a,rCM;&,n0;seBJ;bo,.;aJeI^;fA8n74t1yo3;d5j,pmi,tn0;!b5UcLd,#,g4le8PmKp_,rIs1tAP;abs1dih,tI;!#,lEn(47;!#F;a,s5;a01eWiUlRnNoM<l0rJuI;!-,[,c02h5;eI`28;ps6vI;lEn0;ca,p2rg4;aKeI;pIt;!#,m6Ls6;c8rt;ob_JupI;!mi,);#,s1;ce3+,p,rf,@sBvI;!a,#,orpmi,=pC;b,cZfLpKrIv~ta;/7gIpG;#,$,o3;!?;n0o3;!b2cLma,pKrI;ra,tI;a,#;!#7GsaA;!~f;a1Db13cul12d11e0Mfic8g0Ji0Dnoh,o05pm0r00tRuI;atsPcOdNgMj74mrum,p8JsLtI;cJiAnIp-,*t,.;eva;af,urtse2;#<,%c,ualc;esa,if6Zua7;!am,rB;!o3;#,$;alodi,ePibFlif9MnNsI;aLe`es,iJ]BLuI;li,rf;g5$mI;da,.;c,rF;eI(%2;!c6O;monorc,nB;aLeJoI.C;b,ha;!b,c28s,tI;a,%8;ga,ma8n;!bOc1da,ep_,frBga,ir/1jem,lMmKnJpIsesa,v1;ave,r(7;gi,im9N;!a4eI;d,mn0;av,l,pI;mi,);al8Worr0;g,mMpJtIv;!#,se;!sI);a,#,nI.;aAi,(;!da;a8TeJimI>s,ol;!e,$;+,t$2Q;bilARc4dTgRlPmu4nNpJtIvesrB;i5+,%;m/,oKsJuI;c5s;e8o3;!(;eIic7luv,oG;g2v;eIot;ca8;aGiI;+,rf5;iInop,];l,snI;(2B;al,%g4;!ov7;ePiNmJoI;!c2inE;eKon,uI;lsItsoH;&,iv;ms1s;lIv;!-,i@e;lI@;ec;!cKlc6OpI;!eIi@e,m0s6;d,r47s;%,sam%8;aOeAiMl`LmaHrKs~,uI;coIhc,rga;!e3s1;az,itG.u;!s6;citIs6@e;>,rap;c9rIt;!ta;a15e0Zg0Wi0AoRrLuI;a,cJt*pIy4P;mi;av;-4eKoI;da,tI;!#,n7C;bJtI;+,$;ih,og;[,dZiI*2Ms,t1z~;cMsJtseI)lf2;g,`;-o,#pJir<,%m6olI*ts6uf;ce;!mi;aQcMiLnJ]o3pec1*po3uloI;s,ve7U;as,eIuf;m,vbC;aAda,sop;a2eI;fJlIps7;es,(;n0rB;lIr,t9;#I;!r0;!>[,rB;b02c00d*ZeYfXgVlSmKpo,sesa,tJurFviI;da;ap,s1;!aNiLl`,oK=Iuli;g,tI;!&,);d,n1;le,rcI;$,s6;cItn0)2;!%;cJpiI;cs6;&,$;aIi*;mi,pm0;a,#,n0;p,r;bC(;oIsaf;c,ic~,rtap;m0ob5;isJupI;mi,o3;a2&,n0;cMdLi+,ll2nKrI;d,f,tI;%,se;ev4;-n6Tn0*;!am+;fo3g,lJrg4sI;!bC;+,p;aXeViQlPoOrKsaJuI;f,hGrFs34;isut4lp,p;aKef4ifJofI;!e3RnDs53;!a2n0;!+,s1;d,t2;-,if,(;m,>Lr,tIxor<;igel,lu,$,sI;al,eI;!bCs1;!#,s1;fs3QrI@;!c;!f6lKm,rIs+b_;goIr1t;rp2;c3Xf7l;a0Sb0Oc0Ne0If0Hg0Gi08l02oZpXrWsiUuI;bScPd],gOmL>,piKtI;~gn0iIor,sop;p-2t;nEt9;e,iI*f2uH;sIt9;!^;a0#,>3Q;ep9iJ+c,$v,rI;ic;rtEtF;at4ma1;a,gI;el;ahc,ub;_7CoI;ca,s;c,iv,<JrIsn0v;!%,tn0;rtG;aLes,iIorr1U;mJpIrb,@E;!ec;uh;c,f,h,tI;!&,se;ab,cOfNgMmisa,pLtJ@I;i>,+;nIs1um;ev;a,&,m0(5;iv;a,rBs1;av,so;#F;$,um-;cn-,d]2gn0NhLp4StJvI;!#,in,s1;>Iut;ms1;!>;ic5zem;aKmJoI;d2p;as4/;h,t4;b_,c24g5j,tJugi,ñI;es;nu<,s$8;aPeLif,oJ*f,uI;b6p_;lIm,%,rF;a8fa;d,lKnEps1rap_,snoHtI@;(,r0sI;ef;a,f5;bIc4iv,l5ta;!aA#;bm-0Oc07d01fZgYlTmSn]its/,pRrOsMuLvJxifI;sa;bo,#Ii+,%,s1;[;g,q9;/seI>;>;aJc,fI;%,s5;r5Vv;ic$3mil,(,se,);e3(4;aLiJpI;ma;cnIfa,xua;(2;!p;elivi3ole;as1nI;(8;~ri,em2iMnLoJuI;p5t9;!tsI;`;ec7;l,sbC;aX#pViSnMoKrJuI;b+b,s4;em0ov6;gIr,sa;en;a$f2eKunI;a,eIo3;!d,r;cil,diJiIlis,=f6se3top,ulf7;cn0;ve;dJfenI$2po3raHuj4;eb;$,=ps1;a,sI;&,o%m;s,v;!r46;aNeL>KorbJrEuI;c9d,l;as1;g4lp,m;!f,ps?,rt9sIvor<8;&,(;ps1r*b_;a0Ae04iZlXnWoSrLsJujIzuj;!n0;~,eirF;ra;aLeIoto,up;bJtsI;op;+;cIl2I;!#I%,s1;!b?;ha,+KrI;!d,&,rI;/7o3;^,t-;ev,olo3;(,uI;mo3v6;d%m,lLrKtI;im,sI;-,ev7$;[,ri;!bo,s1;c,lMnKp8rIvan;!f,gIp,t4;a,n0;!eI;d,r;a,&,l,p;c,d7pKrIv;fCtI;!se;!a,o3;at9nuiA;b0Dc0Ad07jn-,l03ms01nYpWrQsOtK@I;as,nIolb8sahc;alb;aKlJ>lp2oI*s;[s,ciYg;ov;b,g2hc,p;aI&,+f;p,rf~ap;alc,cMoLrJtsI;~;aHeug;ca;[s,l0;!#,o3;log,oI;rt9;aJilIofelO;a,&;lp,s;iIuh;hc;cJep,pI;_;/;-;aprJi,l],nIor,rabN;a[r30od5;ap;a<AnIub;alIorb;ab;mob;!a0Ke0Ii07l05nVoTrLuI;aJd,+s,m,nIs,ya;a5*t9s1;c5rf1;aMoI;bJcIg4;a,#,n0s6;!a,sI;>A;t2ugI;!aIs5;!v+s;m(Ip,r;a,$;aOeKirb,oJuI;f,$;ha,s;mJrIvs1;em,ra;#,%,(I;#,%;!mJrI;ga;!&,(;aI?;ps5s;cPlMmit7uKvI;lo,nI;e,(;c8qI;il;avJoI;sn0;!$;iCulI;e,^;.;psI=h,@;oh;f4lsaAn,rgI;a8&;a1Me1Ki08l07n02oUrPsLuIzillB;dJhcE;am;-,e;am,eKiJuI;b,fo;d,fn0;p,rf5;aJecIoha;!a;bJmI;!#,%,s1;a,_8;bmOfNhc,l0rMt2vI;eJiuInDo3;qe;!r;!#;r1t;%,?,.;es1;aJiIor;rb;b,m,rIt9;ra,t8;!s1;-5ov,`7;bu,d0OfXlQnOp,r[f,tI;alp,ca3irc,%tLsI;am,emJonI;ga6o3;od;ua;rp;rIum0;of;bNc,pI;a,#,iKmDuI);d,s;i,(;rt,tlI;um;up;aAiI;c03dZlXnVpit,rSsOtI;~,c5nKon,rJsI;/,uj;ec,of;aJeI;di;s,`;aNlKnJ=v6;^;/7;af;aJcIev,olg,up;as;lc;aIgis,ot,u;lp;-,pmI;a,eGis;e,ilKoI;cIm;!&;?;ap,ep9uI;rc;se;rt;~=,[,eL$JujI;da,rB;!vi5;#;d,rp;f1hc,p,s,topI;ih;lMrLs,tI;aIs1;!~I;tn0;ta;<;aUirr1lSmut,oNrJ`7;$;ecaGuI;trB;ep;);lg4rI;!pI;!a,m0;(;%;is;&;cJ+,rI;g,t;a,#,sonI;em;]",
-    "Noun": "true¦:!1:#$%&()*+-./<=>?@[]^_`~:re,et,se,ne,am,ro,im,la,ir,na,er,ci,ra,rc,ni,id,ps,rp,en,op,es,ac;0:32;1:3O;a2Ge1Q+18n0VoWrOs2;aGel4o2élg1;<2tad;hc,p;a2beum;cBeAg,i#t(,jecnoc,mi.,n7#6s,t3ut2vi15ñ`;cel1A-;em,i2s-c;b),p2;~,soh;bil,n*;~,edr0i2u19;f2m#t;!*`;di,#c;@ar,ov;<5da2;céd,m= saz#uf,n3p%,r2;o2Pt&;ed)oc,)j;hc,lbúp/,n3rbáf,t2;cá],síd37í>;cét,ó>;at8e2*e,oñ`;bew,cnác,d6jum,l4sál,t3v2;-,ád0;cár0ipúj,%&m,t_ yr=h,á>;l2mmih;at,icn0;.tnNíl;+,%&ib;<VdOgMiJjabart,lHm-p,nFrBs8t6v4z#um+,ír,ñ2;a2eBin;!b,d,mat;alc%,it2;ejda,iso[@,luc,&c1om;ce[o],i2;bah,du#,m,sópo],xé;a05ep,o2;!p2;/,%;bme*,e3i[2;us;dan#v1fím(,j2l+b0?d;asap,uga;adaduic,i2#i0Z;cev,/,m0rge19v;e2lor=sU;meg,uv;<c#je,=2;d?cev,l2s#vi.,usu;as;a2euj,*a;m,p;a4n2;a2$?n,of,um;b,moc;c4elpme,g3i+,l,rg,sap$.,t2zeb~&;aZiv1lu%r,n$a,soc,up@;oCíh;ifingis,#m;dói0Uf4hc,p,r ot#up,t2;nálta4róp,sónga@,uéc(=f,á2ílo^;mu^,rdR;áTícap2; o.éco;aCe2or;d)9g6iug+,m2rt;axe,i4od3r0u2;lS%r;ba;gér,>;!(i,i3r2;(,iv;);!s2;ed;l2mtab,p,to;c,p;cIdu0iHmiGnCr8s,t5u4v2ñS;anr0i2;r,t%f;n(,t-;e3i[2&mucod,)p,s-c;oh;gev,m;bmu,d4^3g2otil,ulp;$1;*,uf;$0;~,e4*#t,os01u2;bi2;rt;dr0s=;.;cn$_,lif,)t@e;ov;lbOtn2;aAe2;i5n_o,r4t3u2yub-tnN;f,p;ap;eg;d,lc,pr4v2;iv/b8r2;is;`;<DdCf1iBjubAma,n8r6t2ug,vel;i3&%]6ov,s2;e,?;<l2siv;os;*Huats2;/;od,#2;bog;@;c#m5dut%,=v;n(4uya;+,rbaf;a3itsubm2or;oc;c,s;beu],<05dLgK-a?uq(,lIm)f,.DrAs9t8vit3í)2;$,y(;a3ce[2;#p;g3i<1n#t2;+;^;lSob;~,_%;beiuq,^3t%2uc;um;*;!b5l,m4&,pm0r3tn2znQñQ;ev;!bm5;`,#h;ah;cz2lI;em;/tDr0;a3#2;uc;cIgEhCjabB+sAn8pSr5t3zl0;~;nFr2;_;ap,*,o2t6;pm2;$;!r2;oj;&;me;!c2;af;ell,l4u2;j,rd2;(;up;éd;ncBt2;cát,sí6ám4é3í2;>;!ivos nóinu,t7;arg,$,)f1;?;d3ügn2;il;at2;%;ét;]",
+    "Noun": "true¦:!1:#$%&()*+-./<=>?@[]^_`~:re,et,se,ne,am,ro,im,la,ir,na,er,ci,ra,rc,ni,id,ps,rp,en,op,es,ac;0:32;1:3O;a2Ge1Q+18n0VoWrOs2;aGel4o2élg1;<2tad;hc,p;a2beum;cBeAg,i#t(,jecnoc,mi.,n7#6s,t3ut2vi15ñ`;cel1A-;em,i2s-c;b),p2;~,soh;bil,n*;~,edr0i2u19;f2m#t;!*`;di,#c;@ar,ov;<5da2;céd,m= saz#uf,n3p%,r2;o2Qt&;ed)oc,)j;hc,lbúp/,n3rbáf,t2;cá],síd37í>;cét,ó>;at8e2*e,oñ`;bew,cnác,d6jum,l4sál,t3v2;-,ád0;cár0ipúj,%&m,t_ yr=h,á>;l2mmih;at,icn0;.tnNíl;+,%&ib;<VdOgMiJjabart,lHm-p,nFrBs8t6v4z#um+,ír,ñ2;a2eBin;!b,d,mat;alc%,it2;ejda,iso[@,luc,&c1om;ce[o],i2;bah,du#,m,sópo],xé;a05ep,o2;!p2;/,%;bme*,e3i[2;us;dan#v1fím(,j2l+b0?d;asap,uga;adaduic,i2#i0Z;cev,/,m0rge19v;e2lor=sU;meg,uv;<c#je,=2;d?cev,l2s#vi.,usu;as;a2euj,*a;m,p;a4n2;a2$?n,of,um;b,moc;c4elpme,g3i+,l,rg,sap$.,t2zeb~&;aZiv1lu%r,n$a,soc,up@;oCíh;ifingis,#m;dói0Uf4hc,p,r ot#up,t2;nálta4róp,sónga@,uéc(=f,á2ílo^;mu^,rdR;áTícap2; o.éco;aCe2or;d)9g6iug+,m2rt;axe,i4od3r0u2;lS%r;ba;gér,>;!(i,i3r2;(,iv;);!s2;ed;l2mtab,p,to;c,p;cIdu0iHmiGnCr8s,t5u4v2ñS;anr0i2;r,t%f;n(,t-;e3i[2&mucod,)p,s-c;oh;gev,m;bmu,d4^3g2otil,ulp;$1;*,uf;$0;~,e4*#t,os01u2;bi2;rt;dr0s=;.;cn$_,lif,)t@e;ov;lbOtn2;aAe2;i5n_o,r4t3u2yub-tnN;f,p;ap;eg;d,lc,pr4v2;iv/b8r2;is;`;<DdCf1iBjubAma,n8r6t2ug,vel;i3&%]6ov,s2;e,?;<l2siv;os;*Huats2;/;od,#2;bog;@;c#m5dut%,=v;n(4uya;+,rbaf;a3itsubm2or;oc;c,s;beu],<05dLgK-a?uq(,lIm)f,.DrAs9t8vit3í)2;$,y(;a3ce[2;#p;g3i<1n#t2;+;^;lTob;~,_%;beiuq,^3t%2uc;um;*;!b5l,m4&,pm0r3tn2znRñR;ev;!bm5;`,#h;ah;cz2lJ;em;/tEr0;a3#2;uc;cIgFhDjabC+sBn9pSr6t3zl0;~;n3r2;_;up;ap,*,o2t6;pm2;$;!r2;oj;&;me;!c2;af;ell,u2;j,rd2;(;éd;ncBt2;cát,sí6ám4é3í2;>;!ivos nóinu,t7;arg,$,)f1;?;d3ügn2;il;at2;%;ét;]",
     "Adjective": "true¦!1:#$%&()*+-./<=>?@[]^_`~:er,en,es,ro,il,lo,ri,ti,an,al,le,or,st,ci,vo,te,re,ra,do,mo,no,ar;0:MU;1:NT;2:NF;3:LW;4:NM;5:NO;6:MW;7:L6;8:KN;9:NQ;A:LU;B:MZ;C:NA;D:MJ;E:LE;F:NE;G:L5;H:G8;I:NB;aK1bITcFZdEMeCVfBZgBBhAQi8Rj8Ikur1l7Um6En5To5Gp3Uqu3Sr2Ss1Et0Ku0FvVweb,xeUySzQáOíLóKúJ;l+mGnEFt(;pAMs7;be3gn7nJ;fi_,tJ;eg3i_;>1g(,l2NrJs3Vto0ur7vi1;abe4i1;aJur1;_LQpoB6]goza0;#_,uJ;caB4gosla?;nófobo,róDM;aUePiLáKíJ;tr7vi1;li1nda);ejFXguDkinFlGYolHrLsJtAu1?4zcJ0;iJuA;b/,go1;tuAulH;cto9XlMnezoGUrKsp#KJtJ;eLEus2;-4TdJsát(,t35;ad#5e4;lu1oz;cPgOlN`,q48*MsJ;.),cJto;oJón;!nNI;ab/,op98;liso/IFón;abBVo;u0ío;bG5lt]KPmbrío,nLrK@LZzbeJ;co,ko;b7Tug4C;iJíD1;f<me,v#sA;a0Ae02he,iZoVrOuLárta3éKíJ;mi1pDD;cni8rmLN;cuI9nI6rJ;bJco,í=DA;io,ulH;aKemCAiJoHIun8;)buMC=e;bajMXcMdicMCnKsJvieB;e3lúLW;qu(o,sJ;grKElúLUm08vM3;io,t9;/77n2rLscKtJ;.,ona8;a0o;^,e3;bK#0ll,n2&J;id7lD;eHOio;atrAba0mpPn7DrJs.6utEó*8;cMmóCBrJ;eKiJáqu7;b/,to8S;`,s8T;#Jio;!a;<ArKF;iwVng33rJuL2í0;as8dío,t83;a0Me0Di07oYuKíIQóJúp#;li1rBP;ave4bUcSdReQfi>JFje2mPpKrc43sJt(;odicho,+tu2;#K[J;_,s9;!^L6fKiJOvJ;is9;iBQluo;#6o;co,l2?;-D;%9iJulH;n2o;.JcampeEd%~&lLBmaKMu6U;pi0t9Z;bO>.NlKmJn<5r1viéI6;brío,e3;aJemne,it0Po;!rJ;!ieF;!%,i=a;#KrJ;ehuGVio;a0b6;amDgNlMmKnJr6;ce3ieJRóBI;i2LpJ;/4áHU;vADíc7;nificaHRuiDW;cQdPguOmiMnLpt$trEArKvJxuCñe3;e3(EM;b6e0io,]0;c(l5eg.Dsa2;cJd%nu1áL6;on0BáCB;nda,&;iHuGT;o4[toDPunda*DE;b6crRgrCRjElPmOnKrJ;^,]ce0;!gKju-i0o,tJ;afeJPiagJNo;*HuJ;i`lHín7;a48oa0;iJtGR?;`,tGY;o,í/F;a0EeSiRoMuKápid5íJ;gi1;a0bJ^,ma0rCs5;io,&;b9WcMd6jLmKn8q1JsaJt9C;^,*0;-Go;a,ibl-8o4;ie3ke3ocó;c5oja0;a01cXdWfUgSlR_2nPpLsponsDKtK?lu>onJ;~6;iC3rógH2;/2rJ;%KoJ;duG2;.DY<;aJomb]da;c$tIB`;aC0igiosG/0;ioJul3C;!nC;iK2/J;ct9jo,xi?;on1uFT;e59honcho,iLo/KtJíp&8;-g2N(D6<;ct9to;$K1o;c6lJ;!eJi=a;nFs;dL),ncKquíd7&,sJ;o,tFZ;he3io;icA;eJie2ímET;bequDchua,*1;a0Se0Ji0Hl0Eo03rNuLáAVéKíJó=u_,úblER;ca3o;ndu),tr7;d93#8lc3n+agu1rJto;iETo,p9PulH;acG1eViSoLáctIAóJ;diFsJximBV;pe3;bCKcedC2duF7fNg$A1lijo,mLn2pKsp#-1@F7vJ;$iC1in99;$BiGuls9;eJiscuo,ot9;d6tJ7;a0%IXuJ;nd5so;e2mJn1Y;aEN#JigG7;!a4os;cKdecGXmatu3r73sJvi5;$J8id$FYo,to,un2;o)mbi0urs9;bSdRlOpu0BrMsJtoHV;iKtJ;#iGR[3;b9Z+v5;>0tJ;u2Vát(;a8iK?*HíJ;c1VfaFga_,tDZ;c1Un4T;#os5*1;la1[;aKeJ;beyo,n5;`,ye3;cu1gm7nJ;na1o,t9;cu7GdunAClPnO<,queñNrLsJ;imGPqJ;ue3;la1m-FXpJson.%,t$e>B6ua0vI0;etuo,/jo;a4o4ín;tá91úl55;iJu1;g&Br46;cífi8ga0lRmpHCrKtJuHD;#0r6óGZ;aM>AdLejo,iH4+J;cuJsa0;l~I;o,us8;gJ/);uaJ;yo;aJ%F8me3;cJ+0;ieF;bRcPfiEVmnCIpMrKsc66toDGvJ;i0oid7ípa3;.,deHYiJto^xo;e65ginCun1;a8#aEFoKrFP+mG1uJ;%2lH;r3Cs8H;>Jhava1ul2;de60ta0;eBlL[3sJtuBv6;cJo/2;e0u3;icuo,onF;aYeTiSoMuJíEMómada4;c/JevG),m#os6B;aJó7L;^,rI;b8KcNmbE9rKtJva2;ab8Jo;cKmaJo%@,ueF;lIn1;<GF;i?,tur0;pEt&geHD;cMfas2gKoJrv6Xto,ut3;gr-a4Zy<qG3;aDTrJ;a,o4uz8;%a*Gio;cGVpoliCItMvKzJ;a[0i;aJie3;l,r3;.,o,urC;a0He0Bi06oVuOáxNédi8íMóLúJ;l+plJsi8;e4o;r8Lv(;nJse3;im5;^,#2la2nMsJtuo;cKicJulmán;.IóEF;ul~;dKiJ;>pC;a0iA;deSlRnMrJzo;aKe0iJmEo,u0;b5Fs8;^,l;ocMtKóJ;ga_,to0;aJevidFJés;`,ñD;&_;da?,%2;rnGs2;lLsKxtJ;e8(9Lo;mGógi0;-DitJ;~%;dMjE1nLrJt&politEJxicEJzqF1;id9BoJ;!vAO;<ItAu1;iJo;a,evAo;cYdXeEIgVlSnQrOsNtKuJyDV;*BD;eJuD6;mát42rJ;iA`;cuEZiva;aga2i`4rJí2N;oquí,ón;cheFdBVifiD8so,uJ;eEVfacC1;aKig0)rquín,o,tJv2HéBK;r18és;!yo;nJ&;o,éC9;eBWu3;ab3edBP;a02eYiRlQoNuKáct7íJúEV;m53qui1;sK@DLxemburJ;guD;iATo;buF4cJmb~1nge?;.IoJ;!mBT;a0e0<E;bNgMmLnKs2tJ;#a*5ua0;^,eAgF0;p6ít&f%;e3ue3;-D#Jio,[4;.,+0;cLgKja0n2oF6tJ;]1ón;.Io,í1U;he3t9;cLdrEnKrgGs>?,tJxo;#Cin5o;ceolad6Pu1;io,*móDN;aOeNoLuJóv$%;dJguetEnto4s2v$(;i4Sí7B;rJv$;da0;m#,ró4Z;cobKponJ;%a,és;eo,i0;be3d1GguCl19mp13nOrLsKt.iJzqui#d5;-73;abeDOom<fo,]elí,óCI;aJla1N[dH;c3DnJ;io,í;a0Vc0Rd0He0Ff0Bg09h08i07ju=06m02na2o00quie2sWtLus16vJút(;as9#Já5R;so77;eKrJ;au@DDuBé3Xí3G;lQnPrJ;!ceN%EHiMmed6nKuJv$t9;rba0;aJo4;!cDYs;`,<;pt9;cDKs5;ec3VigBL;atKeJospe5L;ct8Mgu3nsa2r2;isfJuAT;echo;cuo,^3p<J;tu0;aLeKunJ;^,osuprBR;dia2nBrB;cuDJdu3;ifiCLo;>Ant#rum3C;abiD3u99;$uo,l%J]2;a,%;aLeK]rJun58;&jo;liz,*BG;me,nt(;quí3Psp#0AxpJ;#2)AB;eQiLoJu=*Cíg$a4;e7P)3nJ;%6;f#$c77g0o,sJviduC;cKtJ;in2;rJuAD;e2iD5;bi1fJpe5Zs4Rt#D4;$Bi8W;i4OoJruHul2ó_1;)3mpKnJrpAH;cluBexo,t&CV;/2r$2V;cabUdJl@9Wni49p&p6W;ecuTv27;~,eNoMrKuJío;ls9&;eJop6;s9v4D;rtD4sib/;*A;eNiKusJ;t[4;mJr6;itJ;ad5;gíJso;+_;eAón7;aZeUiSoLuKáb(,íbCTúJ;me1n94;e8go`@,m6Q]caCOér3I;>cu1lNmLnKrJ;izoAZr26;^,%2;ogQóJ;fo0)Fni_;aJgazán;ndD;d2Fndú,rsu2sJ;p-o0Dtór7K;br7chi9ClMrLt#oJ;^xo,gJ;én7;b6T_B;a1e0;bLlóKmbrJr2;e,iH;f(o,ge0;ituClCF;a01eYiXlVoUrNuJé3E;aK#rJipuzcoa0;e3(l4M;po,rdián,@m.J;@8;aLecoKiJose3ueB;eg5s;!la93rX;nKsJto,ve4;iHo;!aJde4;di0;^,r1;aJobAút7;b3u8;g6Wta0;nJográfAIr75=9;#Jui0étAH;.IoB;di6XlJrzo,scEucho;lLoJés;!rJ;&6Z;~1eF;a0Ae07i01lXoVrQuMác(,éKísJ;icB0;rJ+1;r7t(;#BInKtJ;ur5;c4EdameJ%2;ntC;aKecu3XisEug5RíJ;a,o4?);ncKtJudulH;#0;%A2is8Fo,és;lclór9XrJ;mAni1;aKexi?,oJ;jo,*1;co,mJ;$8íge3;b]^s,c+>Ndedig0eMjo,lLnJrme;aJo;l,n>#o4;ipi0ósofo;lI&;as,os;cKd#AliJm$in5o,&z;`,z;un1;lLmJríng7s>2Gv<3V;iJosG;li~;),s5;br6conóm5Qd18f16g15jecu74l0Zm0Yn0Tp0Qqu0Nrrón7s01t00u&peGvid80xJ;!acta,cX$2haWiVpTtJó98;ePin2rJ;aLem5ovKíJ;nse8;#7F;ct9nj#Kt#rJ;%t[;a4os;nKrJ;i83n2Q;di1s5;#J[B;ime8Lto;guo,=2V;us2;elJ[t9;$@,so;#0rus8ér7;bel2cZ$YlWpPqui?,tJ;aNel~,on6r1OuKánd~,úJ;pi1;dKpJ;$1;ioB;b/,^unid$se4n8tC;aNeLi*KlénJur6;di1;tuA;cJso;iCíf09;>Cr51ñolJ;!a4%;a?,ovJ;a8e0;>A;aM/KoJue2;cDl~;róJ;f(o;ndina?,s1W;iKíJ;?8;lib64`,v.6T;icKóJ;ni_;úr7;a0cMdLemiFf#_,oK[ve6RtJ;e3usia=a;ja1rme4;oc85ó7V;-t9Fima;ba]8Bis9;eJéctr5Y;ctJg49va1;<LróJ;f(o,nJ;ic1F;!.;eo,ipc6oí=a;ec0Sicaz,íJ;me3;it9;a0Ue01iNoLruBuJéb(;lJr5;ce,zE;b/,)8Umin3XrmiJ;^,lE;e74fUgTminu2oce5Lp)S[ct1EsNur0vKáJ;fa0;#Ji0;sJ+1;as,o4;cMj85pJ+ntG;#BonibKu%tJ;!o;/4;apa>7Q[2;ma1;itA`;#11uJíc22;n2so12; _da,b(,c08f05l03n01pZrYsJ?2;aVcRdiQemplPhon5NiOnu1o14pKtru43vaJ;li1;iLrJ;e3RovJ;is2;aN#2;#2;ea1;cha1;.LonKuiJ;da1;o78tH;zo;fo79p#>J;bi1;ech5;<+vJ[d83;as,o;so,+J;cu7E;gJicJ;ad79;$s9iniJ;+J;va;a0iduo;(;da;nDñi0;a1Qe1Hh19i15l13oYrQuLáKé/b[,óJ;_1nca?,rn7;li1ntab3;aMba0#1ltLrJ=od6ánt67;si,vJ;(0Ko;o,urC;d3rta;-69ePiLoata,uJí3T;^,eJ;l,n2;ol),=J;a66iJ;-J`;a,o4;>4Hs6C;l0Km0EnWoVque2rLsJ;a8tJ;#a;a5ZdRea0int6nu1pP[Kso,tJuñD;a4e3To4és;ctLspoJ;ndiJ;$6Z;a,oJ;!r;<AulHór7;$2;a1(/4Q;rde6O;cZdu2GeYfWj68_v6Ko5WsOtLvJ;eJulB;rBxo;$2iJ;guo,nJ;e4Vu5;aO#v6QiMpLtJult9;-6LitucJ*29;ionA;icuo;d#J=3S;ab/;bi1nguJ;ín7;<JuB;me;xo;i$zu1[2;~3F#30pKunJún;%,i=a;lKo=eJ;la0;eJi4R;j5t5;e1SoJ;mbiJniA*1;a0`;aJo2Más2Q;nd%30r5;clóp7eLlKm~rErcunv17vJ;(I;ia1;go,ntíf2LrtG;aOecMiKoJur3;),&;f5BlJ`;$5lE;he0oJ;!s)va8;rJto;&,t#;lPnLrJ;cJebrA]1;-G;s9trJ;.IoeKíJ;fuFpe2;u&p7;%@,tíbe3ulJ;~;bezEduc03l02mZnWpSrNsLtJu2;.Jól41;án;e3tJ;ell3Fo;act#ís1Oc3RnMoK&ñe3tJ;ag0Rujo;!lJ;ing6;í?3;aKit.J*0uchi0;!i0;cJz;%;-7c#í3Ji0o,sa1tJ;-@,oJ;nDr;boKpeJ;&,si0ón;ya0;cár7i24_,?;ifol6o;a0Ie09i02l-ZoVrOuLáKíJúl12;fi1pe1;rba3sQva3;$Kfo,rJ;^,guDlE;!a4o4;a?,eOiKuJ;jo,s0Eto;llLtJ;a0ánJ;icG;-@;tEve;goLhem6mKni2ol3ArJsn6to,vi0;goñE]cho;bo;ta0;cK^,quJ;e>0;a4o4uz8;eMlbLnaKrJz~3;ma0;*a;aí0;)rruBnJ;veJ;ni1;a2lQnMoc6rJ;b#11ebKlJ;inD;#;eKig0éJ;?);dic0VfaJ;ct9;ga,);b(P(NjGldMrK=Jyo;~1o;a2bu1cel0W&Jí27;co4;ío;~J;ín;on6;b3Gc35d2We2Uf2Qg2Mje2Kl20m1Mn0Xp0Rqu7r07s02tWuPvLzuKé[5ñeJ;jo;caLlI;aL$J;tuJ;[3;n2F&;dO=&húnNtJ;oKóJ;c1Sg]fo,`m5;g%t2ImJp&pul0M;ot9;ga3;az;eMlánLrJ;acJevi1oz;+?;+8;n2o,rJ;>ope2Jr35;%MiKtu2íJ;nc&0;duo,lv%tJr6;]1;i0<;aZbYca0duo,$WgSio,mRqueológicQrNtJábiF;eLifiKí=J;ic5;>C;sa0;ep$Ki%2XoJ;ce3;+1;os;$6;eKiJ;?;li0nJ;+0;is8;co;ór7;gKm7uJ;ca0;onD;aKuJóc*fo4;%2;iLrJ;$J;@;sa1;a03cho,d00eZfiXgWhid3iUtMuCáLóJ;maJni_;);)F;eNiJ;aér7c1KguGsubJ;ma0S;a4o4;eo;cK*J;<I;%9;ma1sóJ;t&po;evi0)sajEos2;b6t*E;ón;jo,xo;.uz,i0<J;]0;ho;e0Ulfabe2rJ;-ja1quJ;isJ;ta;aSbiM#iK<Jpli5;fo;cJnd6;-5;dieMeKgJ;uo;ntA;.;=3;&;bL^,rJ;go,(lJ;a,$2o;/;a01bZcaYdXeSfonRgOoNpi0tMucKócJ;to0;inóJ;ge0;a4#0o4;ca1;eb]KonqJ;ui0;ica;si0;gMj-dLmJnt0W;-Ján;a4%;*0;[;ea0;li0;-Di0;és;^,`;d[J`;za1;iLrJu^4;adeJio,ícola4ó`_;>1;ta1;ga0icKoJ;rtu06;io05;`;&b6;io;ecQiNjMmini=]+vLul2vJ;#B;so;a4o;un2;cKn@J;la1;ionC;ua1;ampaSep2iaFoOtLuKér*J;_;miQ;iv5uC;.I;!%;gJ]zoM;ed9;go;to;na1;neTo*gSrumQsOuJ;ndKrJ;*1;-J;@4;!s;olut5ur1;a,o;ad9;<;$;ga1;^",
     "City": "true¦alexandria,constanta,genève,h6i̇zmir,kobe,londres,m5n4p2qui3rosario,s0;a0ydney;lvador,ntiago;erth,or0uebla;to;ew york city,is;edellín,oscou;amil0ous0;ton",
     "Country": "true¦:!1:#$%&()*+./<=>?@[]^_`~:am,na,ni,ar, a,la,ab,ro, y ,ir,al,et,ne,re,da,ap,ci,ur, s,in,at;a0Le0Fi0Bk&i,l04m02nToMrHs6tiawuk,u4y2zenút,á1í0ú?p;l#,tiah;@$c,ma$p;aug0tic $]t2;&[,^u;)vut,ruan,taun0ásib-04;av;a7e4o0éd<gnU;<2ce^r#,d0j*_esí[;*rS`u_0;eb&á_ot&ime,o@tse;![;l1ta0ve`.)bóts/cD;rime b&a24ts24;aw,lehcyes;mahM%1r0vidl#;omoc,udnoh;@$rg_<.=>]v8pilif;a3egín,o@2ssu,u0;pag%s,s led 0;aXn1V;uce,v)s le;csagad#,tac;c5d`u o%er,g3n1rgen=nom,saf(%krub,t0;osel,pige;*íl,/#0; $s;*ot.@di%rt,noc led(]0ot,rubmexul;l1Utárcom0K;anóm,ixém;emey,i6á1ínQó0ú?mU;bag,mo)sApaj;dus,mo,ri,t0yi*?za;si0ub;jazak,k1n0ugG;agfa,emkrO;[,ebzu,iy~;=sn=hceil,ér0;*;an0odg%k1E;/us,teiv;a3e&2i1)hsr#0;_<1;fr# ed 1Bsa5;si;g1i+tauce 0pen,t>i+ +mit;ae%N;e>s,ut+p;dn^Vt1u<#,yif,énu0;rb;*i0ubiy;rik;]l4d?v ob8l3picnírp.émot oAr2t+n led(1u0;b*miz,qibmazom;e+c;iovi'd =oc,p0;ihc;eb;buc,c0Qd0Me0Jg0IiCk$l /s,lAn5om4r+d$,su,t3ug&acKyobm2zius,í0ñ[T;cul(tn3poite,rgnuh,uqr0;ut;ac;iduas(ibaZlT;as;a2i1oel &?0utuf d$_il)w;is;hc,t>gVvogez?h-a`s6;]0hg,ust5y2;%mod0Prfaort>c0P;#=a0euze>v,og$;ug;bZcXdnTlOn9r5s2uqavFv0;adlOil0;ob;<Heno1^0;!+leI;d%,r]m;agl2e0is,tM;bCg0;`;ub;a7e4o0;dec# 2l1t0;el,se;op;ed08;k,mBv0;ol0;se;b5d+j,m3rcu,t/u2ut1zn0;~;il;#;e1r0^;ib;);a2eg1ogn0;om;ra;mos,rt0ti;sua;<0i;i1n0si;if;~,zaK;aorc,e0$rf;rg,us;i3m1r0;es;a0olI;g,z;l,m0;an;eu+n,not;%ug0rt/e;!(veun(úp0;[;a$rg,$1ubr* y(ugit0;$;gu,l0^;ez(veun,ri;ehc8i0r#a%d;#6gléb,%mod,r0; 3ema fo_=~s2f0;ád0;us; d=`u;~s0;oc;aj;(]l0;búp0;er",
@@ -9591,7 +9403,7 @@ designate
     fromAlphaCode
   };
 
-  const symbols = function (t) {
+  const symbols$1 = function (t) {
     const reSymbol = /^([0-9A-Z]+):([0-9A-Z]+)$/;
     for (let i = 0; i < t.nodes.length; i++) {
       if (!t.nodes[i].includes(':')) {
@@ -9723,7 +9535,7 @@ designate
     dictionary(trie);
     //process symbols, if they have them
     if (str.match(':')) {
-      symbols(trie);
+      symbols$1(trie);
     }
     return toArray(trie)
   };
@@ -10308,7 +10120,7 @@ designate
   const strip = { á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u' };
   const mark = { a: 'á', e: 'é', i: 'í', o: 'ó', u: 'ú' };
   const hasAccent = /[áéíóú]/;
-  const noAccent = (str) => str.replace(/[áéíóú]/g, (c) => strip[c]);
+  const noAccent$1 = (str) => str.replace(/[áéíóú]/g, (c) => strip[c]);
   const setChar = (str, i, c) => str.slice(0, i) + c + str.slice(i + 1);
 
   // where the vowel of each syllable is - 'le|ón' is two, 'dios' is one
@@ -10368,7 +10180,7 @@ designate
       return str
     }
     if (hasAccent.test(str)) {
-      return noAccent(str)
+      return noAccent$1(str)
     }
     return arr.length > 1 ? setChar(str, last, mark[str[last]] || str[last]) : str
   };
@@ -10393,7 +10205,7 @@ designate
   };
 
   // is this a noun, or an adjective, in the given lexicon?
-  const isWord = (str, lex) => Boolean(lex) && lex.hasOwnProperty(str) && /Noun|Adjective/.test(lex[str]);
+  const isWord$1 = (str, lex) => Boolean(lex) && lex.hasOwnProperty(str) && /Noun|Adjective/.test(lex[str]);
 
   // feminine nouns that begin with a stressed 'a' take the masculine article - 'el agua', 'las aguas'
   const takesEl = (str) => /^(h?á.*a|ave|hambre)$/.test(str) || (/^h?a.*a$/.test(str) && nuclei(str).length === 2);
@@ -10445,15 +10257,15 @@ designate
       return false
     }
     // is only one of them a word that we know?
-    if (isWord(e, lex) !== isWord(cons, lex)) {
-      return isWord(e, lex)
+    if (isWord$1(e, lex) !== isWord$1(cons, lex)) {
+      return isWord$1(e, lex)
     }
     // has the model seen it? - 'cines', 'índices' - or 'luces', 'sándwiches'
     const res = convert(str, pRev);
     if (res === e) {
       return true
     }
-    if (noAccent(res) === noAccent(cons)) {
+    if (noAccent$1(res) === noAccent$1(cons)) {
       return false
     }
     // 'viajes', 'coches'
@@ -10565,7 +10377,7 @@ designate
       return str.slice(0, -1) + 'a'
     }
     if (gendered.test(str) && !common.test(str)) {
-      return str.slice(0, -2) + noAccent(str.slice(-2)) + 'a'
+      return str.slice(0, -2) + noAccent$1(str.slice(-2)) + 'a'
     }
     return str
   };
@@ -10590,11 +10402,11 @@ designate
     }
     const o = str.slice(0, -1) + 'o';
     const cons = toConsonant(str);
-    if (isWord(o, lex)) {
+    if (isWord$1(o, lex)) {
       return o
     }
     // 'habladora' -> 'hablador'
-    if (isWord(cons, lex) || /([aei]d|[ts])ora$/.test(str)) {
+    if (isWord$1(cons, lex) || /([aei]d|[ts])ora$/.test(str)) {
       return cons
     }
     if (commonA.test(str) && !notCommon.test(str)) {
@@ -10999,6 +10811,14 @@ designate
 
   // hand-curated entries always win
   Object.assign(lexicon$1, lex);
+  // console.log(lexicon['ganado'])
+
+  // names of people and places, shared by every language - our own words win
+  Object.keys(properNouns).forEach(tag => {
+    Object.keys(unpack(properNouns[tag])).forEach(w => {
+      lexicon$1[w] = lexicon$1[w] || tag;
+    });
+  });
 
   const verbForm = function (term) {
     const want = [
@@ -12263,7 +12083,7 @@ designate
     const prev = terms[i - 1];
     return isFiniteTag(term) && !(prev && prev.tags.has('Determiner'))
   };
-  const isNoun = (term) => Boolean(term) && term.tags.has('Noun') && !term.tags.has('Pronoun');
+  const isNoun$1 = (term) => Boolean(term) && term.tags.has('Noun') && !term.tags.has('Pronoun');
   // something that a verb can lead into - 'juego [al] fútbol', 'cierra [la] puerta', 'vivo [aquí]'
   const isObject = function (term) {
     if (!term) {
@@ -12345,7 +12165,7 @@ designate
         const after = terms[i + 2];
         const isOf = next && next.normal === 'de' && !(after && (deWords.has(after.normal) || after.tags.has('Infinitive')));
         hit = isObject(next) && !isOf ? found.hits[0] : null;
-      } else if (isNoun(prev) && isObject(next)) {
+      } else if (isNoun$1(prev) && isObject(next)) {
         // 'mi madre cocina la cena'
         hit = found.hits.find((o) => o.person === 'third' || o.person === 'thirdPlural');
       }
@@ -12986,10 +12806,7 @@ designate
   var matches = [
     // east berlin
     { match: '[este] #Place', group: 0, tag: 'Adjective', reason: 'este-place' },
-    // hundred and two
-    { match: '#Value [y] #Value', group: 0, tag: 'TextValue', reason: 'num-y-num' },
-    // minus 8
-    { match: '[menos] #Value', group: 0, tag: 'TextValue', reason: 'minus 4' },
+    // ('treinta y dos' and 'menos cinco' are done in ./numbers.js)
     // 3 pintas de cerveza
     { match: '#Value [#PresentTense] de #Noun', group: 0, tag: 'Plural', reason: '3-pintas' },
 
@@ -13072,10 +12889,10 @@ designate
   const joins = new Set(['y', 'o', 'pero', 'ni']);
 
   const getStr = (term) => term.implicit || term.normal;
-  const has = (term, tag) => Boolean(term) && term.tags.has(tag);
+  const has$1 = (term, tag) => Boolean(term) && term.tags.has(tag);
   const hasPunct = (term) => /[,;:.!?]/.test(term.post || '');
-  const isFinite$1 = (term) => has(term, 'Verb') && !['Infinitive', 'Gerund', 'Perfecto'].some((tag) => has(term, tag));
-  const isAdverb = (term) => has(term, 'Adverb') || has(term, 'Negative');
+  const isFinite$1 = (term) => has$1(term, 'Verb') && !['Infinitive', 'Gerund', 'Perfecto'].some((tag) => has$1(term, tag));
+  const isAdverb = (term) => has$1(term, 'Adverb') || has$1(term, 'Negative');
 
   const tagArticles = function (view) {
     const world = view.world;
@@ -13106,23 +12923,23 @@ designate
           return null
         }
         // 'la intenta comprar'
-        if (has(next, 'Infinitive') || has(next, 'Gerund')) {
+        if (has$1(next, 'Infinitive') || has$1(next, 'Gerund')) {
           return 'Verb'
         }
         // 'la cuenta es alta', 'la toma de la ciudad', 'las cocinas modernas'
-        if (verbAt(i + 1) || getStr(next) === 'de' || has(next, 'Adjective')) {
+        if (verbAt(i + 1) || getStr(next) === 'de' || has$1(next, 'Adjective')) {
           return 'Noun'
         }
         // 'la compra y la vende', but 'las casas y el gato'
         if (joins.has(getStr(next)) && terms[i + 2]) {
           const str = getStr(terms[i + 2]);
-          if (articles.hasOwnProperty(str) && has(terms[i + 3], 'Verb')) {
+          if (articles.hasOwnProperty(str) && has$1(terms[i + 3], 'Verb')) {
             return choose(i + 2)
           }
           return verbAt(i + 2) ? 'Verb' : 'Noun'
         }
         // 'la limpia cada día', 'la paga Juan', 'la canta muy bien'
-        const isAfter = ['Adverb', 'Determiner', 'Value', 'ProperNoun', 'Pronoun', 'Date'].some((tag) => has(next, tag));
+        const isAfter = ['Adverb', 'Determiner', 'Value', 'ProperNoun', 'Pronoun', 'Date'].some((tag) => has$1(next, tag));
         return isAfter ? 'Verb' : null
       };
       // is the verb-form after this article a noun, or a verb?
@@ -13134,22 +12951,22 @@ designate
         const before = prev && !hasPunct(prev) ? getStr(prev) : '';
         // 'el baile', 'un viaje', 'del hecho' - but 'el' may be 'él', before its own verb-form - 'el tiene'
         const isEl = art === 'el';
-        if (!clitics$1.has(art) && !(isEl && has(term, 'ThirdPerson'))) {
+        if (!clitics$1.has(art) && !(isEl && has$1(term, 'ThirdPerson'))) {
           return 'Noun'
         }
         // 'la mujer', 'los vestidos', 'los cuadernos' - and 'en la cuenta', 'pago la cuenta'
-        const isObject = before && (has(prev, 'Preposition') || has(prev, 'Verb'));
+        const isObject = before && (has$1(prev, 'Preposition') || has$1(prev, 'Verb'));
         if (!isFinite$1(term) || (/[^m]os$/.test(str) && art !== 'la') || isObject) {
           return 'Noun'
         }
         // 'los tengo', 'la veo', 'la vi', 'la tienen', 'la tienes', 'los tenemos' - but 'la caries'
         const agrees = art === 'la' ? !/[oéíón]$/.test(str) && (!str.endsWith('s') || noun.fromPlural(str) === str) : isEl || /[sx]$/.test(str);
-        if (!agrees || has(term, 'FirstPersonPlural')) {
+        if (!agrees || has$1(term, 'FirstPersonPlural')) {
           return 'Verb'
         }
         // 'la calle', 'los bailes' are only a subjunctive - 'no la calle', 'que la calle', but 'que la calle es larga'
-        const isPresent = has(term, 'PresentTense');
-        if (has(term, 'Subjunctive') || has(term, 'Imperative') || (!isPresent && !has(term, 'PastTense') && !has(term, 'FutureTense') && !has(term, 'Conditional'))) {
+        const isPresent = has$1(term, 'PresentTense');
+        if (has$1(term, 'Subjunctive') || has$1(term, 'Imperative') || (!isPresent && !has$1(term, 'PastTense') && !has$1(term, 'FutureTense') && !has$1(term, 'Conditional'))) {
           const isClause = verbBefore.has(before) || (clauseBefore.has(before) && lookAfter(i + 1) !== 'Noun');
           return isClause ? 'Verb' : 'Noun'
         }
@@ -13158,7 +12975,7 @@ designate
           return 'Verb'
         }
         // 'ella la cuenta', 'María la visita', 'mi madre la cocina'
-        if (!isEl && (verbBefore.has(before) || (before && has(prev, 'Noun') && !has(prev, 'Date')))) {
+        if (!isEl && (verbBefore.has(before) || (before && has$1(prev, 'Noun') && !has$1(prev, 'Date')))) {
           return 'Verb'
         }
         // 'si la cuenta es alta', but 'dice que la compra'
@@ -13170,24 +12987,24 @@ designate
         const term = terms[i + 1];
         const str = term.normal;
         // 'mi cuenta', 'sus viajes' - but 'tu compras' is a typo
-        const isPossessive = has(terms[i], 'Possessive') && has(terms[i], 'Determiner') && !(art === 'tu' && has(term, 'SecondPerson'));
+        const isPossessive = has$1(terms[i], 'Possessive') && has$1(terms[i], 'Determiner') && !(art === 'tu' && has$1(term, 'SecondPerson'));
         if (!clitics$1.has(art) && !articles.hasOwnProperty(art) && !isPossessive) {
           continue
         }
         const isPlural = isPossessive ? art.endsWith('s') : articles[art];
         const isClitic = clitics$1.has(art) && (terms[i].tags.has('Determiner') || art === 'lo');
         // 'la ha visto', 'los puede ver'
-        if (isClitic && (has(term, 'Auxiliary') || (has(term, 'Modal') && isFinite$1(term)))) {
+        if (isClitic && (has$1(term, 'Auxiliary') || (has$1(term, 'Modal') && isFinite$1(term)))) {
           terms[i].tags.clear();
           setTag([terms[i]], 'Pronoun', world, false, 'clitic-aux');
           continue
         }
-        if (has(term, 'Pronoun') || has(term, 'Copula') || has(term, 'Auxiliary') || /\p{Lu}/u.test(term.text) || !(isClitic || terms[i].tags.has('Determiner'))) {
+        if (has$1(term, 'Pronoun') || has$1(term, 'Copula') || has$1(term, 'Auxiliary') || /\p{Lu}/u.test(term.text) || !(isClitic || terms[i].tags.has('Determiner'))) {
           continue
         }
-        if (has(term, 'Verb')) {
+        if (has$1(term, 'Verb')) {
           // 'el puede' is 'él puede' - but 'el suelo'
-          if (art === 'lo' || (has(term, 'Modal') && has(term, 'ThirdPerson'))) {
+          if (art === 'lo' || (has$1(term, 'Modal') && has$1(term, 'ThirdPerson'))) {
             continue
           }
           if (choose(i) === 'Noun') {
@@ -13200,7 +13017,7 @@ designate
             }
             continue
           }
-        } else if (isClitic && (has(term, 'Noun') || (has(term, 'Adjective') && art !== 'lo'))) {
+        } else if (isClitic && (has$1(term, 'Noun') || (has$1(term, 'Adjective') && art !== 'lo'))) {
           // a word in the lexicon, that can not follow this article - 'la trabajo', 'los camino', 'lo cuento', 'la presto'
           const agrees = art === 'la' ? !str.endsWith('o') || femaleO.has(str) : art !== 'lo' && /[sx]$/.test(str);
           const found = agrees || str.length < 3 ? null : verb.lookup(str, { isVerb, known: true, tenses: Object.keys(tenses) });
@@ -13213,18 +13030,18 @@ designate
             continue
           }
         }
-        if (!has(term, 'Noun') || art === 'lo') {
+        if (!has$1(term, 'Noun') || art === 'lo') {
           continue
         }
         // 'las flores', 'la rosa' are not names
-        if (has(term, 'ProperNoun')) {
+        if (has$1(term, 'ProperNoun')) {
           term.tags.clear();
           setTag([term], 'Noun', world, false, 'article-noun');
         }
         // 'los lunes', 'las crisis' - but 'el paraguas'
         if (isPlural && /[sx]$/.test(str)) {
           setTag([term], 'Plural', world, false, 'plural-article');
-        } else if (!isPlural && has(term, 'Plural')) {
+        } else if (!isPlural && has$1(term, 'Plural')) {
           setTag([term], 'Singular', world, false, 'singular-article');
         }
       }
@@ -13266,6 +13083,113 @@ designate
     });
   };
 
+  // number-words that are known by their neighbours
+  //  - 'un' and 'una' are articles, and are a number only inside of one - 'un millón', 'ciento un',
+  //    'treinta y una' - or before a unit - 'un euro', 'un km', 'un por ciento'
+  //  - 'y' joins a ten to a one - 'treinta y dos' - but 'tres y cuatro' are two numbers
+  const tens = /^(treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)$/;
+  const ones = /^(un[oa]?|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)$/;
+  const isOne = /^una?$/;
+  const isBig$1 = /^[mb]ill[oó]n(es)?$/;
+  // 'ciento un', 'mil una'
+  const beforeOne = /ient[oa]s?$|^cien$|^mil$|ll[oó]n(es)?$/;
+  // 'tres cuartos'
+  const parts = /^(medios|tercios|cuartos|quintos|sextos|séptimos|octavos|novenos|décimos|centésimos|milésimos)$/;
+  const isHalf = /^medi[oa]$/;
+
+  const cardinal = ['Cardinal', 'TextValue'];
+  const fraction = ['Fraction', 'TextValue'];
+  const has = (term, tag) => Boolean(term) && term.tags.has(tag);
+  const isText = term => has(term, 'TextValue') && has(term, 'Cardinal');
+
+  const tagNumbers = function (view) {
+    const world = view.world;
+    const setTag = world.methods.one.setTag;
+    // 'euros', 'pesos'
+    const money = new Set(world.model.two.europeanNumbers.currencies);
+    const isCurrency = term => has(term, 'Currency') || (Boolean(term) && money.has(term.normal));
+    view.docs.forEach(terms => {
+      // are these two words side-by-side?
+      const joins = i => Boolean(terms[i] && terms[i + 1]) && !/\S/.test(terms[i].post + terms[i + 1].pre);
+      // start again - an article, noun or adjective is now a number
+      const tag = function (i, tags, reason) {
+        if (terms[i].frozen !== true) {
+          terms[i].tags.clear();
+          setTag([terms[i]], tags, world, false, reason);
+        }
+      };
+      // tag the whole number, before this word
+      const tagBefore = function (i, str, reason) {
+        for (let n = i - 1; n >= 0 && joins(n) && has(terms[n], 'Value'); n -= 1) {
+          setTag([terms[n]], str, world, false, reason);
+        }
+      };
+      const str = i => (terms[i] ? terms[i].normal : '');
+      // does a number begin here?
+      const isNumber = i => has(terms[i], 'Value') || (isOne.test(str(i)) && joins(i) && isBig$1.test(str(i + 1)));
+      for (let i = 0; i < terms.length; i += 1) {
+        const term = terms[i];
+        const w = term.normal;
+        const before = joins(i - 1);
+        const after = joins(i);
+        if (isOne.test(w)) {
+          // 'un millón', 'un euro', 'un por ciento'
+          let found = after && (isBig$1.test(str(i + 1)) || isCurrency(terms[i + 1]) || has(terms[i + 1], 'Unit'));
+          found = found || (after && joins(i + 1) && str(i + 1) === 'por' && str(i + 2) === 'ciento');
+          // 'un medio', 'un tercio' - but 'un medio de transporte'
+          if (after && /^(medio|tercio)$/.test(str(i + 1)) && !(joins(i + 1) && str(i + 2) === 'de')) {
+            found = true;
+            tag(i + 1, fraction, 'un-tercio');
+          }
+          // 'ciento un', 'treinta y una'
+          found = found || (before && has(terms[i - 1], 'TextValue') && (beforeOne.test(str(i - 1)) || str(i - 1) === 'y'));
+          if (found) {
+            tag(i, cardinal, 'un-number');
+          }
+        } else if (w === 'y') {
+          if (before && after && isText(terms[i - 1])) {
+            if (tens.test(str(i - 1)) && ones.test(str(i + 1))) {
+              tag(i, 'TextValue', 'treinta-y-dos');
+            } else if (isHalf.test(str(i + 1))) {
+              // 'dos y medio'
+              tag(i, 'TextValue', 'dos-y-medio');
+              tag(i + 1, fraction, 'dos-y-medio');
+            }
+          }
+        } else if (w === 'menos') {
+          // 'menos cinco', but 'tres menos dos'
+          if (after && isNumber(i + 1) && !has(terms[i + 1], 'Ordinal') && !has(terms[i - 1], 'Value')) {
+            tag(i, 'TextValue', 'menos-cinco');
+          }
+        } else if (w === 'coma') {
+          // 'tres coma cinco'
+          if (before && after && isText(terms[i - 1]) && isText(terms[i + 1])) {
+            tag(i, 'TextValue', 'tres-coma-cinco');
+          }
+        } else if (w === 'por' && after && /^cien(to)?$/.test(str(i + 1)) && before && has(terms[i - 1], 'Value')) {
+          // 'cinco por ciento'
+          tagBefore(i, 'Percent', 'por-ciento');
+          tag(i, 'Unit', 'por-ciento');
+          tag(i + 1, 'Unit', 'por-ciento');
+          i += 1;
+        } else if (isCurrency(term) && before && has(terms[i - 1], 'Value')) {
+          // 'un euro'
+          tagBefore(i, 'Money', 'value-currency');
+          setTag([term], 'Currency', world, false, 'value-currency');
+        } else if (parts.test(w)) {
+          if (before && isText(terms[i - 1])) {
+            tag(i, fraction, 'tres-cuartos');
+          }
+        } else if (isHalf.test(w) && !has(term, 'Fraction')) {
+          // 'medio millón', 'medio litro', or the word by itself
+          if (terms.length === 1 || (after && (isBig$1.test(str(i + 1)) || has(terms[i + 1], 'Unit')))) {
+            tag(i, fraction, 'medio');
+          }
+        }
+      }
+    });
+  };
+
   let net = null;
 
   // rules like 'la-cura' flip a verb into a noun, after the preTagger's
@@ -13286,6 +13210,8 @@ designate
     tagArticles(view);
     // 'es limpia'
     copulaAdjective(view);
+    // 'un millón', 'treinta y dos'
+    tagNumbers(view);
     // rebuild this only lazily
     net = net || methods.one.buildNet(matches, world);
     // perform these matches on a comma-seperated document
@@ -13800,19 +13726,7 @@ designate
     tags
   };
 
-  const findNumbers = function (view) {
-    let m = view.match('#Value+');
-    //5-8
-    m = m.splitAfter('#NumberRange');
-    // june 5th 1999
-    m = m.splitBefore('#Year');
-    // 1993/44 y 1994/44
-    m = m.splitAfter('#Fraction');
-    // not 'y una'
-    m = m.not('^y');
-    return m
-  };
-
+  // [number, cardinal, ordinal]
   var data = {
     ones: [
       [1, 'uno', 'primero'],
@@ -13821,7 +13735,7 @@ designate
       [4, 'cuatro', 'cuarto'],
       [5, 'cinco', 'quinto'],
       [6, 'seis', 'sexto'],
-      [7, 'siete', 'sétimo'],
+      [7, 'siete', 'séptimo'],
       [8, 'ocho', 'octavo'],
       [9, 'nueve', 'noveno'],
       [10, 'diez', 'décimo'],
@@ -13834,18 +13748,17 @@ designate
       [17, 'diecisiete', 'decimoséptimo'],
       [18, 'dieciocho', 'decimoctavo'],
       [19, 'diecinueve', 'decimonoveno'],
-      [20, 'veinte', 'vigésimo'],//20th
-      [21, 'veintiuno', 'vigésimo primero'],//21st
-      [22, 'veintidós', 'vigésimo segundo'],//22nd
-      [23, 'veintitrés', 'vigésimo tercero'],//23rd
-      [24, 'veinticuatro', 'vigésimo cuarto'],//24th
-      [25, 'veinticinco', 'vigésimo quinto'],
-      [26, 'veintiséis', 'vigésimo sexto'],
-      [27, 'veintisiete', 'vigésimo sétimo'],
-      [28, 'veintiocho', 'vigésimo octavo'],
-      [29, 'veintinueve', 'vigésimo noveno'],
+      [20, 'veinte', 'vigésimo'],
+      [21, 'veintiuno'],
+      [22, 'veintidós'],
+      [23, 'veintitrés'],
+      [24, 'veinticuatro'],
+      [25, 'veinticinco'],
+      [26, 'veintiséis'],
+      [27, 'veintisiete'],
+      [28, 'veintiocho'],
+      [29, 'veintinueve'],
     ],
-
     tens: [
       [30, 'treinta', 'trigésimo'],
       [40, 'cuarenta', 'cuadragésimo'],
@@ -13855,7 +13768,6 @@ designate
       [80, 'ochenta', 'octogésimo'],
       [90, 'noventa', 'nonagésimo'],
     ],
-
     hundreds: [
       [100, 'ciento', 'centésimo'],
       [200, 'doscientos', 'ducentésimo'],
@@ -13864,94 +13776,308 @@ designate
       [500, 'quinientos', 'quingentésimo'],
       [600, 'seiscientos', 'sexcentésimo'],
       [700, 'setecientos', 'septingentésimo'],
-      [800, 'ochocientos', 'octingésimo'],
+      [800, 'ochocientos', 'octingentésimo'],
       [900, 'novecientos', 'noningentésimo'],
     ],
+    // [number, singular, plural, ordinal] - a 'billón' is a million millions
     multiples: [
-      [1000, 'mil', 'milésimo'],
-      [1000000, 'millón', 'millonésima'],
-      [1000000000, 'billones', 'milmillonésima'],
-    ]
+      [1e12, 'billón', 'billones', 'billonésimo'],
+      [1e6, 'millón', 'millones', 'millonésimo'],
+      [1e3, 'mil', 'mil', 'milésimo'],
+    ],
   };
 
-  const toCardinal = {};
-  const toNumber$1 = {};
+  // 'dieciséis' is often written 'dieciseis'
+  const noAccent = str => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-  Object.keys(data).forEach(k => {
-    data[k].forEach(a => {
-      const [num, card, ord] = a;
-      toCardinal[ord] = card;
-      toNumber$1[card] = num;
+  // number-words, and their values
+  const cardinals$1 = { cero: 0, cien: 100, un: 1, una: 1, veintiún: 21, veintiuna: 21 };
+  const ordinals$1 = { sétimo: 7, decimoprimero: 11, decimosegundo: 12 };
+  const multiples = {};
+  // the bottom of a fraction - 'tres cuartos'
+  const fractions = { medio: 2, media: 2, medios: 2, tercio: 3, tercios: 3, centésimos: 100, milésimos: 1000 };
+
+  const list = [...data.ones, ...data.tens, ...data.hundreds];
+  list.forEach(a => {
+    const [num, card, ord] = a;
+    cardinals$1[card] = num;
+    if (ord) {
+      ordinals$1[ord] = num;
+    }
+    // 'doscientas'
+    if (num > 100) {
+      cardinals$1[card.replace(/os$/, 'as')] = num;
+    }
+    // 'quintos'
+    if (num > 3 && num <= 10) {
+      fractions[ord + 's'] = num;
+    }
+  });
+  data.multiples.forEach(a => {
+    const [num, single, plural, ord] = a;
+    multiples[single] = num;
+    multiples[plural] = num;
+    ordinals$1[ord] = num;
+  })
+  ;[cardinals$1, ordinals$1, multiples].forEach(obj => {
+    Object.keys(obj).forEach(k => {
+      obj[noAccent(k)] = obj[k];
     });
   });
-  // add extras
-  toNumber$1['cien'] = 100;
-  toNumber$1['una'] = 1;
-  // sétimo / séptimo
-  toNumber$1['séptimo'] = 7;
-  toCardinal['séptimo'] = 'siete';
 
-  const isNumber = /^[0-9,$.+-]+$/;
-
-  const multiples$1 = {
-    // ciento: 100,
-    mil: 1000,
-    millones: 1000000,
-    millón: 1000000,
-    billones: 1000000000,
+  // 'primera' or 'primer' -> 1
+  const getOrdinal = function (w) {
+    const str = [w, w.replace(/a$/, 'o'), w + 'o'].find(s => ordinals$1.hasOwnProperty(s));
+    return str === undefined ? undefined : ordinals$1[str]
   };
 
-  const fromText = function (terms) {
-    let sum = 0;
-    let carry = 0;
-    let minus = false;
-    for (let i = 0; i < terms.length; i += 1) {
-      const { tags, normal } = terms[i];
-      let w = normal || '';
-      // ... y-ocho
-      if (w === 'y') {
-        continue
+  // the words that are a number, wherever they are - 'un', 'una' and 'medio' are tagged by their neighbours
+  const words = {};
+  Object.keys(cardinals$1).forEach(k => {
+    words[k] = ['Cardinal', 'TextValue'];
+  });
+  Object.keys(multiples).forEach(k => {
+    words[k] = ['Cardinal', 'TextValue'];
+  });
+  Object.keys(ordinals$1).forEach(k => {
+    words[k] = ['Ordinal', 'TextValue'];
+    words[k.replace(/o$/, 'a')] = ['Ordinal', 'TextValue'];
+  });
+  words.primer = words.primero;
+  words.tercer = words.primero;
+  delete words.un;
+  delete words.una;
+
+  const isDigit = term => /[0-9]/.test(term.text);
+  // is there anything between these two words? - 'tres, cuatro'
+  const isBroken = (a, b) => /\S/.test(a.post + b.pre);
+  // 'mil', and anything larger
+  const getMult = term => (term && multiples.hasOwnProperty(term.normal) ? multiples[term.normal] : 0);
+
+  // digits, and the words that multiply them - '1 000', '2,5 millones', '3 mil millones'
+  const readDigits = function (terms, i, res) {
+    let end = i + 1;
+    const joins = () => terms[end] && !isBroken(terms[end - 1], terms[end]);
+    if (/^[0-9]{1,3}$/.test(terms[i].text)) {
+      while (joins() && /^[0-9]{3}$/.test(terms[end].text)) {
+        end += 1;
       }
-      // minus eight
-      if (w === 'menos') {
-        minus = true;
-        continue
+    }
+    res.digits = [i, end];
+    res.mult = 1;
+    if (/^[-+−]?[0-9][0-9.,]*$/.test(terms[end - 1].text)) {
+      if (joins() && getMult(terms[end]) === 1000) {
+        res.mult = 1000;
+        end += 1;
       }
-      // 'huitieme'
-      if (tags.has('Ordinal')) {
-        w = toCardinal[w];
+      if (joins() && getMult(terms[end]) > 1000) {
+        res.mult *= getMult(terms[end]);
+        end += 1;
       }
-      // 'cent'
-      if (multiples$1.hasOwnProperty(w)) {
-        const mult = multiples$1[w] || 1;
-        if (carry === 0) {
-          carry = 1;
+    }
+    res.end = end;
+    return res
+  };
+
+  // read the one number that begins at this term, and say where it ends
+  // - each new word must fit beside the ones before it, so 'dos tres' is two numbers
+  const readNumber = function (terms, start) {
+    const res = { start, end: start + 1, num: null, neg: false };
+    let i = start;
+    if (terms[i].normal === 'menos' && terms[i + 1] && !isBroken(terms[i], terms[i + 1])) {
+      res.neg = true;
+      i += 1;
+    }
+    if (isDigit(terms[i])) {
+      return readDigits(terms, i, res)
+    }
+    const isOrd = terms[i].tags.has('Ordinal');
+    let total = 0; // the millions
+    let section = 0; // the thousands
+    let group = 0; // the hundreds, tens and ones
+    let lastBig = Infinity;
+    let usedMil = false;
+    // which parts of the group are full?
+    let h = false;
+    let t = false;
+    let u = false;
+    let canY = false;
+    let afterY = false;
+    let any = false;
+    let int = null; // the whole part, before a 'coma'
+    let zeros = '';
+    let over = 1;
+    let extra = 0;
+    const clear = () => {
+      h = t = u = canY = afterY = false;
+      group = 0;
+    };
+    for (; i < terms.length; i += 1) {
+      const term = terms[i];
+      const w = term.normal;
+      const next = terms[i + 1];
+      const joins = Boolean(next) && !isBroken(term, next);
+      if ((i > start && isBroken(terms[i - 1], term)) || isDigit(term)) {
+        break
+      }
+      if (term.tags.has('Fraction') && fractions.hasOwnProperty(w)) {
+        if (isOrd || int !== null) {
+          break
         }
-        // console.log('carry', carry, 'mult', mult, 'sum', sum)
-        sum += mult * carry;
-        carry = 0;
+        // 'medio millón'
+        if (!any) {
+          group = 1 / fractions[w];
+          h = t = u = any = true;
+          continue
+        }
+        // 'dos y medio', or 'tres cuartos'
+        if (afterY) {
+          extra = 1 / fractions[w];
+        } else {
+          over = fractions[w];
+        }
+        i += 1;
+        break
+      }
+      if (w === 'y') {
+        if (!any || isOrd || int !== null || !joins) {
+          break
+        }
+        const v = cardinals$1[next.normal];
+        const isHalf = next.tags.has('Fraction') && fractions[next.normal] === 2;
+        if (isHalf || (canY && !u && v > 0 && v < 10 && !isDigit(next))) {
+          afterY = true;
+          continue
+        }
+        break
+      }
+      // 'tres coma cinco'
+      if (w === 'coma') {
+        if (!any || isOrd || int !== null || !joins || !cardinals$1.hasOwnProperty(next.normal)) {
+          break
+        }
+        int = total + section + group;
+        total = section = 0;
+        clear();
         continue
       }
-      // 'tres'
-      if (toNumber$1.hasOwnProperty(w)) {
-        carry += toNumber$1[w];
-      } else if (isNumber.test(w)) {
-        w = w.replace(/[,$+-]/g, '');
-        const num = Number(w) || 0;
-        carry += num;
-      } else ;
+      if (isOrd !== term.tags.has('Ordinal')) {
+        break
+      }
+      const mult = isOrd ? 0 : getMult(term);
+      if (mult) {
+        if (int !== null) {
+          break
+        }
+        if (mult === 1000) {
+          if (usedMil) {
+            break
+          }
+          section = (group || 1) * 1000;
+          usedMil = true;
+        } else {
+          // 'dos millones tres millones'
+          if (mult >= lastBig) {
+            break
+          }
+          total += (section + group || 1) * mult;
+          section = 0;
+          usedMil = false;
+          lastBig = mult;
+        }
+        clear();
+        any = true;
+        continue
+      }
+      const v = isOrd ? getOrdinal(w) : cardinals$1[w];
+      if (v === undefined) {
+        break
+      }
+      if (v === 0) {
+        // 'tres coma cero cinco'
+        if (int !== null && !h && !t && !u) {
+          zeros += '0';
+          continue
+        }
+        if (any) {
+          break
+        }
+        h = t = u = true;
+      } else if (v >= 1000) {
+        // 'milésimo primero'
+        if (any) {
+          break
+        }
+        total = v;
+        any = true;
+        continue
+      } else if (v >= 100) {
+        if (h || t || u) {
+          break
+        }
+        h = true;
+      } else if (v >= 30 || (isOrd && v % 10 === 0)) {
+        if (t || u) {
+          break
+        }
+        t = true;
+        canY = !isOrd;
+      } else if (v >= 10) {
+        if (t || u) {
+          break
+        }
+        t = u = true;
+      } else {
+        // 'treinta y uno', but 'vigésimo primero'
+        if (u || (t && !afterY && !isOrd)) {
+          break
+        }
+        u = true;
+        canY = false;
+      }
+      group += v;
+      afterY = false;
+      any = true;
     }
-    // include any remaining
-    if (carry !== 0) {
-      sum += carry;
+    if (!any) {
+      // an unknown word is its own number - and a loose 'y' is nothing
+      return /^(y|coma|menos)$/.test(terms[start].normal) ? null : res
     }
-    if (minus === true) {
-      sum *= -1;
+    let num = total + section + group;
+    if (int !== null) {
+      num = Number(int + '.' + zeros + group);
     }
-    return sum
+    num = num / over + extra;
+    res.num = res.neg ? num * -1 : num;
+    res.end = i;
+    return res
   };
 
-  const isNumeric = term => /[0-9]/.test(term.text);
+  // split these terms into each of their numbers
+  const scan = function (terms) {
+    const out = [];
+    let i = 0;
+    while (i < terms.length) {
+      const res = readNumber(terms, i);
+      if (res) {
+        out.push(res);
+      }
+      i = res ? res.end : i + 1;
+    }
+    return out
+  };
+
+  // find each number - 'dos mil tres' is one, and 'dos tres', 'dos, tres' and 'cuarenta y 3' are two
+  const findNumbers = function (view) {
+    const ptrs = [];
+    view.match('#Value+').fullPointer.forEach(ptr => {
+      const [n, start, end] = ptr;
+      scan(view.document[n].slice(start, end)).forEach(res => {
+        ptrs.push([n, start + res.start, start + res.end]);
+      });
+    });
+    return view.update(ptrs)
+  };
 
   // read digits with the shared european-numbers plugin - '1.234,56', '-5', '3,5%'
   const fromNumber = function (terms, m) {
@@ -13968,22 +14094,14 @@ designate
 
   const parseNumber = function (m) {
     const terms = m.docs[0];
-    const isText = m.has('#TextValue');
+    const found = scan(terms)[0] || { num: null };
+    let res = { num: found.num, prefix: '', suffix: '', hasComma: false };
     // any digits come first - '2,5 millones'
-    const split = terms.findIndex(t => !isNumeric(t));
-    const digits = split === -1 ? terms : terms.slice(0, split);
-    const words = split === -1 ? [] : terms.slice(split);
-    let res = { num: null, prefix: '', suffix: '', hasComma: false };
-    if (digits.length > 0) {
-      res = fromNumber(digits, m);
-    }
-    if (isText) {
-      const num = fromText(words);
-      // '2,5 millones' is 2.5 * 1,000,000
-      if (res.num !== null && num) {
-        res.num = Number((res.num * num).toPrecision(15));
-      } else {
-        res.num = num;
+    if (found.digits) {
+      res = fromNumber(terms.slice(found.digits[0], found.digits[1]), m);
+      if (res.num !== null) {
+        // '2,5 millones' is 2.5 * 1,000,000
+        res.num = Number((res.num * found.mult).toPrecision(15)) * (found.neg ? -1 : 1);
       }
     }
     return {
@@ -13994,162 +14112,205 @@ designate
       // how the digits were written
       decimal: res.decimal,
       group: res.group,
-      isText,
+      // '.º', 'ª' or 'er'
+      ordinal: res.ordinal || null,
+      isText: m.has('#TextValue'),
       isOrdinal: m.has('#Ordinal'),
       isFraction: m.has('#Fraction'),
       isMoney: m.has('#Money'),
     }
   };
 
-  const ones = data.ones.reverse();
-  const tens = data.tens.reverse();
-  const hundreds = data.hundreds.reverse();
+  // words for each part of a number
+  const cardinals = {};
+  const ordinals = {}
+  ;[...data.ones, ...data.tens, ...data.hundreds].forEach(a => {
+    cardinals[a[0]] = a[1];
+    ordinals[a[0]] = a[2];
+  });
+  const bigs = data.multiples.filter(a => a[0] > 1000);
 
-  const multiples = [
-    [1000000000, 'billones', 'billones'],
-    [1000000, 'millón', 'millones'],
-    [1000, 'mil', 'mil'],
-    // [100, 'cent'],
-    [1, 'one', 'one'],
-  ];
-
-  //turn number into an array of magnitudes, like [[5, million], [2, hundred]]
-  const getMagnitudes = function (num) {
-    let working = num;
-    const have = [];
-    multiples.forEach(a => {
-      if (num >= a[0]) {
-        const howmany = Math.floor(working / a[0]);
-        working -= howmany * a[0];
-        if (howmany) {
-          let str = a[1];
-          if (howmany > 1) {
-            str = a[2];//use plural version
-          }
-          have.push({
-            unit: str,
-            num: howmany,
-          });
-        }
-      }
-    });
-    return have
-  };
-
-  const twoDigit = function (num) {
+  // 1-999 - 'ciento veintiuno'
+  // `one` is how a last 'uno' ends - 'uno', 'una' or 'un'
+  const toGroup = function (num, fem, one) {
     const words = [];
-    let addAnd = false;
-    // 100-900
-    for (let i = 0; i < hundreds.length; i += 1) {
-      if (hundreds[i][0] <= num) {
-        words.push(hundreds[i][1]);
-        num -= hundreds[i][0];
-        break
-      }
+    const h = Math.floor(num / 100) * 100;
+    let rest = num % 100;
+    if (h) {
+      const w = num === 100 ? 'cien' : cardinals[h];
+      // 'doscientas'
+      words.push(fem && h > 100 ? w.replace(/os$/, 'as') : w);
     }
-    // 30-90
-    for (let i = 0; i < tens.length; i += 1) {
-      if (tens[i][0] <= num) {
-        words.push(tens[i][1]);
-        num -= tens[i][0];
-        addAnd = true;
-        break
-      }
+    // 'treinta y dos'
+    if (rest > 30 && rest % 10) {
+      words.push(cardinals[rest - (rest % 10)], 'y');
+      rest = rest % 10;
     }
-    if (num === 0) {
-      return words
-    }
-    // 0-29
-    for (let i = 0; i < ones.length; i += 1) {
-      if (ones[i][0] <= num) {
-        // 'y dos'
-        if (words.length > 0 && addAnd) {
-          words.push('y');
-        }
-        words.push(ones[i][1]);
-        // num -= ones[i][0]
-        break
-      }
+    if (rest === 21 && one === '') {
+      words.push('veintiún');
+    } else if (rest) {
+      words.push(rest % 20 === 1 ? cardinals[rest].replace(/o$/, one) : cardinals[rest]);
     }
     return words
   };
 
-  const toText = function (num) {
+  // under a million - 'veintiún mil doscientos'
+  const toThousands = function (num, fem, one) {
+    const mil = Math.floor(num / 1000);
+    let words = [];
+    if (mil > 1) {
+      words = toGroup(mil, fem, '');
+    }
+    if (mil) {
+      words.push('mil');
+    }
+    return words.concat(toGroup(num % 1000, fem, one))
+  };
+
+  // write a whole number as words - `opts.isFemale` is 'una', and `opts.short` is 'un', before a noun
+  const toText = function (num, opts = {}) {
+    if (!Number.isSafeInteger(num)) {
+      return null
+    }
     if (num === 0) {
       return ['cero']
     }
-    if (num === 100) {
-      return ['cien']
-    }
-    let words = [];
-    if (num < 0) {
-      words.push('menos');
-      num = Math.abs(num);
-    }
-    // handle multiples
-    const found = getMagnitudes(num);
-    found.forEach(obj => {
-      const res = twoDigit(obj.num);
-      words = words.concat(res);
-      if (obj.unit !== 'one') {
-        words.push(obj.unit);
+    let words = num < 0 ? ['menos'] : [];
+    let rest = Math.abs(num);
+    bigs.forEach(a => {
+      const [size, single, plural] = a;
+      const count = Math.floor(rest / size);
+      rest -= count * size;
+      // 'un millón', 'dos millones'
+      if (count === 1) {
+        words.push('un', single);
+      } else if (count) {
+        words = words.concat(toThousands(count, false, ''), plural);
       }
     });
-    // 'uno mil' -> 'mil'
-    if (words.length > 1 && words[0] === 'uno') {
-      words = words.slice(1);
-    }
-    // 'ciento mil' -> 'cien mil'
-    if (words.length === 2 && words[0] === 'ciento') {
-      if (words[1] === 'mil' || words[1] === 'millones') {
-        words[0] = 'cien';
+    let one = opts.short ? '' : 'o';
+    one = opts.isFemale ? 'a' : one;
+    return words.concat(toThousands(rest, opts.isFemale, one))
+  };
+
+  // 'centésimo vigésimo primero' - up to 1999, and 'millonésimo'
+  const toTextOrdinal = function (num, opts = {}) {
+    let words = [];
+    let rest = num;
+    const big = data.multiples.find(a => a[0] === num);
+    if (big) {
+      words.push(big[3]);
+    } else if (!Number.isInteger(num) || num < 1 || num >= 2000) {
+      return null
+    } else {
+      if (rest > 1000) {
+        words.push('milésimo');
+        rest -= 1000;
       }
+      const parts = [rest - (rest % 100), rest % 100];
+      if (parts[1] > 20) {
+        parts.push(parts[1] % 10);
+        parts[1] -= parts[2];
+      }
+      words = words.concat(parts.filter(n => n).map(n => ordinals[n]));
+    }
+    if (opts.isFemale) {
+      return words.map(w => w.replace(/o$/, 'a'))
+    }
+    // 'primer día', 'tercer piso'
+    if (opts.short) {
+      const last = words.length - 1;
+      words[last] = words[last].replace(/(primer|tercer)o$/, '$1');
     }
     return words
   };
 
-  const toOrdinal = {};
-
-  Object.keys(data).forEach(k => {
-    data[k].forEach(a => {
-      const [num, card, ord] = a;
-      toOrdinal[card] = ord;
-    });
-  });
-  // add extras
-  toOrdinal.cien = 'centésimo';
-
   const { write } = europeanNumbers.methods.two.europeanNumbers;
 
+  // returns null when a number can't be written this way
   const formatNumber = function (parsed, fmt) {
-    if (fmt === 'TextOrdinal') {
-      let words = toText(parsed.num);
-      words = words.map(w => {
-        if (toOrdinal.hasOwnProperty) {
-          return toOrdinal[w]
-        }
-        return w
-      });
-      return words.join(' ')
-    }
-    if (fmt === 'TextCardinal') {
-      return toText(parsed.num).join(' ')
+    const num = parsed.num;
+    if (fmt === 'TextOrdinal' || fmt === 'TextCardinal') {
+      const words = fmt === 'TextOrdinal' ? toTextOrdinal(num, parsed) : toText(num, parsed);
+      return words ? words.join(' ') : null
     }
     // numeric formats
     if (fmt === 'Ordinal') {
-      return String(parsed.num) + '°'
+      if (!Number.isInteger(num) || num < 1) {
+        return null
+      }
+      const old = parsed.ordinal || '';
+      let end = parsed.isFemale ? 'ª' : 'º';
+      // '1er' and '3er' - but '11º'
+      if (end === 'º' && parsed.short && /(^|[^1])[13]$/.test(String(num))) {
+        end = 'er';
+      }
+      // '1.º' keeps its period
+      return String(num) + (old[0] === '.' ? '.' : '') + end
     }
     // digits go back the way they were found - '1.234,5', '5,3€'
-    // .. but a unit is its own (implicit) term - '9km'
-    const suffix = /\p{L}/u.test(parsed.suffix || '') ? '' : parsed.suffix;
-    return write(parsed.num, { ...parsed, suffix })
+    return write(num, parsed)
+  };
+
+  // the words for a symbol that is written on a number - '50%', '5€', '$5'
+  // [singular, plural, tag, isFemale]
+  const symbols = {
+    '%': ['por ciento', 'por ciento', 'Unit'],
+    '€': ['euro', 'euros', 'Currency'],
+    $: ['dólar', 'dólares', 'Currency'],
+    '£': ['libra', 'libras', 'Currency', true],
+    '¥': ['yen', 'yenes', 'Currency'],
+  };
+
+  // 'euros' -> '€' - to find a unit that is already written out
+  const fromWord = {};
+  Object.keys(symbols).forEach(k => {
+    const [single, plural] = symbols[k];
+    fromWord[single] = k;
+    fromWord[plural] = k;
+  });
+
+  // a unit that can stand as its own word - 'km', 'kg', 'm²'
+  const isWord = /^[a-zà-ÿµ]+[²³]?$/i;
+
+  // 'cinco euros', but 'un euro'
+  const unitWords = function (key, num) {
+    const [single, plural] = symbols[key];
+    return Math.abs(num) === 1 ? single : plural
+  };
+
+  const hasDash = /[-−–]$/;
+  // 'una', 'veintiuna', 'doscientas'
+  const femCardinal = /^(veinti)?una$|ientas$/;
+  const isBig = /^[mb]ill[oó]n(es)?$/;
+  const isNoun = term => term.tags.has('Noun') && !term.tags.has('Pronoun');
+
+  // the word after these ones, if nothing is in the way
+  const getNext = function (terms, end) {
+    const next = terms[end];
+    return next && next.text && !/\S/.test(terms[end - 1].post + next.pre) ? next : null
+  };
+
+  // parse a number, and remember how it was written - so that it can be written back the same way
+  const parse = function (val) {
+    const obj = parseNumber(val);
+    const terms = val.docs[0];
+    // the gender of 'primera', '1ª' or 'doscientas'
+    obj.isFemale = /ª/.test(obj.ordinal || '') || terms.some(t => {
+      return t.tags.has('Ordinal') ? t.tags.has('TextValue') && /a$/.test(t.normal) : femCardinal.test(t.normal)
+    });
+    // 'primer', 'tercer' or '1er'
+    obj.short = /er$/.test(obj.ordinal || '') || terms.some(t => t.tags.has('Ordinal') && /er$/.test(t.normal));
+    // the tokenizer keeps the sign of '-5%' apart from the term, as punctuation
+    obj.hasDash = !obj.isText && obj.num < 0 && hasDash.test(terms[0].pre);
+    return obj
   };
 
   // return the nth elem of a doc
   const getNth$3 = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc);
 
   // turn a number, or a string like 'doce' or '12', into a number (or null)
-  const toNumber = function (view, n) {
+  const toNum = function (view, n) {
     if (typeof n === 'number') {
       return Number.isFinite(n) ? n : null
     }
@@ -14161,8 +14322,8 @@ designate
     if (/^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$/.test(str)) {
       return Number(str)
     }
-    // a written-out number, like 'doce'
-    const m = view.fromText(str).numbers();
+    // a written-out number, like 'doce' or 'un millón'
+    const m = view.fromText(str).compute(['index', 'postTagger']).numbers();
     if (m.length !== 1 || m.text('normal') !== m.all().text('normal')) {
       return null
     }
@@ -14170,10 +14331,199 @@ designate
     return typeof num === 'number' && Number.isFinite(num) ? num : null
   };
 
-  // the new text has its own sign, so remove one left in the punctuation - '-|3,5'
-  const dropSign = function (val) {
-    const term = val.docs[0][0];
-    term.pre = term.pre.replace(/[-−]$/, '');
+  // tags that describe the form of a number - these are set again for each new number
+  const formTags = new Set(['Value', 'TextValue', 'NumericValue', 'Cardinal', 'Ordinal', 'Fraction', 'Determiner']);
+
+  // find the symbol or unit of a number, and the terms that it is written in.
+  // - it may be attached - '50%', '€5', '5km' - or be the next word - '5 €', 'cincuenta por ciento'
+  const findUnit = function (val, obj, end) {
+    const [n, start] = val.fullPointer[0];
+    const terms = val.document[n];
+    const last = terms[end - 1];
+    const next = getNext(terms, end);
+    // a sign is not a symbol - '+5%', '10+'
+    const lead = /^\+/.test(obj.prefix) ? '+' : '';
+    const trail = /\+$/.test(obj.suffix) ? '+' : '';
+    const prefix = obj.prefix.slice(lead.length).toLowerCase();
+    const suffix = obj.suffix.slice(0, obj.suffix.length - trail.length).toLowerCase();
+    if (!obj.isText && (prefix || suffix)) {
+      // '5km' is a contraction of two terms - '5km' and an empty 'km'
+      const silent = terms[end];
+      const isSplit = Boolean(silent && silent.text === '' && silent.implicit && last.implicit);
+      const unit = { attached: true, isSplit, lead, trail, view: isSplit ? val.update([[n, start, end + 1]]) : val };
+      // the symbol, in its original case - '5 Kg'
+      unit.prefix = lead + obj.prefix.slice(lead.length);
+      unit.suffix = obj.suffix;
+      if (prefix && suffix) {
+        return unit
+      }
+      if (symbols.hasOwnProperty(prefix || suffix)) {
+        unit.key = prefix || suffix;
+      } else if (suffix && isWord.test(suffix)) {
+        unit.word = unit.suffix.slice(0, suffix.length);
+        unit.tag = isSplit ? Array.from(silent.tags) : [];
+      }
+      return unit
+    }
+    if (!next) {
+      return null
+    }
+    const unit = { attached: false, view: val.update([[n, start, end + 1]]) };
+    // '5 €'
+    if (symbols.hasOwnProperty(next.normal)) {
+      unit.key = next.normal;
+      return unit
+    }
+    // 'cinco por ciento'
+    const after = terms[end + 1];
+    if (next.normal === 'por' && next.tags.has('Unit') && after && after.tags.has('Unit')) {
+      unit.key = '%';
+      unit.isWord = true;
+      unit.view = val.update([[n, start, end + 2]]);
+      return unit
+    }
+    // 'cinco euros'
+    if (fromWord.hasOwnProperty(next.normal)) {
+      unit.key = fromWord[next.normal];
+      unit.isWord = true;
+      return unit
+    }
+    return null
+  };
+
+  // choose the new text for a number, and for its symbol or unit.
+  // a symbol is never left stuck to a word - '50%' is 'cincuenta por ciento', and not 'cincuenta%'
+  // - returns null if this number can't be written like that
+  const getPlan = function (val, obj, fmt, toSymbol) {
+    const [n, start, stop] = val.fullPointer[0];
+    const terms = val.document[n];
+    // 'un millón de euros' - this 'de' belongs to the number
+    const de = getNext(terms, stop);
+    const hasDe = Boolean(de) && de.normal === 'de' && isBig.test(terms[stop - 1].normal) && Boolean(getNext(terms, stop + 1));
+    const end = hasDe ? stop + 1 : stop;
+    const isCardinal = fmt === 'TextCardinal' || fmt === 'Cardinal';
+    const unit = isCardinal ? findUnit(val, obj, end) : null;
+    // the word that this number counts - 'veintiún gatos', 'doscientas casas', 'primer día'
+    const next = getNext(terms, end);
+    const noun = next && isNoun(next) ? next : null;
+    const how = Object.assign({}, obj, { prefix: '', suffix: '' });
+    // (the gender of a plural is not well known)
+    const single = noun && !noun.tags.has('Plural') ? noun : null;
+    how.isFemale = obj.isFemale || Boolean(single && single.tags.has('FemaleNoun'));
+    how.short = isCardinal ? Boolean(noun) : obj.short || Boolean(single);
+    const plan = { view: val.update([[n, start, end]]), unitTerms: 0, unitTag: null, inPlace: false };
+    // 'un millón de casas'
+    const withDe = str => (str && noun && isBig.test(str.split(' ').pop()) ? str + ' de' : str);
+    if (!unit) {
+      plan.str = formatNumber(fmt === 'Cardinal' ? obj : how, fmt);
+      plan.numTerms = (plan.str || '').split(' ').length;
+      // '+5' is '+cinco'
+      if (fmt === 'TextCardinal' && plan.str) {
+        plan.str = (/^\+/.test(obj.prefix) ? '+' : '') + withDe(plan.str);
+      }
+      return plan
+    }
+    if (fmt === 'Cardinal') {
+      plan.str = formatNumber(obj, fmt);
+      if (unit.attached) {
+        // '5km' -> '6km' - keep both halves of the contraction
+        plan.inPlace = unit.isSplit;
+        plan.num = formatNumber(how, fmt);
+        plan.str = (obj.num < 0 ? '-' : '') + unit.prefix + plan.num.replace(/^-/, '') + unit.suffix;
+      } else if (toSymbol && unit.isWord && unit.key === '%') {
+        // 'cincuenta por ciento' -> '50 %'
+        plan.view = unit.view;
+        plan.str = plan.str + ' %';
+        plan.unitTerms = 1;
+        plan.unitTag = 'Unit';
+      }
+      plan.numTerms = 1;
+      return plan
+    }
+    // written-out
+    let words = null;
+    if (unit.key) {
+      words = unitWords(unit.key, obj.num);
+      plan.unitTag = symbols[unit.key][2];
+      // 'un euro' and 'una libra', but 'uno por ciento'
+      how.short = unit.key !== '%';
+      how.isFemale = Boolean(symbols[unit.key][3]);
+    } else if (unit.word) {
+      words = unit.word;
+      plan.unitTag = unit.tag;
+      how.short = true;
+    }
+    let num = formatNumber(how, fmt);
+    // '#5' or '10+' have no words
+    if (!words || !num) {
+      return null
+    }
+    plan.numTerms = num.split(' ').length;
+    // 'un millón de euros'
+    if (unit.key !== '%' && isBig.test(num.split(' ').pop())) {
+      num += ' de';
+    }
+    plan.view = unit.view;
+    plan.str = (unit.lead || '') + num + ' ' + words + (unit.trail || '');
+    plan.unitTerms = words.split(' ').length;
+    return plan
+  };
+
+  // swap-in the new form of this number, and tag it as the tagger would have.
+  // - the terms made by .replaceWith() are tagged without their neighbours - so the 'un' of
+  // 'un gato' is a Determiner, and '.numbers()' can't find it again.
+  // returns the new number, without its unit
+  const replace = function (val, obj, fmt, toSymbol) {
+    const plan = getPlan(val, obj, fmt, toSymbol);
+    if (!plan || !plan.str) {
+      return val
+    }
+    const first = val.docs[0][0];
+    // the sign is written by the number, now
+    if (obj.hasDash) {
+      first.pre = first.pre.replace(hasDash, '');
+    }
+    // re-write the first half of '5km', beside its silent 'km'
+    if (plan.inPlace) {
+      first.text = plan.str;
+      first.normal = plan.str.toLowerCase();
+      first.implicit = plan.num;
+      first.machine = plan.num;
+      return val
+    }
+    // remember any tags about the role of the number - #Money, #Percent, #Date
+    const keep = Array.from(first.tags).filter(tag => !formTags.has(tag));
+    let m = plan.view;
+    m.replaceWith(plan.str);
+    const [n, start, end] = m.fullPointer[0];
+    // split the number from its unit
+    if (plan.unitTerms > 0) {
+      const unit = m.update([[n, end - plan.unitTerms, end]]);
+      unit.unTag('Value');
+      unit.tag(plan.unitTag);
+    }
+    m = m.update([[n, start, start + plan.numTerms]]);
+    const isText = fmt === 'TextCardinal' || fmt === 'TextOrdinal';
+    const isOrdinal = fmt === 'Ordinal' || fmt === 'TextOrdinal';
+    m.unTag('Determiner');
+    m.tag(isText ? 'TextValue' : 'NumericValue');
+    m.tag(isOrdinal ? 'Ordinal' : 'Cardinal');
+    if (keep.length > 0) {
+      m.tag(keep);
+    }
+    return m
+  };
+
+  // run a change on each number, and keep this view pointing at the new terms
+  // - .replaceWith() only repairs the one-match view that it is called on. Without this,
+  // the view that the user holds keeps the ids of the deleted terms, and core 'repairs'
+  // each of its matches by stretching it out to the end of the sentence.
+  // returns the same view, so that every link of a chain stays in sync
+  const mutate = function (view, fn) {
+    const res = view.map(val => fn(val) || val);
+    view.ptrs = res.fullPointer;
+    view.uncache();
+    return view
   };
 
   const api$3 = function (View) {
@@ -14207,7 +14557,7 @@ designate
       }
       /** any known measurement unit, for the number */
       units() {
-        return this.growRight('#Unit').match('#Unit$')
+        return this.growRight('#Unit+').match('#Unit+$')
       }
       /** return only ordinal numbers */
       isOrdinal() {
@@ -14218,117 +14568,86 @@ designate
         return this.if('#Cardinal')
       }
 
-      /** convert to numeric form like '8' or '8th' */
+      /** convert to numeric form like '8' or '8º' */
       toNumber() {
-        const m = this.if('#TextValue');
-        const res = m.map(val => {
-          const obj = parseNumber(val);
+        return mutate(this, val => {
+          // leave 'tres cuartos' alone
+          if (!val.has('#TextValue') || val.has('#Fraction')) {
+            return val
+          }
+          const obj = parse(val);
           if (obj.num === null) {
             return val
           }
           const fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal';
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val.replaceWith(str, { tags: true });
-            val.tag('NumericValue');
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          // 'cincuenta por ciento' becomes '50 %'
+          return replace(val, obj, fmt, true)
+        })
       }
-      /** convert to numeric form like 'eight' or 'eighth' */
+      /** convert to text form like 'ocho' or 'octavo' */
       toText() {
-        const m = this;
-        const res = m.map(val => {
+        return mutate(this, val => {
           if (val.has('#TextValue')) {
             return val
           }
-          const obj = parseNumber(val);
-          // there are no words for '3,5'
-          if (obj.num === null || !Number.isInteger(obj.num)) {
+          const obj = parse(val);
+          // there are no words for '3,5' or '1/2'
+          if (!Number.isInteger(obj.num)) {
             return val
           }
           const fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val.replaceWith(str, { tags: true });
-            val.tag('TextValue');
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          return replace(val, obj, fmt)
+        })
       }
-      /** convert ordinal to cardinal form, like 'eight', or '8' */
+      /** convert ordinal to cardinal form, like 'ocho', or '8' */
       toCardinal() {
-        const m = this;
-        const res = m.map(val => {
+        return mutate(this, val => {
           if (!val.has('#Ordinal')) {
             return val
           }
-          const obj = parseNumber(val);
+          const obj = parse(val);
           if (obj.num === null) {
             return val
           }
           const fmt = val.has('#TextValue') ? 'TextCardinal' : 'Cardinal';
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val.replaceWith(str, { tags: true });
-            val.tag('Cardinal');
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          return replace(val, obj, fmt)
+        })
       }
-      /** convert cardinal to ordinal form, like 'eighth', or '8th' */
+      /** convert cardinal to ordinal form, like 'octavo', or '8º' */
       toOrdinal() {
-        const m = this;
-        const res = m.map(val => {
+        return mutate(this, val => {
           if (val.has('#Ordinal')) {
             return val
           }
-          const obj = parseNumber(val);
-          if (obj.num === null) {
+          const obj = parse(val);
+          // there is no ordinal for '1,5', 'tres cuartos' or '-5'
+          if (!Number.isInteger(obj.num) || obj.num < 1) {
+            return val
+          }
+          // ... or for an amount - '50%', '5€', '5km', 'cinco euros'
+          if (obj.prefix || obj.suffix || val.has('(#Percent|#Money)')) {
             return val
           }
           const fmt = val.has('#TextValue') ? 'TextOrdinal' : 'Ordinal';
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val.replaceWith(str, { tags: true });
-            val.tag('Ordinal');
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          return replace(val, obj, fmt)
+        })
       }
 
       /** return only numbers that are == n */
       isEqual(n) {
-        return this.filter((val) => {
-          const num = parseNumber(val).num;
-          return num === n
-        })
+        return this.filter(val => parseNumber(val).num === n)
       }
       /** return only numbers that are > n*/
       greaterThan(n) {
-        return this.filter((val) => {
-          const num = parseNumber(val).num;
-          return num > n
-        })
+        return this.filter(val => parseNumber(val).num > n)
       }
       /** return only numbers that are < n*/
       lessThan(n) {
-        return this.filter((val) => {
-          const num = parseNumber(val).num;
-          return num < n
-        })
+        return this.filter(val => parseNumber(val).num < n)
       }
       /** return only numbers > min and < max */
       between(min, max) {
-        return this.filter((val) => {
+        return this.filter(val => {
           const num = parseNumber(val).num;
           return num > min && num < max
         })
@@ -14338,63 +14657,42 @@ designate
         if (n === undefined) {
           return this // don't bother
         }
-        n = toNumber(this, n);
+        n = toNum(this, n);
         if (n === null) {
           return this // not a number
         }
-        const m = this;
-        const res = m.map((val) => {
-          const obj = parseNumber(val);
+        return mutate(this, val => {
+          const obj = parse(val);
           obj.num = n;
-          if (obj.num === null) {
-            return val
-          }
           let fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal';
           if (val.has('#TextValue')) {
             fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
           }
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val = val.not('#Currency');
-            val.replaceWith(str, { tags: true });
-            // handle plural/singular unit
-            // agreeUnits(agree, val, obj)
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          return replace(val, obj, fmt)
+        })
       }
       add(n) {
-        n = toNumber(this, n);
+        n = toNum(this, n);
         if (!n) {
           return this // don't bother
         }
-        const m = this;
-        const res = m.map((val) => {
-          const obj = parseNumber(val);
+        return mutate(this, val => {
+          const obj = parse(val);
           if (obj.num === null) {
             return val
           }
-          obj.num += n;
+          // avoid float noise - 0.1 + 0.2
+          obj.num = Number((obj.num + n).toPrecision(15));
           let fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal';
           if (obj.isText) {
             fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
           }
-          const str = formatNumber(obj, fmt);
-          if (str) {
-            dropSign(val);
-            val.replaceWith(str, { tags: true });
-            // handle plural/singular unit
-            // agreeUnits(agree, val, obj)
-          }
-          return val
-        });
-        return new Numbers(res.document, res.pointer)
+          return replace(val, obj, fmt)
+        })
       }
       /** decrease each number by n*/
       subtract(n) {
-        n = toNumber(this, n);
+        n = toNum(this, n);
         if (!n) {
           return this // don't bother
         }
@@ -14432,8 +14730,18 @@ designate
 
   var numbers = {
     api: api$3,
-    // the shared european-numbers plugin reads '1.234,56' - these are our ordinals: '2ª', '3er'
-    model: { two: { europeanNumbers: { ordinal: '\\.?[ºª°]|er' } } },
+    // 'doscientas', 'veintiún', 'primera', 'tercer'
+    words,
+    // the shared european-numbers plugin reads '1.234,56' - these are our ordinals: '2ª', '3er', '1.º'
+    // .. and the currencies that follow a number - '1.500 pesos'
+    model: {
+      two: {
+        europeanNumbers: {
+          ordinal: '\\.?(?:[ºª°]|er)',
+          currencies: ['euro', 'euros', 'peso', 'pesos', 'dólar', 'dólares', 'dolar', 'dolares', 'libra', 'libras'],
+        },
+      },
+    },
   };
 
   const getNth$2 = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc);
@@ -14948,8 +15256,6 @@ designate
   nlp.plugin(adjectives);
   nlp.plugin(verbs);
   nlp.plugin(numbers);
-  // names of people and places, shared by every language - after our own words
-  nlp.plugin(names$1);
 
 
   const es = function (txt, lex) {

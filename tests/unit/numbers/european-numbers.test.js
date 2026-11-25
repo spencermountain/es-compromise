@@ -78,3 +78,29 @@ test('decimal-comma output', function (t) {
   t.equal(nlp('1.234,56 €').numbers().json()[0].number.hasComma, true, here + 'json')
   t.end()
 })
+
+// the number takes its tag from the word beside it
+test('spaced money and percent', function (t) {
+  const money = ["5,30 €", "1.000 euros", "12,50 EUR", "$ 1.500", "1.500 pesos", "cien dólares"]
+  const percent = ["3,5 %", "50 por ciento", "cincuenta por ciento"]
+  const values = [["50 por ciento", 50], ["cincuenta por ciento", 50]]
+  const neither = ["por cien años", "cinco gatos"]
+  money.forEach(str => {
+    const doc = nlp(str)
+    t.ok(doc.has('#Money'), here + 'money: ' + str)
+    t.ok(doc.has('#Currency'), here + 'currency: ' + str)
+    t.equal(doc.numbers().length, 1, here + 'one number: ' + str)
+  })
+  percent.forEach(str => {
+    const doc = nlp(str)
+    t.ok(doc.has('#Percent'), here + 'percent: ' + str)
+    t.equal(doc.numbers().length, 1, here + 'one number: ' + str)
+  })
+  values.forEach(a => {
+    t.deepEqual(nlp(a[0]).numbers().get(), [a[1]], here + 'value: ' + a[0])
+  })
+  neither.forEach(str => {
+    t.equal(nlp(str).has('(#Money|#Percent)'), false, here + 'neither: ' + str)
+  })
+  t.end()
+})

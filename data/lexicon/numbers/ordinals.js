@@ -40,7 +40,7 @@ export default [
   'quingentésimo',//500th
   'sexcentésimo',//600th
   'septingentésimo',//700th
-  'octingésimo',//800th
+  'octingentésimo',//800th
   'noningentésimo',//900th
   'milésimo',//1,000th
   'dosmilésimo',//2,000th

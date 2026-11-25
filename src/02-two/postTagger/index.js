@@ -2,6 +2,7 @@ import matches from './matches.js'
 import guessNounGender from '../preTagger/compute/3rd-pass/noun-gender.js'
 import tagArticles from './article-clitic.js'
 import copulaAdjective from './copula-adjective.js'
+import tagNumbers from './numbers.js'
 let net = null
 
 // rules like 'la-cura' flip a verb into a noun, after the preTagger's
@@ -22,6 +23,8 @@ const postTagger = function (view) {
   tagArticles(view)
   // 'es limpia'
   copulaAdjective(view)
+  // 'un millón', 'treinta y dos'
+  tagNumbers(view)
   // rebuild this only lazily
   net = net || methods.one.buildNet(matches, world)
   // perform these matches on a comma-seperated document
