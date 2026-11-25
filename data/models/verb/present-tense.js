@@ -2694,7 +2694,7 @@ export default {
   grelhar: ['grelho', 'grelhas', 'grelha', 'grelhamos', 'grelhais', 'grelham'],
   guerrear: ['guerreio', 'guerreias', 'guerreia', 'guerreamos', 'guerreais', 'guerreiam'],
   guinchar: ['guincho', 'guinchas', 'guincha', 'guinchamos', 'guinchais', 'guincham'],
-  haber: ['he', 'has', 'ha/hay', 'hemos', 'habéis', 'han'],
+  haber: ['he', 'has', 'ha', 'hemos', 'habéis', 'han'],
   habilitar: ['habilito', 'habilitas', 'habilita', 'habilitamos', 'habilitáis', 'habilitan'],
   habitar: ['habito', 'habitas', 'habita', 'habitamos', 'habitáis', 'habitan'],
   habituar: ['habituo', 'habituas', 'habitua', 'habituamos', 'habituais', 'habituam'],

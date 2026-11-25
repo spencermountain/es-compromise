@@ -631,5 +631,6 @@ export default {
   "calcular": ["calcule", "calcules", "calcule", "calculemos", "calculéis", "calculen"],
   "mantener": ["mantenga", "mantengas", "mantenga", "mantengamos", "mantengáis", "mantengan"],
   "ejercer": ["ejerza", "ejerzas", "ejerza", "ejerzamos", "ejerzáis", "ejerzan"],
-  "pescar": ["pesque", "pesques", "pesque", "pesquemos", "pesquéis", "pesquen"]
+  "pescar": ["pesque", "pesques", "pesque", "pesquemos", "pesquéis", "pesquen"],
+  haber: ['haya', 'hayas', 'haya', 'hayamos', 'hayáis', 'hayan'],
 }

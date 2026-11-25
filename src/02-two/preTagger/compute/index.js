@@ -16,6 +16,8 @@ import adjGender from './3rd-pass/adj-gender.js'
 import verbForm from './3rd-pass/verb-form.js'
 import auxVerb from './3rd-pass/aux-verb.js'
 import checkImperative from './3rd-pass/imperative.js'
+import subjectVerb from './3rd-pass/subject-verb.js'
+import checkSubjunctive from './3rd-pass/subjunctive.js'
 
 // these methods don't care about word-neighbours
 const firstPass = function (terms, world) {
@@ -50,12 +52,21 @@ const thirdPass = function (terms, world) {
   }
 }
 
+// these methods look at the words before them
+const fourthPass = function (terms, world) {
+  for (let i = 0; i < terms.length; i += 1) {
+    subjectVerb(terms, i, world)
+    checkSubjunctive(terms, i, world)
+  }
+}
+
 const tagger = function (view) {
   const world = view.world
   view.docs.forEach((terms) => {
     firstPass(terms, world)
     secondPass(terms, world)
     thirdPass(terms, world)
+    fourthPass(terms, world)
   })
   return view
 }

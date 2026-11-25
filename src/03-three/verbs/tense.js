@@ -48,25 +48,6 @@ const clitics = new Set(['me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les'
 // other words allowed between a subject and its verb - 'yo nunca hablaba'
 const fillers = new Set(['no', 'nunca', 'ya', 'también', 'tampoco', 'siempre', 'casi', 'solo', 'sólo', 'aún', 'todavía'])
 
-const byPerson = (arr) =>
-  persons.reduce((h, k, i) => {
-    h[k] = arr[i]
-    return h
-  }, {})
-
-// 'haber' is our only auxiliary - and is missing from the conjugation models
-const haber = {
-  present: byPerson(['he', 'has', 'ha', 'hemos', 'habéis', 'han']),
-  past: byPerson(['hube', 'hubiste', 'hubo', 'hubimos', 'hubisteis', 'hubieron']),
-  imperfect: byPerson(['había', 'habías', 'había', 'habíamos', 'habíais', 'habían']),
-  future: byPerson(['habré', 'habrás', 'habrá', 'habremos', 'habréis', 'habrán']),
-  conditional: byPerson(['habría', 'habrías', 'habría', 'habríamos', 'habríais', 'habrían']),
-}
-const isHaber = new Set(['hay'])
-Object.keys(haber).forEach((tense) => {
-  persons.forEach((p) => isHaber.add(haber[tense][p]))
-})
-
 // the preterites of 'ser' and 'ir' are identical - 'fui feliz' vs 'fui a casa'
 const serOrIr = new Set(['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'])
 const afterIr = new Set(['a', 'al', 'hacia', 'hasta', 'para', 'allí', 'allá', 'ahí'])
@@ -76,9 +57,6 @@ const skipTags = ['Infinitive', 'Gerund', 'Perfecto', 'Participle', 'Imperative'
 
 // every indicative form of this verb
 const getForms = function (root, methods) {
-  if (root === 'haber') {
-    return haber
-  }
   return {
     present: methods.toPresent(root),
     past: methods.toPast(root),
@@ -90,9 +68,6 @@ const getForms = function (root, methods) {
 
 const getRoot = function (term, next) {
   const str = term.normal
-  if (isHaber.has(str)) {
-    return 'haber'
-  }
   if (serOrIr.has(str) && next && (afterIr.has(next.normal) || next.tags.has('Infinitive'))) {
     return 'ir'
   }

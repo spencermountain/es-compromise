@@ -132,3 +132,21 @@ test('verb-conjugate-from-sentence:', function (t) {
   t.equal(o.gerund, 'hablando', here + 'from-past-to-gerund')
   t.end()
 })
+test('haber-conjugate:', function (t) {
+  const o = nlp('haber').verbs().conjugate()[0]
+  t.deepEqual(Object.values(o.presentTense), ['he', 'has', 'ha', 'hemos', 'habéis', 'han'], here + 'haber present')
+  t.deepEqual(Object.values(o.pastTense), ['hube', 'hubiste', 'hubo', 'hubimos', 'hubisteis', 'hubieron'], here + 'haber past')
+  t.deepEqual(Object.values(o.futureTense), ['habré', 'habrás', 'habrá', 'habremos', 'habréis', 'habrán'], here + 'haber future')
+  t.deepEqual(Object.values(o.conditional), ['habría', 'habrías', 'habría', 'habríamos', 'habríais', 'habrían'], here + 'haber conditional')
+  t.deepEqual(Object.values(o.subjunctive), ['haya', 'hayas', 'haya', 'hayamos', 'hayáis', 'hayan'], here + 'haber subjunctive')
+  t.equal(o.gerund, 'habiendo', here + 'haber gerund')
+  t.equal(o.perfecto, 'habido', here + 'haber perfecto')
+  // neighbours in the model are not disturbed
+  t.equal(nlp('saber').verbs().conjugate()[0].pastTense.first, 'supe', here + 'saber past')
+  t.equal(nlp('caber').verbs().conjugate()[0].pastTense.first, 'cupe', here + 'caber past')
+  t.equal(nlp('deber').verbs().conjugate()[0].pastTense.first, 'debí', here + 'deber past')
+  t.equal(nlp('beber').verbs().conjugate()[0].subjunctive.first, 'beba', here + 'beber subjunctive')
+  // from a conjugated form
+  t.equal(nlp('ella ha comido').match('ha').verbs().conjugate()[0].pastTense.third, 'hubo', here + 'ha → hubo')
+  t.end()
+})

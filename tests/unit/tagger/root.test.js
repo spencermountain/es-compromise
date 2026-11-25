@@ -505,3 +505,31 @@ test('root-match:', function (t) {
   })
   t.end()
 })
+
+test('subjunctive + haber roots:', function (t) {
+  const arr = [
+    ['quiero que vengas', '{venir}'],
+    ['dudo que venga', '{venir}'],
+    ['espero que tengas suerte', '{tener}'],
+    ['quiero que hables', '{hablar}'],
+    ['quiero que lo hagas', '{hacer}'],
+    ['para que sepas', '{saber}'],
+    ['ojalá llueva', '{llover}'],
+    ['es importante que estudies', '{estudiar}'],
+    ['yo como pan', '{comer}'],
+    ['yo vivo aquí', '{vivir}'],
+    // every form of the auxiliary
+    ['he comido', '{haber} {comer}'],
+    ['ella ha comido', '{haber} {comer}'],
+    ['había un gato', '{haber}'],
+    ['hubo un problema', '{haber}'],
+    ['habrá una fiesta', '{haber}'],
+    ['hay un gato', '{haber}'],
+  ]
+  arr.forEach(function (a) {
+    const [str, match] = a
+    const doc = nlp(str).compute('root')
+    t.equal(doc.has(match), true, here + `'${str}' has ${match}`)
+  })
+  t.end()
+})

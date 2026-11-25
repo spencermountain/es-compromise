@@ -402,3 +402,45 @@ test('nth verb only:', function (t) {
   t.equal(doc.text(), 'yo hablo. ella comió.', here + 'second sentence only')
   t.end()
 })
+
+test('verbs the tagger used to miss:', function (t) {
+  // 'como' is a conjunction, 'vivo' an adjective, 'trabajo' a noun - but not after 'yo'
+  run(t, [
+    ['yo como pan', 'yo comí pan'],
+    ['yo vivo aquí', 'yo viví aquí'],
+    ['yo trabajo mucho', 'yo trabajé mucho'],
+    ['yo camino', 'yo caminé'],
+    ['yo no como carne', 'yo no comí carne'],
+    ['yo bajo', 'yo bajé'],
+  ], 'toPastTense')
+  run(t, [
+    ['yo como pan', 'yo comeré pan'],
+    ['yo vivo aquí', 'yo viviré aquí'],
+    ['yo no como carne', 'yo no comeré carne'],
+  ], 'toFutureTense')
+  run(t, [
+    ['yo comí pan', 'yo como pan'],
+    ['yo viví aquí', 'yo vivo aquí'],
+  ], 'toPresentTense')
+  t.end()
+})
+
+test('the subjunctive after que is left alone:', function (t) {
+  run(t, [
+    ['quiero que vengas', 'quise que vengas'],
+    ['dudo que venga', 'dudé que venga'],
+    ['espero que tengas suerte', 'esperé que tengas suerte'],
+    ['quiero que lo hagas', 'quise que lo hagas'],
+    ['espero que ella coma', 'esperé que ella coma'],
+  ], 'toPastTense')
+  run(t, [
+    ['quiero que vengas', 'querré que vengas'],
+    ['dudo que venga', 'dudaré que venga'],
+  ], 'toFutureTense')
+  // .. but the indicative after que is not
+  run(t, [
+    ['creo que vienes', 'creí que viniste'],
+    ['dice que come pan', 'dijo que comió pan'],
+  ], 'toPastTense')
+  t.end()
+})

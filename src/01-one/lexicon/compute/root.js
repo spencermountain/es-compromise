@@ -18,6 +18,38 @@ const stripReflexive = function (str) {
   return str
 }
 
+const persons = {
+  FirstPerson: 'first',
+  SecondPerson: 'second',
+  ThirdPerson: 'third',
+  FirstPersonPlural: 'firstPlural',
+  SecondPersonPlural: 'secondPlural',
+  ThirdPersonPlural: 'thirdPlural',
+}
+
+// 'haber' is our auxiliary verb - the tagger gives it no tense
+let haber = null
+const isHaber = function (str, verb) {
+  if (haber === null) {
+    haber = new Set(verb.all('haber'))
+    haber.add('hay')
+  }
+  return haber.has(str)
+}
+
+// the subjunctive is often person-ambiguous ('hable' is 1st or 3rd)
+// so try each person, and keep an infinitive that conjugates back to our word
+const fromSubjunctive = function (str, form, verb) {
+  const order = [form].concat(Object.keys(persons)).filter((s) => s)
+  for (let i = 0; i < order.length; i += 1) {
+    const inf = verb.fromSubjunctive(str, order[i])
+    if (inf && inf !== str && verb.toSubjunctive(inf)[persons[order[i]]] === str) {
+      return inf
+    }
+  }
+  return verb.fromPresent(str, form)
+}
+
 const root = function (view) {
   const { verb, noun, adjective } = view.world.methods.two.transform
   view.docs.forEach((terms) => {
@@ -36,8 +68,14 @@ const root = function (view) {
           term.root = stripReflexive(str)
           return
         }
+        if (isHaber(str, verb)) {
+          term.root = 'haber'
+          return
+        }
         const form = verbForm(term)
-        if (term.tags.has('Gerund')) {
+        if (term.tags.has('Subjunctive')) {
+          term.root = fromSubjunctive(str, form, verb)
+        } else if (term.tags.has('Gerund')) {
           term.root = verb.fromGerund(str, form)
         } else if (term.tags.has('Perfecto')) {
           term.root = verb.fromPerfecto(str, form)

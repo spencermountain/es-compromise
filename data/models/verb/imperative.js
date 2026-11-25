@@ -635,5 +635,6 @@ export default {
   "vestir": ["", "viste", "vestid", "", "vista", "vistan"],
   "vivir": ["", "vive", "vivid", "", "viva", "vivan"],
   "merecer": ["", "merezcas", "mereced", "", "merezca", "merezcan"],
-  "abrir": ["", "abras", "abráis", "", "abra", "abran"]
+  "abrir": ["", "abras", "abráis", "", "abra", "abran"],
+  haber: ['', 'he', 'habed', '', 'haya', 'hayan'],
 }

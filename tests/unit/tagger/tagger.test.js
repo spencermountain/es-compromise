@@ -158,3 +158,55 @@ test('sentence-tags:', function (t) {
   })
   t.end()
 })
+
+test('verb after a subject-pronoun:', function (t) {
+  const arr = [
+    // these are a conjunction, an adjective, and nouns, on their own
+    ['yo como pan', 'yo #Verb #Noun'],
+    ['yo como pan', 'yo (#PresentTense && #FirstPerson) pan'],
+    ['yo vivo aquí', 'yo #PresentTense aquí'],
+    ['yo trabajo mucho', 'yo #PresentTense mucho'],
+    ['yo camino', 'yo #PresentTense'],
+    ['yo paso', 'yo #PresentTense'],
+    ['yo bajo', 'yo #PresentTense'],
+    // past any negative, or object-pronoun
+    ['yo no como carne', 'yo no #PresentTense carne'],
+    ['yo lo trabajo', 'yo lo #PresentTense'],
+    // .. and stay so, without a subject
+    ['como tú', '#Conjunction tú'],
+    ['el trabajo', 'el #Noun'],
+    ['un camino largo', 'un #Noun #Adjective'],
+    ['tú y yo', 'tú #Conjunction yo'],
+    // not a first-person form
+    ['yo vino', 'yo #Noun'],
+  ]
+  arr.forEach(function (a) {
+    const [str, match] = a
+    t.equal(nlp(str).has(match), true, here + `'${str}' has ${match}`)
+  })
+  t.end()
+})
+
+test('subjunctive after que:', function (t) {
+  const arr = [
+    // 'vengas' is also the present-tense of 'vengar'
+    ['quiero que vengas', 'quiero que (#Subjunctive && #SecondPerson)'],
+    ['dudo que venga', 'dudo que #Subjunctive'],
+    ['espero que tengas suerte', 'que #Subjunctive suerte'],
+    ['quiero que lo hagas', 'que lo #Subjunctive'],
+    ['espero que ella coma', 'que ella #Subjunctive'],
+    ['para que sepas', 'para que #Subjunctive'],
+    ['es importante que estudies', 'que #Subjunctive'],
+  ]
+  arr.forEach(function (a) {
+    const [str, match] = a
+    const doc = nlp(str)
+    t.equal(doc.has(match), true, here + `'${str}' has ${match}`)
+    t.equal(doc.match('que .? [#Subjunctive]', 0).has('#PresentTense'), false, here + `'${str}' not #PresentTense`)
+  })
+  // the indicative, after a verb of saying or thinking
+  t.equal(nlp('creo que vienes').has('que #PresentTense'), true, here + 'creo que vienes')
+  t.equal(nlp('creo que creas problemas').has('que #PresentTense'), true, here + 'creo que creas')
+  t.equal(nlp('dice que come pan').has('que #PresentTense'), true, here + 'dice que come')
+  t.end()
+})

@@ -3684,4 +3684,5 @@ export default {
     'merecisteis',
     'merecieron',
   ],
+  haber: ['hube', 'hubiste', 'hubo', 'hubimos', 'hubisteis', 'hubieron'],
 }
