@@ -18,6 +18,9 @@ import auxVerb from './3rd-pass/aux-verb.js'
 import checkImperative from './3rd-pass/imperative.js'
 import subjectVerb from './3rd-pass/subject-verb.js'
 import checkSubjunctive from './3rd-pass/subjunctive.js'
+import checkComo from './3rd-pass/como.js'
+import homographVerbs from './3rd-pass/homograph-verb.js'
+import accentName from './2nd-pass/accent-name.js'
 
 // these methods don't care about word-neighbours
 const firstPass = function (terms, world) {
@@ -33,6 +36,7 @@ const firstPass = function (terms, world) {
 const secondPass = function (terms, world) {
   for (let i = 0; i < terms.length; i += 1) {
     let found = acronym(terms, i, world)
+    found = found || accentName(terms, i, world)
     found = found || enclitic(terms, i, world)
     found = found || suffixCheck(terms, i, world)
     // found = found || neighbours(terms, i, world)
@@ -57,6 +61,7 @@ const fourthPass = function (terms, world) {
   for (let i = 0; i < terms.length; i += 1) {
     subjectVerb(terms, i, world)
     checkSubjunctive(terms, i, world)
+    checkComo(terms, i, world)
   }
 }
 
@@ -67,6 +72,7 @@ const tagger = function (view) {
     secondPass(terms, world)
     thirdPass(terms, world)
     fourthPass(terms, world)
+    homographVerbs(terms, world)
   })
   return view
 }

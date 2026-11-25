@@ -20,6 +20,8 @@ export default [
   // 'la cura', 'el canto' - determiner + verb-form is a noun
   { match: '(el|la|un|una) [#PresentTense]$', group: 0, tag: 'Noun', reason: 'la-cura' },
   { match: '(el|la|un|una) [#PresentTense] #Preposition', group: 0, tag: 'Noun', reason: 'el-canto-de' },
+  // 'limpiamos la cocina cada semana' - the object of a verb
+  { match: '#Verb (el|la|un|una) [#PresentTense]', group: 0, tag: 'Noun', reason: 'verb-la-cocina' },
   // 'las casas' - plural determiner + verb-form is a plural noun
   { match: '(los|las|unos|unas) [#PresentTense]$', group: 0, tag: 'Plural', reason: 'las-casas' },
   // 'gran parte de', 'forma parte de'
@@ -70,6 +72,8 @@ export default [
 
   // possessives - 'my taste'
   { match: '(#Possessive && #Determiner) [#FirstPerson]', group: 0, tag: 'Noun', reason: 'mi-gusto' },
+  // 'es mi tía' - a verb can not end a sentence after 'mi'
+  { match: '(#Possessive && #Determiner) [#Verb]$', group: 0, tag: 'Noun', reason: 'mi-verb-end' },
   //Los avances en
   { match: '(los|las) [#Verb] #Preposition', group: 0, tag: 'Plural', reason: 'los-advances' },
   //confundo los numbres

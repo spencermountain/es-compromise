@@ -3208,7 +3208,7 @@ export default {
     'neutralizáis',
     'neutralizan'
   ],
-  nevar: ['nevo', 'nevas', 'neva', 'nevamos', 'nevais', 'nevam'],
+  nevar: ['nievo', 'nievas', 'nieva', 'nevamos', 'neváis', 'nievan'],
   nivelar: ['nivelo', 'nivelas', 'nivela', 'nivelamos', 'niveláis', 'nivelan'],
   nombrar: ['nombro', 'nombras', 'nombra', 'nombramos', 'nombráis', 'nombran'],
   nomear: ['nomeio', 'nomeias', 'nomeia', 'nomeamos', 'nomeais', 'nomeiam'],

@@ -12,12 +12,7 @@ const fillers = new Set([
   'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
 ])
 
-const tenses = [
-  ['PresentTense', 'fromPresent', 'toPresent'],
-  ['PastTense', 'fromPast', 'toPast'],
-  ['Imperfect', 'fromImperfect', 'toImperfect'],
-  ['FutureTense', 'fromFuture', 'toFuture'],
-]
+const tenses = { present: 'PresentTense', past: 'PastTense', imperfect: 'Imperfect', future: 'FutureTense' }
 
 const isInfinitive = function (str, lexicon) {
   if (!lexicon.hasOwnProperty(str)) {
@@ -43,15 +38,11 @@ const subjectVerb = function (terms, i, world) {
   const [tag, form] = found
   const verb = world.methods.two.transform.verb
   const lexicon = world.model.one.lexicon
-  const str = term.normal
-  for (let k = 0; k < tenses.length; k += 1) {
-    const [tense, from, to] = tenses[k]
-    const inf = verb[from](str, tag)
-    // it has to be a known verb, that conjugates back to this word
-    if (inf && inf !== str && isInfinitive(inf, lexicon) && verb[to](inf)[form] === str) {
-      world.methods.one.setTag([term], ['Verb', tense, tag], world, false, '3-subject-verb')
-      return
-    }
+  // it has to be a known verb, that conjugates back to this word
+  const res = verb.lookup(term.normal, { isVerb: (inf) => isInfinitive(inf, lexicon), known: true, tenses: Object.keys(tenses) })
+  const hit = res ? res.hits.find((o) => o.person === form) : null
+  if (hit) {
+    world.methods.one.setTag([term], ['Verb', tenses[hit.tense], tag], world, false, '3-subject-verb')
   }
 }
 export default subjectVerb

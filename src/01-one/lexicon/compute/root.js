@@ -50,6 +50,30 @@ const fromSubjunctive = function (str, form, verb) {
   return verb.fromPresent(str, form)
 }
 
+// most-specific first - an #Imperfect is also a #PastTense
+const tenses = [
+  ['Imperfect', 'fromImperfect'],
+  ['PresentTense', 'fromPresent'],
+  ['PastTense', 'fromPast'],
+  ['FutureTense', 'fromFuture'],
+  ['Conditional', 'fromConditional'],
+]
+
+// the tagger's tense + person are often a guess, and so is the infinitive we get from them.
+// if it does not conjugate back into our word, look for a known verb that does
+const checkRoot = function (str, guess, world) {
+  const verb = world.methods.two.transform.verb
+  // the models learned some verbs in their reflexive form - 'llovió' -> 'lloverse'
+  guess = (guess || '').replace(/([aeií]r)se$/, '$1')
+  if (guess && guess !== str && verb.findHits(str, guess).length > 0) {
+    return guess
+  }
+  const lexicon = world.model.one.lexicon
+  const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive')
+  const found = verb.lookup(str, { isVerb, known: true })
+  return found ? found.root : guess
+}
+
 const root = function (view) {
   const { verb, noun, adjective } = view.world.methods.two.transform
   view.docs.forEach((terms) => {
@@ -79,21 +103,15 @@ const root = function (view) {
           term.root = verb.fromGerund(str, form)
         } else if (term.tags.has('Perfecto')) {
           term.root = verb.fromPerfecto(str, form)
-        } else if (term.tags.has('Imperfect')) {
-          term.root = verb.fromImperfect(str, form)
-        } else if (term.tags.has('PresentTense')) {
-          term.root = verb.fromPresent(str, form)
-        } else if (term.tags.has('PastTense')) {
-          term.root = verb.fromPast(str, form)
-        } else if (term.tags.has('FutureTense')) {
-          term.root = verb.fromFuture(str, form)
-        } else if (term.tags.has('Conditional')) {
-          term.root = verb.fromConditional(str, form)
-        } else if (term.tags.has('Imperative')) {
-          term.root = verb.fromImperative(str, form)
         } else {
-          // guess!
-          term.root = verb.fromPresent(str, form)
+          // an indicative tense - 'hablo', 'habló', 'hablaba', 'hablará', 'hablaría'
+          const from = tenses.find((o) => term.tags.has(o[0]))
+          if (!from && term.tags.has('Imperative')) {
+            term.root = verb.fromImperative(str, form)
+          } else {
+            // .. or a guess
+            term.root = checkRoot(str, verb[(from || tenses[1])[1]](str, form), view.world)
+          }
         }
       }
 

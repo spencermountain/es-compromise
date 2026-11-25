@@ -25,6 +25,7 @@ import adjective from './adjectives/index.js'
 import { fromGerund, toGerund } from './verbs/gerund.js'
 import { fromPerfecto, toPerfecto } from './verbs/perfecto.js'
 import { toReflexive, stripReflexive } from './verbs/reflexive.js'
+import { table, findHits, candidates, lookup } from './verbs/lookup.js'
 
 export default {
   verb: {
@@ -50,6 +51,10 @@ export default {
     toPerfecto,
     toReflexive,
     stripReflexive,
+    table,
+    findHits,
+    candidates,
+    lookup,
     all: allVerb
   },
   noun: {

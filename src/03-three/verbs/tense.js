@@ -5,8 +5,6 @@
 // and its grammatical person is kept - 'hablamos' -> 'hablaremos'
 // spanish drops its subject pronouns, so the person is read from the verb itself
 
-const persons = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural']
-
 const personTags = {
   FirstPerson: 'first',
   SecondPerson: 'second',
@@ -55,17 +53,6 @@ const afterIr = new Set(['a', 'al', 'hacia', 'hasta', 'para', 'allí', 'allá', 
 // verb-forms that are not an indicative tense
 const skipTags = ['Infinitive', 'Gerund', 'Perfecto', 'Participle', 'Imperative', 'Subjunctive']
 
-// every indicative form of this verb
-const getForms = function (root, methods) {
-  return {
-    present: methods.toPresent(root),
-    past: methods.toPast(root),
-    imperfect: methods.toImperfect(root),
-    future: methods.toFuture(root),
-    conditional: methods.toConditional(root),
-  }
-}
-
 const getRoot = function (term, next) {
   const str = term.normal
   if (serOrIr.has(str) && next && (afterIr.has(next.normal) || next.tags.has('Infinitive'))) {
@@ -74,49 +61,9 @@ const getRoot = function (term, next) {
   return term.root
 }
 
-const fromTense = {
-  present: 'fromPresent',
-  past: 'fromPast',
-  imperfect: 'fromImperfect',
-  future: 'fromFuture',
-  conditional: 'fromConditional',
-}
-
-// find the word in the conjugation table of this infinitive
-const findHits = function (str, root, methods) {
-  const forms = getForms(root, methods)
-  const hits = []
-  Object.keys(forms).forEach((tense) => {
-    persons.forEach((person) => {
-      if (forms[tense][person] === str) {
-        hits.push({ tense, person })
-      }
-    })
-  })
-  return hits
-}
-
-// the tagger gives some verbs no tense, and so no root - 'sabe', 'pude'
-// try each tense, and keep an infinitive that conjugates back to our word
-const guessRoot = function (str, methods, lexicon) {
-  const tenses = Object.keys(fromTense)
-  let found = null
-  for (let i = 0; i < tenses.length; i += 1) {
-    for (let k = 0; k < persons.length; k += 1) {
-      const root = methods[fromTense[tenses[i]]](str, toPersonTag[persons[k]])
-      if (root && root !== str && /[aeií]r$/.test(root)) {
-        const hits = findHits(str, root, methods)
-        if (hits.length > 0) {
-          // prefer a real verb - 'pude' is 'poder', not 'pudir'
-          if (lexicon.hasOwnProperty(root)) {
-            return { root, hits }
-          }
-          found = found || { root, hits }
-        }
-      }
-    }
-  }
-  return found
+const isInfinitive = function (str, lexicon) {
+  const tags = lexicon.hasOwnProperty(str) ? lexicon[str] : null
+  return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
 }
 
 // which tense + person is this word?
@@ -135,10 +82,11 @@ const parseTerm = function (term, next, methods, lexicon) {
   }
   // find the word in its own conjugation table
   // no root was found for this one
+  // the tagger gives some verbs no tense, and so no root - 'sabe', 'pude'
   if (root === str) {
-    return guessRoot(str, methods, lexicon)
+    return methods.lookup(str, { isVerb: (inf) => isInfinitive(inf, lexicon) })
   }
-  const hits = findHits(str, root, methods)
+  const hits = methods.findHits(str, root)
   if (hits.length > 0) {
     return { root, hits }
   }
@@ -254,7 +202,7 @@ const convertOne = function (vb, want, methods, lexicon) {
     // already there
     return same
   }
-  let str = getForms(root, methods)[want][person]
+  let str = methods.table(root, [want])[want][person]
   // existential - 'había un gato' -> 'hay un gato'
   if (root === 'haber' && want === 'present' && person === 'third' && !isPerfect) {
     str = 'hay'
@@ -270,13 +218,43 @@ const convertOne = function (vb, want, methods, lexicon) {
   return [n, start, end - (len - 1)]
 }
 
+// a verb-phrase can hold two clauses - 'la mujer que [canta es] mi tía', 'donde [vivo, nieva]'
+// so give each conjugated verb a phrase of its own
+const convertEach = function (vb, want, methods, lexicon) {
+  const ptr = vb.fullPointer[0]
+  if (!ptr) {
+    return null
+  }
+  vb.compute('root')
+  const [n, start, end] = ptr
+  const terms = vb.document[n]
+  const found = []
+  for (let i = start; i < end; i += 1) {
+    if (parseTerm(terms[i], terms[i + 1], methods, lexicon)) {
+      found.push(i)
+    }
+  }
+  if (found.length < 2) {
+    return convertOne(vb, want, methods, lexicon)
+  }
+  // last one first, so that the indexes before it stay true
+  let shrink = 0
+  for (let k = found.length - 1; k >= 0; k -= 1) {
+    const from = k === 0 ? start : found[k]
+    const to = k === found.length - 1 ? end : found[k + 1]
+    const res = convertOne(vb.update([[n, from, to]]), want, methods, lexicon)
+    shrink += res ? to - res[2] : 0
+  }
+  return [n, start, end - shrink]
+}
+
 const convertTo = function (view, want) {
   const methods = view.methods.two.transform.verb
   // replacing a word orphans the pointer that held it, so rebuild them as we go
   const lexicon = view.model.one.lexicon
   const ptrs = []
   view.forEach((vb) => {
-    const ptr = convertOne(vb, want, methods, lexicon)
+    const ptr = convertEach(vb, want, methods, lexicon)
     if (ptr) {
       ptrs.push(ptr)
     }

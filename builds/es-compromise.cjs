@@ -567,7 +567,7 @@
   const debug$2 = { tags: Boolean(env.DEBUG_TAGS) };
 
   // Capture only the requested terms, and only while tracing.
-  const before = term => {
+  const before$1 = term => {
     if (debug$2.tags && (!debug$2.word || debug$2.word === (term.normal || term.text || term.implicit || '').toLowerCase())) {
       return [...term.tags]
     }
@@ -604,7 +604,7 @@
     print(added, '+', green);
   };
 
-  debug$2.before = before;
+  debug$2.before = before$1;
   debug$2.log = log;
 
   // Install only while verbose matching is enabled; restore the original hot path.
@@ -8003,7 +8003,7 @@ er
     return { str, pre, post }
   };
 
-  const parseTerm = (txt, model) => {
+  const parseTerm$1 = (txt, model) => {
     // cleanup any punctuation as whitespace
     const { str, pre, post } = normalizePunctuation(txt, model);
     const parsed = {
@@ -8159,7 +8159,7 @@ er
         splitSentences,
         isSentence,
         splitTerms: splitWords,
-        splitWhitespace: parseTerm,
+        splitWhitespace: parseTerm$1,
         fromString: parse,
       },
     },
@@ -9264,18 +9264,18 @@ designate
     "presentTense": {
       "first": "1nho:r|2o:r{a{ncost,reneg,vend,scord},e{,end{nsc,ac,st,et},rret,at,rt,pel,oz},i,leti,ivi}|6uestro:ostrar|2io:ear{t{ha,co,s,en},elin,and,cad}|3ço:cer{,e{fal,ol,el,nd,rn}}|3zco:urecer{nd,osc}|2go:ner,aler,alir|3jo:ger,gir|3go:zer|3o:uer,guir|4ito:etir|5isto:estir|4imo:emir|4igo:ecir|4ijo:egir|4ido:edir|5igo:eguir|4iro:erir|4ibo:ebir|4ulo:olir|3uyo:üir|2igo:ír|2onho:ôr~2o:r{a{,emend,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{met,olv{bs,ss,senv}},ui{bstit,imin,ol,s,etrib,fr}}|3zco:r{ci,ce{a,e{r,nt,l,d,n,iqu,laqu,j,p},o}}|6urco:orquir|5uelco:olcar|8me quejo:quejarse|8me alejo:alejarse|1jo:ver{te,ro}|5irjo:vergir|5irjo/emerjo:emergir|5irjo/submerjo:bmergir|5quepo:caber|11me preocupo:preocuparse|5ispo:espir|5iento:r{enti,enta{as,l,ec,ev}}|8me siento:sentarse|5into:entir{sm,ss}|10me levanto:levantarse|5uesto:ostar{c,ap}|9me acuesto:acostarse|5iesto:festar|5ierto:r{erti,erta{sp,c}}|5uelto:soltar|4ieto:apretar|5icto:ectir|4uebo:probar|4íbo:ibir{oh,o}|9me afilio:afiliarse|3ío/palio:paliar|1o:orrir,air,prever|2io:ear|1io:crer,ler|5ierro:errar{c,nt,s}|5iebro:uebrar|6iembro:sembrar|5ubro:obrir|4iero:erir{u,h,pref,ug}|4üero:agorar|4uero:orir|9me retiro:retirarse|3iro:erer|2igo:aer|2go:enir|4iego:egar{n,pl}|3go:acer{f,h}|5uelgo:olgar|5ienzo:enzar|3zo:vencer,jercer,rcir|5üenzo:onzar|5uerzo:orzar|4iezo:pezar|4uezo:cocer|4ízo:aizar|3úo:uar{d,t{si,c,en,pe},n,l}|5iendo:r{enda,ende{c,t,ef}}|5indo:endir|9me olvido:olvidarse|9me decido:decidirse|10me suicido:suicidarse|5uerdo:order,cordar|5ierdo:erder|4uedo:oder,rodar|8me quedo:quedarse|5ueldo:soldar|4údo:saudar|5uermo:ormir|4ieso:esar{nf,v}|5ienso:epensar|7me caso:casarse|4úso:husar|5usso:ossir|4ueso/engroso:rosar|3ío:r{eí,ia{u,saf,var,nfr,nv,sv,vac,roc,pl,sp}}|2yo:uir|4uelo:oler,volar|6iemblo:emblar|5ueblo:poblar|5íslo:aislar|4iño:eñir|4ueño:oñar|5ierno:ernir,obernar|4ueno:sonar|4ino:evenir|4úno:aunar,eunir|1nho:ter|2enho:vir|5uelvo:olver|5iervo:hervir|5irvo:servir|4uevo:over,enovar|6e muevo:overse|3úo/adecuo:decuar|3ço:r{e{rec{r,lvo,u,d,g,fe},faz},simpedi}|3ço/oiço:uvir|4é:aber|4e:haber|4ei:aver~2ger:jo{rote,emer,co,an}|3egir:ijo{r,el}|2gir:jo{i{ir,er,x,l,d},oa,era,ea,r,fu,n}|1ar:o{orj,rranj,t{rien,vis{tre,a},apar,mi{i,vo,a},dic,reba,escu,ecu},rrib,mai,nsai,heir,mendig,d{sven,brin,uci,que,salu},aviv,eç{r,om,p}}|1er:o{omp,vert,erret,bat,eb,orb,amb,r{of,var,cor,mor},coz,d{en,pon,con,ce,fe},m{te,pre,tre,co},epel,e,tañ,ench,colh,v{fer,or,nvi,re,de},mex,rro,mo}|1ir:o{ump,scup,usp,t{aran,sis,xis,par,mi,dimi,fle,mba,cu},ib,sub,cumb,r{uf,ut,bur,cur,neg,scub,ab,ui,ump,sup,ud},duz,d{n{pa,ci,nfu,ifu,hu},i{iv,c,col,s},ña,va,ua,cu,lu,lau,lo},m{ri,exi,di,su},ull,umpl,upl,ruñ,pun,defin,viv}|4estir:visto|3etir:ito{err,mp,ep}|3ebir:ncibo|6ostrar:muestro|3erir:iro{d,f,g,s}|3ír:oigo|3ecir:digo|2zer:ondigo|3eguir:sigo|2er:ngo{po,te}|1uir:tingo|2ir:salgo|3edir:ido{p,r}|3emir:gimo|3üir:guyo|3olir:engulo|3r:ponho|2cer:ço{e,en,tor,er,s}~2voy:ir|2oy:ser,dar,estar|3ío:iar{conf,cr}|5ienso:pensar|5uerzo:torcer|2o:r{e{barr,le,cre,ard,cos,gem,lam,reviv,tej},i{un,cubr,bat,lat,curt,esculp},a{rim,sum,salient,su}}|4iero:querer|5yerro:errar|4ido:medir|3ego:jugar|5iento:entar{s,t}|6uentro:encontrar|4huelo:oler|2go:valer|4uego:rogar|4ielo:helar|4iego:regar{,f}|5uento:contar|1o:ver,rir|3zco:abastecer|4ulo:olir{ab,p}|3jo:r{agi,rugi,ege{el,r}}|3o:erguer|2onho:pôr|4imo:premir|1jo:rever|2o/roigo:roer|5ierto:verter",
       "second": "1s:r{a{ncost,err{at,b,f},reneg,emend,vend,scord,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{end{nsc,ac,st,et},at,rt,olv{bs,ss,senv}},i{u{fr,bstit,imin,etrib,s},orr,a}}|6uestras:ostrar|2ias:ear{t{ha,co,s,en},elin,and,cad}|3s:haber|2es:ir{,t{ssen,smen,le,nves},ssegu}|5istes:estir|4iges:egir|4ides:edir|4ienes:enir|4ibes:ebir|3uyes:üir|2ões:ôr~1s:r{,ete{m,rr}}|5uelcas:olcar|8te quejas:quejarse|8te alejas:alejarse|11te preocupas:preocuparse|5uestas:ostar{c,ap}|9te acuestas:acostarse|5iestas:festar|5ientas:entar{as,l,ec,ev}|8te sientas:sentarse|10te levantas:levantarse|5iertas:ertar{sp,c}|5ueltas:soltar|4ietas:apretar|9te afilias:afiliarse|3ías/palias:paliar|2ias:ear|5ierras:errar|5iebras:uebrar|6iembras:sembrar|4üeras:agorar|9te retiras:retirarse|4iegas:egar{n,pl}|5uelgas:olgar|5ienzas:enzar|5üenzas:onzar|4iezas:pezar|5uerzas:orzar|4ízas:aizar|3úas:uar{d,t{si,c,en,pe},n,l}|4uevas:enovar|5iendas:endar|9te olvidas:olvidarse|10te suicidas:suicidarse|5uerdas:cordar|8te quedas:quedarse|4uedas:rodar|5ueldas:soldar|4údas:saudar|4iesas:esar{nf,v}|5iensas:epensar|7te casas:casarse|4úsas:husar|4uesas/engrosas:rosar|3ías:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uelas:volar|6iemblas:emblar|5ueblas:poblar|5íslas:aislar|4ueñas:oñar|5iernas:obernar|4uenas:sonar|4únas:aunar|4uebas:probar|3úas/adecuas:decuar|4íbes:ibir{oh,o}|5ientes:entir|5iertes:ertir|4ites:etir|4ueces:cocer|4ices:ecir|4ienes:ener|4ines:evenir|5iernes:ernir|4únes:eunir|4ieres:erir{u,h,pref,ug}|4ueres:orir|4imes:gemir|5uermes:ormir|4oges:fugir|9te decides:decidirse|5iendes:ender{c,t,ef}|5indes:endir|4uedes:oder|2es:ir{simped,gu,olu}|5ierdes:erder|5uerdes:order|2yes:ír,uir|5ospes:uspir|3íes:eír|5igues:eguir|2es/exturques:quir|5uelves:olver|5irves:servir|5ierves:hervir|4ueves:over|7te mueves:moverse|4iñes:eñir|4ueles:oler|4ules:polir|2ões:or|2és:prever|4ás:aver|2ês:er{tev,rov,cr,rel}|3óis:oer|2éns:ter,rvir,ovir~7ostrar:muestras|2ir:es{ib,ub,umb,t,mit,uc,arc,n,r,im,um,g,d,cind,p,breviv,uv,uñ,l,uz,ss}|4ebir:ncibes|1r:es{ert,abat,ebat,on,r{que,of,ar,or},g{e,emer,o,an},d{en,on,e,r},omp,rgu,el,val}|5estir:vistes|5enir:vienes|4egir:iges{rr,el}|4edir:ides{p,m,r}|4üir:guyes~2vas:ir|3eres:ser|4iges:regir|3ías:iar{conf,cr}|5iensas:pensar|5uerces:torcer|4ieres:querer|5yerras:errar|2es:vivir,premir|3egas:jugar|5ientas:entar{s,t}|6uentras:encontrar|4hueles:oler|4uegas:rogar|4ielas:helar|4iegas:regar{,f}|5uentas:contar|2ás:estar|3s:haber|2ês:ler,rever|2ões:pôr|1s:rir,roer,salientar|1ns:ter|5iertes:verter|2ens:vir",
-      "third": "1:r{,a{ncost,err{at,b,f},reneg,emend,vend,scord,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{end{nsc,ac,st,et},at,rt,olv{bs,ss,senv}}}|6uestra:ostrar|2ia:ear{t{ha,co,s,en},elin,and,cad}|2e:ir{t{ssen,smen,le,nves},gu,ssegu,olu}|5iste:estir|4ige:egir|4ide:edir|4iene:enir|4ibe:ebir|3uye:üir|2:zir|2õe:ôr~5uelca:olcar|8se queja:quejarse|8se aleja:alejarse|11se preocupa:preocuparse|5uesta:ostar{c,ap}|9se acuesta:acostarse|5iesta:festar|5ienta:entar{as,l,ec,ev}|6 sienta:ntarse|10se levanta:levantarse|5ierta:ertar{sp,c}|5uelta:soltar|4ieta:apretar|9se afilia:afiliarse|3ía/palia:paliar|2ia:ear|5ierra:errar|5iebra:uebrar|6iembra:sembrar|4üera:agorar|9se retira:retirarse|4iega:egar{n,pl}|5uelga:olgar|5ienza:enzar|5üenza:onzar|4ieza:pezar|5uerza:orzar|4íza:aizar|3úa:uar{d,t{si,c,en,pe},n,l}|4ueva:enovar|5ienda:endar|9se olvida:olvidarse|9e suicida:uicidarse|5uerda:cordar|8se queda:quedarse|4ueda:rodar|5uelda:soldar|4úda:saudar|4iesa:esar{nf,v}|5iensa:epensar|7se casa:casarse|4úsa:husar|4uesa/engrosa:rosar|3ía:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uela:volar|6iembla:emblar|5uebla:poblar|5ísla:aislar|4ueña:oñar|5ierna:obernar|4uena:sonar|4úna:aunar|4ueba:probar|3úa/adecua:decuar|2e:ir,simpedir|4íbe:ibir{oh,o}|5iente:entir|5ierte:ertir|4ite:etir|1:r{mete,rrete,oze,i{a,u{imin,s,etrib,bstit,fr},orr}}|4uece:cocer|4ice:ecir|4iene:ener|4ine:evenir|5ierne:ernir|4úne:eunir|4ime:gemir|5uerme:ormir|4oge:fugir|9se decide:decidirse|5iende:ender{c,t,ef}|5inde:endir|4uede:oder|5ierde:erder|5uerde:order|2ye:ír,uir|4iere:erir{u,h,pref,ug}|4uere:orir|5ospe:uspir|3íe:eír|5igue:eguir|2e/exturque:quir|5uelve:olver|5irve:servir|5ierve:hervir|4ueve:over|7se mueve:moverse|4iñe:eñir|4uele:oler|4ule:polir|2õe:or|2é:prever|4á:aver|2:zer,erer|2ê:er{tev,rov,cr,rel}|3ói:oer|2ém:ter,rvir,ovir|3/hay:haber~0r:a,e{b{e,a,r,am},ert,abat,ebat,c,on,em,om,am,g{e,emer,o,an},d{en,on,e,r},ofr,arr,orr,omp,rgu,v,añ,a,el,val,e,h,os,x,j}|6ostrar:muestra|3ebir:ncibe|1ir:e{mit,uc,arc,cind,breviv,uv}|4estir:viste|4enir:viene|3egir:ige{rr,el}|3edir:ide{p,m,r}|3üir:guye|0ir:uz~2va:ir|3es:ser|4ige:regir|3ía:iar{conf,cr}|5iensa:pensar|5uerce:torcer|4iere:querer|5yerra:errar|2e:vivir,premir|3ega:jugar|5ienta:entar{s,t}|6uentra:encontrar|4huele:oler|4uega:rogar|4iela:helar|4iega:regar{,f}|5uenta:contar|2á:estar|2ê:ler,rever|2õe:pôr|1:rir,roer,salientar|1m:ter|5ierte:verter|2em:vir",
+      "third": "1:r{,a{ncost,err{at,b,f},reneg,emend,vend,scord,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{end{nsc,ac,st,et},at,rt,olv{bs,ss,senv}}}|6uestra:ostrar|2ia:ear{t{ha,co,s,en},elin,and,cad}|3:haber|2e:ir{t{ssen,smen,le,nves},gu,ssegu,olu}|5iste:estir|4ige:egir|4ide:edir|4iene:enir|4ibe:ebir|3uye:üir|2:zir|2õe:ôr~5uelca:olcar|8se queja:quejarse|8se aleja:alejarse|11se preocupa:preocuparse|5uesta:ostar{c,ap}|9se acuesta:acostarse|5iesta:festar|5ienta:entar{as,l,ec,ev}|6 sienta:ntarse|10se levanta:levantarse|5ierta:ertar{sp,c}|5uelta:soltar|4ieta:apretar|9se afilia:afiliarse|3ía/palia:paliar|2ia:ear|5ierra:errar|5iebra:uebrar|6iembra:sembrar|4üera:agorar|9se retira:retirarse|4iega:egar{n,pl}|5uelga:olgar|5ienza:enzar|5üenza:onzar|4ieza:pezar|5uerza:orzar|4íza:aizar|3úa:uar{d,t{si,c,en,pe},n,l}|4ueva:enovar|5ienda:endar|9se olvida:olvidarse|9e suicida:uicidarse|5uerda:cordar|8se queda:quedarse|4ueda:rodar|5uelda:soldar|4úda:saudar|4iesa:esar{nf,v}|5iensa:epensar|7se casa:casarse|4úsa:husar|4uesa/engrosa:rosar|3ía:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uela:volar|6iembla:emblar|5uebla:poblar|5ísla:aislar|4ueña:oñar|5ierna:obernar|4uena:sonar|4úna:aunar|4ueba:probar|3úa/adecua:decuar|2e:ir,simpedir|4íbe:ibir{oh,o}|5iente:entir|5ierte:ertir|4ite:etir|1:r{mete,rrete,oze,i{a,u{imin,s,etrib,bstit,fr},orr}}|4uece:cocer|4ice:ecir|4iene:ener|4ine:evenir|5ierne:ernir|4úne:eunir|4ime:gemir|5uerme:ormir|4oge:fugir|9se decide:decidirse|5iende:ender{c,t,ef}|5inde:endir|4uede:oder|5ierde:erder|5uerde:order|2ye:ír,uir|4iere:erir{u,h,pref,ug}|4uere:orir|5ospe:uspir|3íe:eír|5igue:eguir|2e/exturque:quir|5uelve:olver|5irve:servir|5ierve:hervir|4ueve:over|7se mueve:moverse|4iñe:eñir|4uele:oler|4ule:polir|2õe:or|2é:prever|4á:aver|2:zer,erer|2ê:er{tev,rov,cr,rel}|3ói:oer|2ém:ter,rvir,ovir~0r:a,e{b{e,a,r,am},ert,abat,ebat,c,on,em,om,am,g{e,emer,o,an},d{en,on,e,r},ofr,arr,orr,omp,rgu,v,añ,a,el,val,e,h,os,x,j}|6ostrar:muestra|3ebir:ncibe|1ir:e{mit,uc,arc,cind,breviv,uv}|4estir:viste|4enir:viene|3egir:ige{rr,el}|3edir:ide{p,m,r}|3üir:guye|0ir:uz~2va:ir|3es:ser|4ige:regir|3ía:iar{conf,cr}|5iensa:pensar|5uerce:torcer|4iere:querer|5yerra:errar|2e:vivir,premir|3ega:jugar|5ienta:entar{s,t}|6uentra:encontrar|4huele:oler|4uega:rogar|4iela:helar|4iega:regar{,f}|5uenta:contar|2á:estar|3:haber|2ê:ler,rever|2õe:pôr|1:rir,roer,salientar|1m:ter|5ierte:verter|2em:vir",
       "firstPlural": "4emos:haber|2omos:ôr~1mos:r|8nos quejamos:quejarse|8nos alejamos:alejarse|11nos preocupamos:preocuparse|9nos acostamos:acostarse|8nos sentamos:sentarse|10nos levantamos:levantarse|9nos afiliamos:afiliarse|9nos retiramos:retirarse|9nos olvidamos:olvidarse|10nos suicidamos:suicidarse|8nos quedamos:quedarse|7nos casamos:casarse|7nos movemos:moverse|1mos/hemos:aver|9nos decidimos:decidirse|1mos/podrimos:drir|2ímos:ir{a,u{imin,s,etrib,bstit,fr}}~~2vamos:ir|2omos:ser,pôr|4emos:haber",
       "secondPlural": "2áis:ar{implific,fisc,rranc,j{e{d,ns,man,qu,l,par,ot,p},fi},t{trevis,uis,n{ime{l,er},afro},afei,edi,e{r,resp,pl,bj,uj,aqu},u{isfr,imp,sp,jec,cl,f}},i{c{,en{ci,fer,t,s}},d,u,saf,v,var,nfr,p,pal,pl,mb,g,om,n},r{nmasca,rast,gar,usur,asegu},jug,olong,eng,tiz{u,fa,te,n},vid{on,l},l{vo,io,tro,a{ñ,nt,g,sc,u,j},nte},ese,pase,oordin,nf,taf,nov,m{la,ra,r,l,ue,to,s,ti,xi,fu},tumb,nco}|1is:ar{elej,rret,i{c{en,efinan,sso,ma,ndi,li,bu},d{pu,a,se,si},ev,uv,xp,ip,ig},bjug,inov,m{fla,tra,defor,lar,acal,nti}}|2éis:er{ec{ndur,oscur,nt,iqu,laqu},rr{ba,reco,soco},met}|1s:ir{t{ssen,smen,an,ur,le,ssis,nves,demi,ncu,c},m{opri,di,ssu,re},g{i{nfl,ol,rr,d},er,tin,un,a,fu},d{simpe,re,li,ilu,ssua,o},ssegu,olu,r{e,eab,ob,i,p,g,t},pun,even,uv,b{xi,ni,oi,m},ol,sp,lp,z,s}|2ís:ir{umerg,er{h,u,pref,ug}}|2ondes:ôr~1s:r|2áis:ar|8os quejáis:quejarse|8os alejáis:alejarse|11os preocupáis:preocuparse|9os acostáis:acostarse|8os sentáis:sentarse|10os levantáis:levantarse|9os afiliáis:afiliarse|9os retiráis:retirarse|8s olvidáis:lvidarse|10os suicidáis:suicidarse|8os quedáis:quedarse|7os casáis:casarse|2éis:er|7os movéis:moverse|1is:r{a{v{o,rqui,ati,ur,tra,sca,ne,u},d{n{bra,oma,fu,do,so,ve,eme},u{j,sn,t,sa},ca,r{sco,sbo,e,eta},vi,eluci,ei,be,pe,ncomo,po,mol},f,x,l{a,i{ssim,ep,sf,st,ut,z,ac},e{op,scong,r,t,s,z},uf,o,u{pit,at,ot,ag,ssim,em,ab,ec,d},sc},n{a{b,ng,pl,f},e{nc,i,z,oord,dr,n},o{i{c{a,di,si,e,p,revolu,ven},s{i,n,s,l},p,quest},r,f},i{ss,ns,z,nf,ef,pl,em,germ,ncrim,d,ioc,ac,ob,tre,r},r{nto,bo,ve,ibe,nte},tu,s},c{i{bd,ejud,f{i{pl,ual,ss,dan,on,ecod,ed,id,t{or,quan,san,e},br,ac},a},nt,rat,cl,ompl,ripl,rn},n,o{al,sl,t,fof,uf,eb,s,tr},smar,emar,for,is,as,fus,adu,hu,e,-ata},o,ç,i,g{i{r,sl,rl,mast},o{v,f,dr,j},n,u,a{c,m,str,op,v},e{r{r,ng,p,sf},c,h,ren,s},al,jul,gas,xer},m,t{e,i{e,ap,d,ig,c{x,xer,ncapa,ssus},fr,rr,hes,ss,uis,lev,bil{ssi,ea},om},n{e{sc,g,u,m{ma,i,r,uple},s{o,apre,s,i},b,ost,li},ia,pa,ja,ro,po,sco,rgu},o{ad,arr,h,c,g,ab},s{a{f,rr,v,p},i,ssu,cu,ate,mpre,nco,go,b},u,r{e{ap,ons,es,fl,b},o{omp,dep,up,f,x},u},a{b,m,nt,d,p,g,dr,ltr,e},l{ssa,xa,co,vo,pu},ip,rap},s{s,li,ri,ui,rra,atra,scur,le,ou,ecu,ran},h{c{o,fe,in,ur},n,l},u{q,m,zig,ag,t{a,fe,u,bi,on},j,rec,s},r{t{as,ns,ques,me,le,a,nfil,eencon},r{a,ate,be,fe,u,i,jo},o{nc,im,omem,rv,h,i,ap,mpl,t,ig},a{ap,dep,sc,s},u{ap,eg,t{a,n,s,u},o,f,m,nd},b{m{so,eslu,me,le},do,no},i{at,e,nsp{o,a},a,ev},ecif,e{sacel,sconsid,sesp,mp,c,on,in,ven,rig},sinteg,imig,son,uad,up,op,v,ac},j{i,e,n,ra,ga,ru,su},z{i{n{e,ter,harmo,ro,ma},t,l{a{atu,ntr,foc,ici,gin,sin,nacion,v},rti,obi,sabi,po},r{o{g,sval,it,p},ute,ve,t,ia,cula},rav,c,otim,rm},pre,le,va},p{eci,ssi,al,escul,hu,socu,ou,im,s,ur},b{m,ba,sa,ga,u,lo},e{b,s,ranqu,faqu,gu,z,g,t{ha,co,s,en},r{a,est,f,er},and,cad,x,elin,h,mp,om,em,ec,ac}},e{v{ol{bs,ss,senv},r,i,cre,de},z,t{a,r,rre,eme,bme},c{e{r{r,lvo,u,d,g,fe},o,m,ol,el,fal,t,u,f,h,rn,nd},or,xer,s,ten},ng,leg,reg,d{e{ac,rc,ec,f},en{ac,nsc,e,esp,st,eapr,ev}},h,ceb,mbeb,mb,r,o,u,rem,gem,erromp,x}}|1is/heis:aver|3is:quir|2ís:ir|9os decidís:decidirse|2ís/podrís:drir|1des:r{e{tev,rov,cr,rel},orri}|1ndes:r{o,te,tervi,ovi}~1r:eís,oís~2vais:ir|2ois:ser|2áis:ar{confi,cri,concili,sec,toc,m{a,ani,re,su},mat,instal,col,fund,relacion}|2éis:er{torc,abastec,quer,corr,ro,vert}|1is:r{a{d,lid,n{ace,flexio,mi,tor},ch{a,ra,lan},r{a,o{c,min,m,nam},ge,luc,mig,minist,pi},c{ar,cer,esti,fi},clam,gel,pul,larg,lev,uiv,post,test,rap,vis},ve,rende}|1des:ler,rever,rir|2ondes:pôr|1s:sumir|1ndes:vir",
       "thirdPlural": "1n:r{a{c{i{,if{,od,impl,cal,cuant}},edu,o{ol,v,h,rr,mb,nf,sof},r{ace,nma,ba,ho},bus,es,fis,a,rran,l},j{e{d,ns,man,qu,l,par,ot,p},fi},t{trevis,uis,n{e{es,m,lim,erim,v,t,r,ri},mo,afro},aler,inser,afei,gri,edi,e{r,resp,pl,bj,uj,aqu},a{r,c,st,l,s},u{isfr,imp,sp,jec,cl,f}},i{c{,en{ci,fer,t,s}},d,iv,bv,mp,op,mb,g,om,n},r{nmasca,eco,t{us,is,ras,en,i,ne},or,gar,usur,inspi,mp,gene,lne,asegu,oluc},g{e{l,tr,agr,v,p},nju,olon,en},iz{r{i,cte,r,ro,uto,mo,gula},final,t{u,fa,te,n}},igu,acu,d{hon,onvi,lvi,acomo},etras,l{titu,stu,nti,io,tro,a{ñ,nt,g,sc,u,j},nte},e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp},n{r{lte,do,eto,a},aicio,afi,esi,oordi},nf,taf,nnov,squiv,m{la,ra,r,l,ue,to,s,ti,xi,fu},tumb,nco},e{ec{ndur,oscur,nt,iqu,laqu},etend}}|1m:r{a{c{i{f{,i{ss,d,ecod,dan,on,br,ac,l,ort,ant,et}},bd,ejud,ompl,ripl,cl,rat,nt,rn},-ata},elej,t{en{apres,m{ma,i,r,uple},ost},rre,ltra,dra},i{c{en,efinan,sso,ma,ndi,li,bu},d{pu,a,se,si},ig},rr{ate,be,fe,jo},reneg,zigu,ch{in,fe,o,ur},m{fla,tra,defor,lar,acal,nti}},e{mb,r,olv{bs,ss,senv}}}|2iam:ear{t{ha,co,s,en},elin,and,cad}|2em:ir{ent{ss,sm},rem,z}|5isten:estir|4imen:emir|4iden:edir|2en:ir{gu,r{f,r,ub,a,d},iv}|4ienen:enir|4iben:ebir|3uyen:üir|2õem:ôr~1n:r{,cuestra,cha,e{omet,jerc,tem,teg,rr{ba,reco,soco},trev}}|5uelcan:olcar|8se quejan:quejarse|8se alejan:alejarse|11se preocupan:preocuparse|5uestan:ostar|9se acuestan:acostarse|5iestan:festar|5ientan:entar{as,l,ec,ev}|6 sientan:ntarse|10se levantan:levantarse|5iertan:ertar{sp,c}|5ueltan:soltar|4ietan:apretar|9se afilian:afiliarse|3ían/palian:paliar|6uestran:ostrar|5ierran:errar|5iebran:uebrar|6iembran:sembrar|4üeran:gorar|9se retiran:retirarse|4iegan:egar{n,pl}|5uelgan:olgar|5ienzan:enzar|5üenzan:onzar|4iezan:pezar|5uerzan:orzar|4ízan:aizar|3úan:uar{d,t{si,c,en,pe},n,l}|4uevan:enovar|5iendan:endar|9se olvidan:olvidarse|9e suicidan:uicidarse|5uerdan:cordar|8se quedan:quedarse|4uedan:rodar|5ueldan:soldar|4iesan:esar{nf,v}|5iensan:epensar|7se casan:casarse|4úsan:husar|4uesan/engrosan:rosar|3ían:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uelan:volar|6iemblan:emblar|5ueblan:poblar|5íslan:aislar|4ueñan:oñar|5iernan:obernar|4uenan:sonar|4únan:aunar|3n:haber|4ueban:probar|3úan/adecuan:decuar|2en:ir{,aflig,umerg}|4íben:ohibir|5ienten:entir|5ierten:ertir|4iten:etir|4uecen:cocer|4icen:ecir|4ienen:ener|5iernen:ernir|4únen:eunir|5uermen:ormir|4igen:egir|9se deciden:decidirse|5ienden:ender{c,t,ef}|5inden:endir|4ueden:oder|5ierden:erder|5uerden:order|2yen:ír,uir|4ieren:erir{u,h,pref,ug}|4ueren:orir|3íen:eír|5iguen:eguir|5uelven:olver|5irven:servir|5ierven:hervir|4ueven:over|7se mueven:moverse|4iñen:eñir|4uelen:oler|2én:prever|1m:r{e{z,t{a,r,rre,me},c{e{r{r,lvo,u,d,g,fe},o,m,ol,el,fal,t,u,f,h,rn,nd},r,s,ten},ng,eg,v,d{e{ac,rc,ec,f},en{ac,nsc,e,esp,st,eapr,ev}},h,em,ceb,mbeb,o,erromp,u,x},a{f,x,l{a,i{ssim,ep,sf,t,z,ac},e{op,g,r,t,s,z},uf,o,u{t,ag,ssim,em,ab,ec,d},sc},n{a{b,ng,pl,f},e{nc,i,z,oord,dr,n},o{i{c{a,i,e,p,revolu,ven},s{i,n,s,l},p,quest},r,f},i{s,z,f,pl,em,germ,ncrim,d,ioc,ac,ob,tre,r},r,tu,s},c,o,ç,d{n{bra,oma,fu,o,ve,eme},ju,snu,tu,ca,r{sco,sbo,e,eta},vi,eluci,ei,be,pe,o,ol},i,g{i{r,sl,rl,mast},o{v,f,dr,j},n,u,a{c,m,str,op,v},e,al,jul,gas,xer},m,t{e,i{e,ap,d,ig,c{x,xer,ncapa,ssus},r,hes,ss,uis,lev,bil{ssi,ea},om},n{e,ia,pa,ja,o,rgu},o{ad,arr,h,c,g,ab},s{a{f,rr,v,p},i,ssu,cu,ate,mpre,nco,go,b},u,r{e,o{omp,dep,up,f,x},u},a,l{ssa,xa,o,pu},ip,rap},s{s,li,ri,ui,ra,scur,le,ou,ecu,ran},h,u,r{t,r,o{c,im,omem,rv,h,i,ap,mpl,t,ig},a{ap,dep,sc,s},u{ap,eg,t{a,n,s,u},o,f,m,nd},b{som,eslum,em,do,no},i{at,e,nsp,a,ev},ecif,e{sacel,sconsid,sesp,mp,c,n,rig},sinteg,imig,son,uad,p,v,c},j{i,e,n,ra,ga,ru,su},z{i{n{e,ter,harmo,ro,ma},t,l{a{atu,ntr,foc,ici,in,nacion,v},rti,obi,sabi,po},r,rav,c,otim,rm},pre,le,va},p{eci,ssi,al,escul,hu,socu,ou,im,s,ur},v{o,ui,ati,ur,tra,sca,ne,u},b{m,ba,sa,ga,u,lo}}}|2em:ir{t{ssis,nves,ur,demi,le,n,ncu,c},ol,g{tin,un,a,li,rri,di,er},uv,d{simpe,li,ilu,ssua,o},r,ssum,oprim,dim,a,xib,nib,mb,sp,lp,u{imin,sseg,ol,s,etrib,bstit,fr},pun,s}|4ulem:polir|4ogem:fugir|4idem:redir|2êem:er{tev,rov,cr}|2õem:or|4íbem:oibir|5ospem:uspir|2em/exturquem:quir|1em:reler,orrir|4inem:evenir|4údam:saudar|2iam:ear|2êm:ter,vir|4ão:aver~1r:en{eb,ab,rb,c,on,om,am,erg,og,d{en,on,e,r},omp,añ,a,el,val,e,s,j},em{uer,rr,fr,amb}|4ebir:nciben|2ir:en{mit,uc,rc,ig{ir,er,x},cind},uzem|5estir:visten|5enir:vienen|4emir:gimen|4edir:iden{p,m}|4üir:guyen~2van:ir|2on:ser|3ían:iar{conf,cr}|5iensan:pensar|5uercen:torcer|4ieren:querer|1n:r{a{sec,toc,marc,m{a,ani,re,su},at,mat,instal,col,congel,concili,filtr,fund,relacion,valoriz},e{met,corr,v,abastec,ro}}|5yerran:errar|3egan:jugar|5ientan:entar{s,t}|6uentran:encontrar|4huelen:oler|4uegan:rogar|4ielan:helar|4iegan:regar{,f}|2en:abrir|5uentan:contar|2án:estar|1m:r{a{acen,flexion,min,ch{a,ra,lan},r{a,ge,mig,minist,mino,mo,namo,pi},clam,estic,larg,lev,lid,post,test,pul,rap,vis},rende}|1em:ler,rir|2õem:pôr|2em:mir{pre,su}|2êem:rever|5ierten:verter"
     },
     "pastTense": {
-      "first": "1:r|2í:er|3fui:ser|4í:rse{e,i{t,m,d,r,l}}|6use:onerse|6uve:enerse|4é:arse|4ué:garse|5qué:carse|4fui:irse~2é:ar|3qué:car|2ué:gar|3cé:zar|3üé:guar|2í:ir,oser|4use:oner|4ise:erer|4uve:ener|3je:cir|2je:raer|4ije:ecir|4ice:acer{f,h}|4ine:enir|4ude:oder|4upe:aber|2e:guiar~3carse:equé|1arse:é{uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1er:í{eb,met,c,lv,prev,em,om,teg,og,ced,nd,rd,rr,p,cre,le,añ,ol,val,a}|1irse:pentí,llí|1erse:oví,eví|1ir:urrí|0r:eí,oí~2fui:ir|2uve:andar,estar|4í:sentirse|2i:dar,ver",
-      "second": "2iste:er|3fuiste:ser|4udiste:oder|3ste:rse{,i{t,m,d,r,l}}|4iste:erse|6usiste:onerse|6uviste:enerse|4fuiste:irse~1ste:r|4iciste:acer{f,h}|4usiste:oner|4isiste:erer|2iste:oser|4uviste:ener|3jiste:cir|2jiste:aer|4ijiste:ecir|4upiste:aber|4iniste:enir|2íste:eer,caer~3rse:ste{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:ste{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:viste{o,tre}|3r:ste{rvi,ivi,urri,reí}|6oder:pudiste~2fuiste:ir|2uviste:andar,estar|3ste:sentirse|2iste:dar",
-      "third": "1ó:r|3fue:ser|2ió:oser|2ó:ñer,ñir|2yó:ír|3ió:eír|4ió:erse|6uso:onerse|6uvo:enerse|4ó:rse{a,li}|4o:riarse|4fue:irse|7irtió:ertirse|7intió:entirse|7istió:estirse|7urmió:ormirse|3ó:irse{d,r}~2ó:ar|2ió:er|5intió:entir|5irtió:ertir|4itió:etir|5istió:estir|5irvió:ervir|4idió:edir|5urmió:ormir|4igió:egir|1ó:guir|5iguió:eguir|4irió:erir|4urió:orir|2yó:uir,eer,caer|4iñó:eñir|4uso:oner|4iso:erer|4uvo:ener|3jo:cir|2jo:aer|4ijo:ecir|4izo:acer{f,h}|2o:iar{cr,gu}|4ino:enir|4udo:oder|4upo:aber~1arse:ó{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1r:ió{ib,ub,t{r,mi,sis,a},iv,cid,ud,ad,im,um,g{iri,xi,fli,r,n},ufr,urr,br,n,sal,pl}|1ar:ió{c{un,va,pre,vor,o,i,u},nv,liv,od,tud,u,f,ar,p}|2er:ió{noc,rr,omp}|5entirse:pintió|2erse:vió{o,tre}|2eír:rió|1irse:ulló|1er:tañó|1ir:uñó~2fue:ir|2uvo:andar,estar|2yó:oír|7intió:sentirse|2io:dar,ver|3io:reír",
-      "firstPlural": "2imos:er|3fuimos:ser|4udimos:oder|3mos:rse{,i{t,m,d,r,l}}|4imos:erse|6usimos:onerse|6uvimos:enerse|4fuimos:irse~1mos:r|4icimos:acer{f,h}|4usimos:oner|4isimos:erer|2imos:oser|4uvimos:ener|3jimos:cir|2jimos:aer|4ijimos:ecir|4upimos:aber|4inimos:enir|2ímos:eer,caer~3rse:mos{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:mos{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:vimos{o,tre}|3r:mos{rvi,ivi,urri,reí}|6oder:pudimos~2fuimos:ir|2uvimos:andar,estar|3mos:sentirse|2imos:dar",
-      "secondPlural": "2isteis:er|3fuisteis:ser|4udisteis:oder|3steis:rse{,i{t,m,d,r,l}}|4isteis:erse|6usisteis:onerse|6uvisteis:enerse|4fuisteis:irse~1steis:r|4icisteis:acer{f,h}|4usisteis:oner|4isisteis:erer|2isteis:oser|4uvisteis:ener|3jisteis:cir|2jisteis:aer|4ijisteis:ecir|4upisteis:aber|4inisteis:enir|2ísteis:eer,caer~5rse:steis{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|6er:steis{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|6erse:visteis{o,tre}|5r:steis{rvi,ivi,urri,reí}|8oder:pudisteis~2fuisteis:ir|2uvisteis:andar,estar|3steis:sentirse|2isteis:dar",
-      "thirdPlural": "3fueron:ser|2ieron:oser|0on:ñer|1eron:ir|3ieron:eír|2on:se|4ieron:erse|6usieron:onerse|6uvieron:enerse|4fueron:irse|7irtieron:ertirse|7intieron:entirse|7istieron:estirse|7urmieron:ormirse|3eron:irse{d,r}~0on:r|2ieron:er|5intieron:entir|5irtieron:ertir|4itieron:etir|5istieron:estir|4icieron:acer{f,h}|4usieron:oner|4isieron:erer|4uvieron:ener|5irvieron:ervir|5urmieron:ormir|4igieron:egir|4idieron:edir|4udieron:oder|4irieron:erir|4urieron:orir|4upieron:aber|4inieron:enir|1eron:guir|5iguieron:eguir|3jeron:cir|2jeron:aer|4ijeron:ecir|2yeron:r{í,ui,ee,cae}|2eron:ñir|4iñeron:eñir|4eron:lirse~2se:aron{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieron{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieron|5erse:vieron{o,tre}|5eír:rieron|5er:rrieron|2:añeron~2fueron:ir|2uvieron:andar,estar|7intieron:sentirse|2ieron:dar"
+      "first": "1:r|2í:er|3fui:ser|4í:rse{e,i{t,m,d,r,l}}|6use:onerse|6uve:enerse|4é:arse|4ué:garse|5qué:carse|4fui:irse~2é:ar|3qué:car|2ué:gar|3cé:zar|3üé:guar|2í:ir,oser|4use:oner|4ise:erer|4uve:ener|3je:cir|2je:raer|4ije:ecir|4ice:acer{f,h}|4ine:enir|4ude:oder|4upe:aber|2e:guiar|4ube:haber~3carse:equé|1arse:é{uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1er:í{eb,met,c,lv,prev,em,om,teg,og,ced,nd,rd,rr,p,cre,le,añ,ol,val,a}|1irse:pentí,llí|1erse:oví,eví|1ir:urrí|0r:eí,oí~2fui:ir|2uve:andar,estar|4í:sentirse|2i:dar,ver",
+      "second": "2iste:er|3fuiste:ser|4udiste:oder|3ste:rse{,i{t,m,d,r,l}}|4iste:erse|6usiste:onerse|6uviste:enerse|4fuiste:irse~1ste:r|4ubiste:haber|4iciste:acer{f,h}|4usiste:oner|4isiste:erer|2iste:oser|4uviste:ener|3jiste:cir|2jiste:aer|4ijiste:ecir|4upiste:aber|4iniste:enir|2íste:eer,caer~3rse:ste{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:ste{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:viste{o,tre}|3r:ste{rvi,ivi,urri,reí}|6oder:pudiste~2fuiste:ir|2uviste:andar,estar|3ste:sentirse|2iste:dar",
+      "third": "1ó:r|3fue:ser|2ió:oser|2ó:ñer,ñir|2yó:ír|3ió:eír|4ió:erse|6uso:onerse|6uvo:enerse|4ó:rse{a,li}|4o:riarse|4fue:irse|7irtió:ertirse|7intió:entirse|7istió:estirse|7urmió:ormirse|3ó:irse{d,r}~2ó:ar|2ió:er|5intió:entir|5irtió:ertir|4itió:etir|5istió:estir|5irvió:ervir|4idió:edir|5urmió:ormir|4igió:egir|1ó:guir|5iguió:eguir|4irió:erir|4urió:orir|2yó:uir,eer,caer|4iñó:eñir|4uso:oner|4iso:erer|4uvo:ener|3jo:cir|2jo:aer|4ijo:ecir|4izo:acer{f,h}|2o:iar{cr,gu}|4ino:enir|4udo:oder|4upo:aber|4ubo:haber~1arse:ó{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1r:ió{ib,ub,t{r,mi,sis,a},iv,cid,ud,ad,im,um,g{iri,xi,fli,r,n},ufr,urr,br,n,sal,pl}|1ar:ió{c{un,va,pre,vor,o,i,u},nv,liv,od,tud,u,f,ar,p}|2er:ió{noc,rr,omp}|5entirse:pintió|2erse:vió{o,tre}|2eír:rió|1irse:ulló|1er:tañó|1ir:uñó~2fue:ir|2uvo:andar,estar|2yó:oír|7intió:sentirse|2io:dar,ver|3io:reír",
+      "firstPlural": "2imos:er|3fuimos:ser|4udimos:oder|3mos:rse{,i{t,m,d,r,l}}|4imos:erse|6usimos:onerse|6uvimos:enerse|4fuimos:irse~1mos:r|4ubimos:haber|4icimos:acer{f,h}|4usimos:oner|4isimos:erer|2imos:oser|4uvimos:ener|3jimos:cir|2jimos:aer|4ijimos:ecir|4upimos:aber|4inimos:enir|2ímos:eer,caer~3rse:mos{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:mos{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:vimos{o,tre}|3r:mos{rvi,ivi,urri,reí}|6oder:pudimos~2fuimos:ir|2uvimos:andar,estar|3mos:sentirse|2imos:dar",
+      "secondPlural": "2isteis:er|3fuisteis:ser|4udisteis:oder|3steis:rse{,i{t,m,d,r,l}}|4isteis:erse|6usisteis:onerse|6uvisteis:enerse|4fuisteis:irse~1steis:r|4ubisteis:haber|4icisteis:acer{f,h}|4usisteis:oner|4isisteis:erer|2isteis:oser|4uvisteis:ener|3jisteis:cir|2jisteis:aer|4ijisteis:ecir|4upisteis:aber|4inisteis:enir|2ísteis:eer,caer~5rse:steis{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|6er:steis{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|6erse:visteis{o,tre}|5r:steis{rvi,ivi,urri,reí}|8oder:pudisteis~2fuisteis:ir|2uvisteis:andar,estar|3steis:sentirse|2isteis:dar",
+      "thirdPlural": "3fueron:ser|2ieron:oser|0on:ñer|1eron:ir|3ieron:eír|2on:se|4ieron:erse|6usieron:onerse|6uvieron:enerse|4fueron:irse|7irtieron:ertirse|7intieron:entirse|7istieron:estirse|7urmieron:ormirse|3eron:irse{d,r}~0on:r|2ieron:er|4ubieron:haber|5intieron:entir|5irtieron:ertir|4itieron:etir|5istieron:estir|4icieron:acer{f,h}|4usieron:oner|4isieron:erer|4uvieron:ener|5irvieron:ervir|5urmieron:ormir|4igieron:egir|4idieron:edir|4udieron:oder|4irieron:erir|4urieron:orir|4upieron:aber|4inieron:enir|1eron:guir|5iguieron:eguir|3jeron:cir|2jeron:aer|4ijeron:ecir|2yeron:r{í,ui,ee,cae}|2eron:ñir|4iñeron:eñir|4eron:lirse~2se:aron{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieron{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieron|5erse:vieron{o,tre}|5eír:rieron|5er:rrieron|2:añeron~2fueron:ir|2uvieron:andar,estar|7intieron:sentirse|2ieron:dar"
     },
     "imperfectTense": {
       "first": "2ía:ir|1a:ír|3ba:rse|4ía:rse{i,e}~1ba:r|2ía:er~2rse:aba{fili,icid}|2ir:ía{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|2er:ía{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|1r:reía~1ba:ir|3era:ser|2ía:r{quere,te,vi,vivi,premi}|1a:oír|1ía:ver",
@@ -9302,28 +9302,28 @@ designate
       "thirdPlural": "2drían:enir,alir|2irían:ír|2ían:se|4drían:nerse~0ían:r|3rían:acer{f,h}|2drían:ner,aler|2rían:er{od,er,ab}~3se:rían{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|3:arían{nf,ch}|5ír:irían{e,o}|5ir:drían{ven,sal}~2ían:sentirse|4irían:decir"
     },
     "subjunctive": {
-      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3zcas:cir|4igas:ecir|2igas:ír|4es:arse|7iebres:ebrarse|5ques:carse|7ientes:entarse|7uestes:ostarse|7iertes:ertarse|5íes:riarse|7uerdes:ordarse|5úes:uarse|6iegues:egarse|4as:rse{e,di,ri}|4gas:nerse|5zcas:cerse|6uevas:overse|4vayas:irse|7ientas:entirse|7istas:estirse|7iertas:ertirse|7uermas:ormirse~2as:ir|3zcas:cer|2yas:uir|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4as:lirse|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:negar|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:volar|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr,pl}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientas|3gir:ijas{ir,fl,x}|3ger:jas{e,o}|2erse:evas|2arse:es{ct,ter,uej,nce}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
-      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír|4emos:arse|5quemos:carse|4uemos:garse|4amos:rse{e,di,ri}|4gamos:nerse|5zcamos:cerse|4vayamos:irse|7intamos:entirse|7istamos:estirse|7irtamos:ertirse|7urmamos:ormirse~2amos:er|3zcamos:cer|2yamos:uir|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:ever|4amos:lirse|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|4er:amos{et,ol,eb}|7entirse:pintamos|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}|4erse:evamos|4arse:emos{ct,ter,uej,nce}~1amos:ver,ser|2vayamos:ir",
-      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír|4éis:arse|5quéis:carse|4uéis:garse|4áis:rse{e,di,ri}|4gáis:nerse|5zcáis:cerse|4vayáis:irse|7intáis:entirse|7istáis:estirse|7irtáis:ertirse|7urmáis:ormirse~2áis:er|3zcáis:cer|2yáis:uir|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:ever|4áis:lirse|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|3er:áis{et,ol,eb}|6entirse:pintáis|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}|3erse:eváis|3arse:éis{ct,ter,uej,nce}~2eis:dar|1áis:ver,ser|2vayáis:ir",
-      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír|4en:arse|7iebren:ebrarse|5quen:carse|7ienten:entarse|7uesten:ostarse|7ierten:ertarse|5íen:riarse|7uerden:ordarse|5úen:uarse|6ieguen:egarse|4an:rse{e,di,ri}|4gan:nerse|5zcan:cerse|6uevan:overse|4vayan:irse|7ientan:entirse|7istan:estirse|7iertan:ertirse|7uerman:ormirse~2an:ir|3zcan:cer|2yan:uir|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4an:lirse|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:negar|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr,pl}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientan|3gir:ijan{ir,fl,x}|3ger:jan{e,o}|2erse:evan|2arse:en{ct,ter,uej,nce}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
+      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3zcas:cir|4igas:ecir|2igas:ír|4es:arse|7iebres:ebrarse|5ques:carse|7ientes:entarse|7uestes:ostarse|7iertes:ertarse|5íes:riarse|7uerdes:ordarse|5úes:uarse|6iegues:egarse|4as:rse{e,di,ri}|4gas:nerse|5zcas:cerse|6uevas:overse|4vayas:irse|7ientas:entirse|7istas:estirse|7iertas:ertirse|7uermas:ormirse~2as:ir|3zcas:cer|2yas:uir|3yas:haber|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4as:lirse|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:negar|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:volar|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr,pl}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientas|3gir:ijas{ir,fl,x}|3ger:jas{e,o}|2erse:evas|2arse:es{ct,ter,uej,nce}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
+      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír|4emos:arse|5quemos:carse|4uemos:garse|4amos:rse{e,di,ri}|4gamos:nerse|5zcamos:cerse|4vayamos:irse|7intamos:entirse|7istamos:estirse|7irtamos:ertirse|7urmamos:ormirse~2amos:er|3zcamos:cer|2yamos:uir|3yamos:haber|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:ever|4amos:lirse|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|4er:amos{et,ol,eb}|7entirse:pintamos|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}|4erse:evamos|4arse:emos{ct,ter,uej,nce}~1amos:ver,ser|2vayamos:ir",
+      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír|4éis:arse|5quéis:carse|4uéis:garse|4áis:rse{e,di,ri}|4gáis:nerse|5zcáis:cerse|4vayáis:irse|7intáis:entirse|7istáis:estirse|7irtáis:ertirse|7urmáis:ormirse~2áis:er|3zcáis:cer|2yáis:uir|3yáis:haber|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:ever|4áis:lirse|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|3er:áis{et,ol,eb}|6entirse:pintáis|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}|3erse:eváis|3arse:éis{ct,ter,uej,nce}~2eis:dar|1áis:ver,ser|2vayáis:ir",
+      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír|4en:arse|7iebren:ebrarse|5quen:carse|7ienten:entarse|7uesten:ostarse|7ierten:ertarse|5íen:riarse|7uerden:ordarse|5úen:uarse|6ieguen:egarse|4an:rse{e,di,ri}|4gan:nerse|5zcan:cerse|6uevan:overse|4vayan:irse|7ientan:entirse|7istan:estirse|7iertan:ertirse|7uerman:ormirse~2an:ir|3zcan:cer|2yan:uir|3yan:haber|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4an:lirse|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:negar|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr,pl}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientan|3gir:ijan{ir,fl,x}|3ger:jan{e,o}|2erse:evan|2arse:en{ct,ter,uej,nce}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
     },
     "imperfectSubjunctive": {
-      "first": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
-      "second": "3fueras:ser|2ieras:oser|0as:ñer|1eras:ir|3ieras:eír|2as:se|4ieras:erse|6usieras:onerse|6uvieras:enerse|4fueras:irse|7irtieras:ertirse|7intieras:entirse|7istieras:estirse|7urmieras:ormirse|3eras:irse{d,r}~0as:r|2ieras:er|5intieras:entir|5irtieras:ertir|4itieras:etir|5istieras:estir|4icieras:acer{f,h}|4usieras:oner|4isieras:erer|4uvieras:ener|5irvieras:ervir|5urmieras:ormir|4igieras:egir|4idieras:edir|4udieras:oder|4irieras:erir|4urieras:orir|4upieras:aber|4inieras:enir|1eras:guir|5iguieras:eguir|3jeras:cir|2jeras:aer|4ijeras:ecir|2yeras:r{í,ui,ee,cae}|2eras:ñir|4iñeras:eñir|4eras:lirse~2se:aras{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieras{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieras|5erse:vieras{o,tre}|5eír:rieras|5er:rrieras|2:añeras~2fueras:ir|2uvieras:andar,estar|7intieras:sentirse|2ieras:dar",
-      "third": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
-      "firstPlural": "1éramos:r|3fuéramos:ser|2iéramos:oser|2éramos:ñer|3iéramos:eír|4iéramos:erse|6usiéramos:onerse|6uviéramos:enerse|4áramos:arse|4fuéramos:irse|7irtiéramos:ertirse|7intiéramos:entirse|7istiéramos:estirse|7urmiéramos:ormirse|3éramos:irse{d,r}~2áramos:ar|2iéramos:er|5intiéramos:entir|5irtiéramos:ertir|4itiéramos:etir|5istiéramos:estir|4iciéramos:acer{f,h}|4usiéramos:oner|4isiéramos:erer|4uviéramos:ener|5irviéramos:ervir|5urmiéramos:ormir|4igiéramos:egir|4idiéramos:edir|4udiéramos:oder|4iriéramos:erir|4uriéramos:orir|4upiéramos:aber|4iniéramos:enir|1éramos:guir|5iguiéramos:eguir|3jéramos:cir|2jéramos:aer|4ijéramos:ecir|2yéramos:r{í,ui,ee,cae}|2éramos:ñir|4iñéramos:eñir|4éramos:lirse~6arse:áramos{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|6r:iéramos{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|10entirse:pintiéramos|7erse:viéramos{o,tre}|7eír:riéramos|7er:rriéramos|6er:añéramos~2fuéramos:ir|2uviéramos:andar,estar|7intiéramos:sentirse|2iéramos:dar",
-      "secondPlural": "3fuerais:ser|2ierais:oser|0ais:ñer|1erais:ir|3ierais:eír|2ais:se|4ierais:erse|6usierais:onerse|6uvierais:enerse|4fuerais:irse|7irtierais:ertirse|7intierais:entirse|7istierais:estirse|7urmierais:ormirse|3erais:irse{d,r}~0ais:r|2ierais:er|5intierais:entir|5irtierais:ertir|4itierais:etir|5istierais:estir|4icierais:acer{f,h}|4usierais:oner|4isierais:erer|4uvierais:ener|5irvierais:ervir|5urmierais:ormir|4igierais:egir|4idierais:edir|4udierais:oder|4irierais:erir|4urierais:orir|4upierais:aber|4inierais:enir|1erais:guir|5iguierais:eguir|3jerais:cir|2jerais:aer|4ijerais:ecir|2yerais:r{í,ui,ee,cae}|2erais:ñir|4iñerais:eñir|4erais:lirse~3se:arais{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|5r:ierais{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|9entirse:pintierais|6erse:vierais{o,tre}|6eír:rierais|6er:rrierais|3:añerais~2fuerais:ir|2uvierais:andar,estar|7intierais:sentirse|2ierais:dar",
-      "thirdPlural": "3fueran:ser|2ieran:oser|0an:ñer|1eran:ir|3ieran:eír|2an:se|4ieran:erse|6usieran:onerse|6uvieran:enerse|4fueran:irse|7irtieran:ertirse|7intieran:entirse|7istieran:estirse|7urmieran:ormirse|3eran:irse{d,r}~0an:r|2ieran:er|5intieran:entir|5irtieran:ertir|4itieran:etir|5istieran:estir|4icieran:acer{f,h}|4usieran:oner|4isieran:erer|4uvieran:ener|5irvieran:ervir|5urmieran:ormir|4igieran:egir|4idieran:edir|4udieran:oder|4irieran:erir|4urieran:orir|4upieran:aber|4inieran:enir|1eran:guir|5iguieran:eguir|3jeran:cir|2jeran:aer|4ijeran:ecir|2yeran:r{í,ui,ee,cae}|2eran:ñir|4iñeran:eñir|4eran:lirse~2se:aran{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieran{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieran|5erse:vieran{o,tre}|5eír:rieran|5er:rrieran|2:añeran~2fueran:ir|2uvieran:andar,estar|7intieran:sentirse|2ieran:dar"
+      "first": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
+      "second": "3fueras:ser|2ieras:oser|0as:ñer|1eras:ir|3ieras:eír|2as:se|4ieras:erse|6usieras:onerse|6uvieras:enerse|4fueras:irse|7irtieras:ertirse|7intieras:entirse|7istieras:estirse|7urmieras:ormirse|3eras:irse{d,r}~0as:r|2ieras:er|4ubieras:haber|5intieras:entir|5irtieras:ertir|4itieras:etir|5istieras:estir|4icieras:acer{f,h}|4usieras:oner|4isieras:erer|4uvieras:ener|5irvieras:ervir|5urmieras:ormir|4igieras:egir|4idieras:edir|4udieras:oder|4irieras:erir|4urieras:orir|4upieras:aber|4inieras:enir|1eras:guir|5iguieras:eguir|3jeras:cir|2jeras:aer|4ijeras:ecir|2yeras:r{í,ui,ee,cae}|2eras:ñir|4iñeras:eñir|4eras:lirse~2se:aras{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieras{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieras|5erse:vieras{o,tre}|5eír:rieras|5er:rrieras|2:añeras~2fueras:ir|2uvieras:andar,estar|7intieras:sentirse|2ieras:dar",
+      "third": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
+      "firstPlural": "1éramos:r|3fuéramos:ser|2iéramos:oser|2éramos:ñer|3iéramos:eír|4iéramos:erse|6usiéramos:onerse|6uviéramos:enerse|4áramos:arse|4fuéramos:irse|7irtiéramos:ertirse|7intiéramos:entirse|7istiéramos:estirse|7urmiéramos:ormirse|3éramos:irse{d,r}~2áramos:ar|2iéramos:er|4ubiéramos:haber|5intiéramos:entir|5irtiéramos:ertir|4itiéramos:etir|5istiéramos:estir|4iciéramos:acer{f,h}|4usiéramos:oner|4isiéramos:erer|4uviéramos:ener|5irviéramos:ervir|5urmiéramos:ormir|4igiéramos:egir|4idiéramos:edir|4udiéramos:oder|4iriéramos:erir|4uriéramos:orir|4upiéramos:aber|4iniéramos:enir|1éramos:guir|5iguiéramos:eguir|3jéramos:cir|2jéramos:aer|4ijéramos:ecir|2yéramos:r{í,ui,ee,cae}|2éramos:ñir|4iñéramos:eñir|4éramos:lirse~6arse:áramos{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|6r:iéramos{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|10entirse:pintiéramos|7erse:viéramos{o,tre}|7eír:riéramos|7er:rriéramos|6er:añéramos~2fuéramos:ir|2uviéramos:andar,estar|7intiéramos:sentirse|2iéramos:dar",
+      "secondPlural": "3fuerais:ser|2ierais:oser|0ais:ñer|1erais:ir|3ierais:eír|2ais:se|4ierais:erse|6usierais:onerse|6uvierais:enerse|4fuerais:irse|7irtierais:ertirse|7intierais:entirse|7istierais:estirse|7urmierais:ormirse|3erais:irse{d,r}~0ais:r|2ierais:er|4ubierais:haber|5intierais:entir|5irtierais:ertir|4itierais:etir|5istierais:estir|4icierais:acer{f,h}|4usierais:oner|4isierais:erer|4uvierais:ener|5irvierais:ervir|5urmierais:ormir|4igierais:egir|4idierais:edir|4udierais:oder|4irierais:erir|4urierais:orir|4upierais:aber|4inierais:enir|1erais:guir|5iguierais:eguir|3jerais:cir|2jerais:aer|4ijerais:ecir|2yerais:r{í,ui,ee,cae}|2erais:ñir|4iñerais:eñir|4erais:lirse~3se:arais{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|5r:ierais{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|9entirse:pintierais|6erse:vierais{o,tre}|6eír:rierais|6er:rrierais|3:añerais~2fuerais:ir|2uvierais:andar,estar|7intierais:sentirse|2ierais:dar",
+      "thirdPlural": "3fueran:ser|2ieran:oser|0an:ñer|1eran:ir|3ieran:eír|2an:se|4ieran:erse|6usieran:onerse|6uvieran:enerse|4fueran:irse|7irtieran:ertirse|7intieran:entirse|7istieran:estirse|7urmieran:ormirse|3eran:irse{d,r}~0an:r|2ieran:er|4ubieran:haber|5intieran:entir|5irtieran:ertir|4itieran:etir|5istieran:estir|4icieran:acer{f,h}|4usieran:oner|4isieran:erer|4uvieran:ener|5irvieran:ervir|5urmieran:ormir|4igieran:egir|4idieran:edir|4udieran:oder|4irieran:erir|4urieran:orir|4upieran:aber|4inieran:enir|1eran:guir|5iguieran:eguir|3jeran:cir|2jeran:aer|4ijeran:ecir|2yeran:r{í,ui,ee,cae}|2eran:ñir|4iñeran:eñir|4eran:lirse~2se:aran{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieran{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieran|5erse:vieran{o,tre}|5eír:rieran|5er:rrieran|2:añeran~2fueran:ir|2uvieran:andar,estar|7intieran:sentirse|2ieran:dar"
     },
     "imperative": {
       "first": "~~~",
-      "second": "1:r{,e{c{ya,e{en,aman,or,fr,bl,aqu},n},vend,pond},a{nt{gu,me,se,a},amin}}|2as:ter,rer|2gas:detener|4iere:erer|4uevas:over|5uestes:costar|2es:ar{vant,prepar,erm,am,cu}|5iertes:ertar|3úa:ectuar|4ige:egir|3zcas:cir|4gas:erse|5zcas:cerse|4as:rse{de,ri}|4es:arse|7ientes:sentarse|5ques:carse|7uerdes:ordarse|4vayas:irse|7ientas:sentirse~2e:ir{duc{n,a},mbat,it,insist,fr,scubr,curr,um,v,ud,ad,g,l,hib,gu}|4ice:edecir|6iégate:egarse|6écate:ecarse|6ócate:ocarse|7ércate:ercarse|7íllate:illarse|7úrlate:urlarse|5íate:iarse|7úntate:guntarse|7iéntate:entarse|7ústate:ustarse|6émate:emarse|7álmate:almarse|7ásmate:asmarse|7ánsate:ansarse|6ásate:asarse|6édate:edarse|6ídate:idarse|6ójate:ojarse|6éjate:ejarse|7úchate:ucharse|5úate:uarse|6áñate:añarse|8órciate:orciarse|7iébrate:ebrarse|7uérmete:ormirse|7iéntete:entirse|6ídete:idirse|6écete:uecerse|6évete:everse|4ite:mpetir|5iente:entir|5iste:estir|5ierte:ertir|4uere:orir|4iere:uerir|4iñe:eñir|5uerme:ormir|4ueve:lover|5ierve:hervir|5iende:ender{nc,t}|3íe:eír|2ye:r{í,ui{h,nstr,b,fl}}|5igue:eguir|2as:r{i,e{p,d,om,le}}|6uevas:overse|5uelvas:olver|5irvas:ervir|2yas:uir|3zcas:cer|4itas:etir|5ientas:sentir|7istas:estirse|7iertas:ertirse|5iertas:nvertir|4uedas:oder|5iendas:ender{nt,c,ef}|4idas:edir|5ierdas:erder|2gas:ner,ler,enir|3as:stinguir|4igas:ecir|5igas:rseguir|2igas:caer|4ieras:erir|4as:lirse|4uelas:oler|3jas:oger|4iñas:reñir|4íbas:ohibir|3ías:nreír|3zas:rcer|5uerzas:orcer|2es:ar{,t{n,o,is,mi,vi,osi,bor,epor,nsul,fal,pe},min,scin,afirm,nform,astim}|4üeres:gorar|6uentres:ontrar|7uestes:ostarse|7iertes:ertarse|2ues:gar|4uegues:ogar|5uelgues:olgar|3ques:car|3íes:iar{u,ar,f}|5iernes:ernar|5uerdes:cordar|3ces:zar|5iences:enzar|4úses:husar|4ieses:esar{v,f}|5ienses:ensar|3úes:tuar|4uebes:probar|1:ar{g{ti,pe,ve,ra},t,r{mo,do,dmi,aspi,espi,p,r,a,ju,ig,nt,eb},z{ra,ha,ti,oli,van},c{e,i{t,l,if{er,ur,s},r},lo,ovo,ar,ta},pañ,bañ,d{ra,fa,abor,uar,u,in,ue,i},j{a,i,o,se},goci,uci,vi,l{uil,r,g,ña,i,gu,ab,ve},us,ns,cas,m,en,in,uch,ech,e{c,s,t,pl},ab,iv,preserv,ev,y,gu}|4iega:negar|5uesta:ostar|5ienta:lentar|5uenta:contar|4ieta:apretar|5ierra:errar|6uestra:ostrar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|4ueña:oñar|5uerda:ecordar|5ienda:endar|4uela:volar|3ía:iar{r,ac,nv}|4uena:sonar|3úa:uar|4ueva:ovar|4ieva:nevar|4ón:poner{u,ro}|4én:ener|3z:acer{h,f}|2é:ever|2:alir~0r:e,ege|3egir:ige{rr,el}|4cerse:jezcas|4cir:uzcas|2er:etas,rras|2ir:sistas,cidas|3erse:tengas|2irse:urras|2arse:es{r{te,mo,eg,mb},t,unt,ce,in,m,ud,fad,ll,icul,h}|2ar:illes,nches~2gas:tener|4gas:ponerse|7ientas:sentirse|1:r{dura,unta,e{parec,nac,v,cog}}|4huelas:oler|2es:amar|4ide:pedir|4ueba:probar|5igas:seguir|2á:estar|4ieles:helar|2:poner|4iegues:regar|2e:escribir|5uestes:costar|4iere:querer|5ientes:sentar|1as:ser|5yerres:errar|2vayas:ir|3ega:jugar|5iente:sentir|6uestres:mostrar|4ijas:regir",
-      "secondPlural": "1d:r{e{ec{d,aman,r,al,j},orr,evolv,ov,scog},a{g{esti,ne,pe,ve,a,r},t{,es,vis,cos,men,esi,xpor},r{o{m,g,ll,d},ti,pi,bor,a,su,nt,eb},z{e,i{ir,eal,vil,an},u,r,ha,ca,lan},iv,nev,ov,c{e,ivo,i{t,epl,apl,if{or,ur,c,s},ed,p,n,r},r,us,sa,u},pañ,bañ,nseñ,ap,d{fa,uar,u,ren,lvi},i{gu,c{go,e,anun,i},r,ud,op,iv},j,n{e,do,io,i{cam,rm,oc,e,t}},m{ir,asti,u,l,s},l{zc,r,he,ve,ga,ña,i,gu,vo,io},us,pres,is,e,ch{du,cu,e},u,y},i{nsegu,onsist,ed,ñad,eprim,produc,educ,edec}}|3zcáis:ecer{sagrad,apar,fr}|2gáis:detener,enir|2éis:preparar,yudar|3quéis:aticar|5urmáis:ormir|4igáis:ecir|5zcáis:cerse|4éis:arse|4vayáis:irse|4áis:irse{d,r}~1d:r|4áis:rse{e,ti}|5irváis:servir|2áis:r{e{lv,p,omet,em,d{ven,ten,con,r},re,r,ñ,tos,sol,deb},i{dmit,ist,mbat,m,d,br,uñ,pl,ub}}|2yáis:uir{estr,l}|4epáis:aber|5quepáis:caber|3zcáis:cir,ecer,enacer|4itáis:retir|7irtáis:ertirse|5irtáis:onvertir|7urmáis:ormirse|4idáis:medir|1áis:ver|4ijáis:regir|3jáis:xigir,rgir,oger|4iráis:erir{g,u}|4iñáis:reñir|3áis:guir|4gáis:enerse|2gáis:er{nten,mpon,al}|5igáis:eguir|2igáis:aer|3záis:cer{or,nven}|2éis:ar{,re,ele,nu,t{n{gu,e,ca,o},ci,si,vi,s,ra,por,p,vo},uj,iaj}|2uéis:gar|3quéis:car|5quéis:rcarse|4éis:callarse|3céis:zar|3os:rse{a{or,mbr,tr,g,c,ud,ad,ll,rl,i,t{i,us,r,an,len},am,lm,sm,oj,ñ,as,ech},ne}|4íos:irse{pent,l}~5cerse:ezcáis{aqu,j}|3irse:áis{id,urr}|4ir:vengáis|5ecir:digáis|3arse:éis{ter,egr,ebr,e,u,t,cost,ued,lvid,ein,icul,erm,em,duch,ach,j}~1d:r{a{reserv,pas,d{,bor,agra,an},am,alent,gust},trae}|2gáis:oponer|3iais:reír|2áis:escribir|1ais:ser|2vayáis:ir|5intáis:sentir",
+      "second": "1:r{,e{c{ya,e{en,aman,or,fr,bl,aqu},n},vend,pond},a{nt{gu,me,se,a},amin}}|2as:ter,rer|2gas:detener|4iere:erer|4uevas:over|5uestes:costar|2es:ar{vant,prepar,erm,am,cu}|5iertes:ertar|3úa:ectuar|4ige:egir|3zcas:cir|4gas:erse|5zcas:cerse|4as:rse{de,ri}|4es:arse|7ientes:sentarse|5ques:carse|7uerdes:ordarse|4vayas:irse|7ientas:sentirse~2e:ir{duc{n,a},mbat,it,insist,fr,scubr,curr,um,v,ud,ad,g,l,hib,gu}|4ice:edecir|6iégate:egarse|6écate:ecarse|6ócate:ocarse|7ércate:ercarse|7íllate:illarse|7úrlate:urlarse|5íate:iarse|7úntate:guntarse|7iéntate:entarse|7ústate:ustarse|6émate:emarse|7álmate:almarse|7ásmate:asmarse|7ánsate:ansarse|6ásate:asarse|6édate:edarse|6ídate:idarse|6ójate:ojarse|6éjate:ejarse|7úchate:ucharse|5úate:uarse|6áñate:añarse|8órciate:orciarse|7iébrate:ebrarse|7uérmete:ormirse|7iéntete:entirse|6ídete:idirse|6écete:uecerse|6évete:everse|4ite:mpetir|5iente:entir|5iste:estir|5ierte:ertir|4uere:orir|4iere:uerir|4iñe:eñir|5uerme:ormir|4ueve:lover|5ierve:hervir|5iende:ender{nc,t}|3íe:eír|2ye:r{í,ui{h,nstr,b,fl}}|5igue:eguir|4e:haber|2as:r{i,e{p,d,om,le}}|6uevas:overse|5uelvas:olver|5irvas:ervir|2yas:uir|3zcas:cer|4itas:etir|5ientas:sentir|7istas:estirse|7iertas:ertirse|5iertas:nvertir|4uedas:oder|5iendas:ender{nt,c,ef}|4idas:edir|5ierdas:erder|2gas:ner,ler,enir|3as:stinguir|4igas:ecir|5igas:rseguir|2igas:caer|4ieras:erir|4as:lirse|4uelas:oler|3jas:oger|4iñas:reñir|4íbas:ohibir|3ías:nreír|3zas:rcer|5uerzas:orcer|2es:ar{,t{n,o,is,mi,vi,osi,bor,epor,nsul,fal,pe},min,scin,afirm,nform,astim}|4üeres:gorar|6uentres:ontrar|7uestes:ostarse|7iertes:ertarse|2ues:gar|4uegues:ogar|5uelgues:olgar|3ques:car|3íes:iar{u,ar,f}|5iernes:ernar|5uerdes:cordar|3ces:zar|5iences:enzar|4úses:husar|4ieses:esar{v,f}|5ienses:ensar|3úes:tuar|4uebes:probar|1:ar{g{ti,pe,ve,ra},t,r{mo,do,dmi,aspi,espi,p,r,a,ju,ig,nt,eb},z{ra,ha,ti,oli,van},c{e,i{t,l,if{er,ur,s},r},lo,ovo,ar,ta},pañ,bañ,d{ra,fa,abor,uar,u,in,ue,i},j{a,i,o,se},goci,uci,vi,l{uil,r,g,ña,i,gu,ab,ve},us,ns,cas,m,en,in,uch,ech,e{c,s,t,pl},ab,iv,preserv,ev,y,gu}|4iega:negar|5uesta:ostar|5ienta:lentar|5uenta:contar|4ieta:apretar|5ierra:errar|6uestra:ostrar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|4ueña:oñar|5uerda:ecordar|5ienda:endar|4uela:volar|3ía:iar{r,ac,nv}|4uena:sonar|3úa:uar|4ueva:ovar|4ieva:nevar|4ón:poner{u,ro}|4én:ener|3z:acer{h,f}|2é:ever|2:alir~0r:e,ege|3egir:ige{rr,el}|4cerse:jezcas|4cir:uzcas|2er:etas,rras|2ir:sistas,cidas|3erse:tengas|2irse:urras|2arse:es{r{te,mo,eg,mb},t,unt,ce,in,m,ud,fad,ll,icul,h}|2ar:illes,nches~2gas:tener|4gas:ponerse|7ientas:sentirse|1:r{dura,unta,e{parec,nac,v,cog}}|4huelas:oler|2es:amar|4ide:pedir|4ueba:probar|5igas:seguir|2á:estar|4ieles:helar|2:poner|4iegues:regar|2e:escribir|5uestes:costar|4iere:querer|5ientes:sentar|1as:ser|5yerres:errar|2vayas:ir|3ega:jugar|5iente:sentir|6uestres:mostrar|4ijas:regir",
+      "secondPlural": "1d:r{e{ec{d,aman,r,al,j},orr,evolv,ov,scog},a{g{esti,ne,pe,ve,a,r},t{,es,vis,cos,men,esi,xpor},r{o{m,g,ll,d},ti,pi,bor,a,su,nt,eb},z{e,i{ir,eal,vil,an},u,r,ha,ca,lan},iv,nev,ov,c{e,ivo,i{t,epl,apl,if{or,ur,c,s},ed,p,n,r},r,us,sa,u},pañ,bañ,nseñ,ap,d{fa,uar,u,ren,lvi},i{gu,c{go,e,anun,i},r,ud,op,iv},j,n{e,do,io,i{cam,rm,oc,e,t}},m{ir,asti,u,l,s},l{zc,r,he,ve,ga,ña,i,gu,vo,io},us,pres,is,e,ch{du,cu,e},u,y},i{nsegu,onsist,ed,ñad,eprim,produc,educ,edec}}|3zcáis:ecer{sagrad,apar,fr}|2gáis:detener,enir|2éis:preparar,yudar|3quéis:aticar|5urmáis:ormir|4igáis:ecir|5zcáis:cerse|4éis:arse|4vayáis:irse|4áis:irse{d,r}~1d:r|4áis:rse{e,ti}|5irváis:servir|2áis:r{e{lv,p,omet,em,d{ven,ten,con,r},re,r,ñ,tos,sol,deb},i{dmit,ist,mbat,m,d,br,uñ,pl,ub}}|2yáis:uir{estr,l}|5quepáis:caber|4epáis:saber|3zcáis:cir,ecer,enacer|4itáis:retir|7irtáis:ertirse|5irtáis:onvertir|7urmáis:ormirse|4idáis:medir|1áis:ver|4ijáis:regir|3jáis:xigir,rgir,oger|4iráis:erir{g,u}|4iñáis:reñir|3áis:guir|4gáis:enerse|2gáis:er{nten,mpon,al}|5igáis:eguir|2igáis:aer|3záis:cer{or,nven}|2éis:ar{,re,ele,nu,t{n{gu,e,ca,o},ci,si,vi,s,ra,por,p,vo},uj,iaj}|2uéis:gar|3quéis:car|5quéis:rcarse|4éis:callarse|3céis:zar|3os:rse{a{or,mbr,tr,g,c,ud,ad,ll,rl,i,t{i,us,r,an,len},am,lm,sm,oj,ñ,as,ech},ne}|4íos:irse{pent,l}~5cerse:ezcáis{aqu,j}|3irse:áis{id,urr}|4ir:vengáis|5ecir:digáis|3arse:éis{ter,egr,ebr,e,u,t,cost,ued,lvid,ein,icul,erm,em,duch,ach,j}~1d:r{a{reserv,pas,d{,bor,agra,an},am,alent,gust},trae}|2gáis:oponer|3iais:reír|2áis:escribir|1ais:ser|2vayáis:ir|5intáis:sentir",
       "firstPlural": "~~~",
-      "third": "2a:er|2ga:ner,ler|4iera:erer|3ja:ger|5iebre:uebrar|2e:cuar|5ista:estir|5uerma:ormir|3zca:cir|4iga:ecir|2iga:ír|4ga:erse|5zca:cerse|4e:arse|7iente:entarse|7ueste:ostarse|5íe:riarse|5úe:uarse|4a:irse|7ienta:entirse|7ierta:ertirse~2a:ir|3zca:cer|2ya:uir|4epa:aber|5quepa:caber|4ita:etir|5ienta:entir|7ista:estirse|5ierta:ertir|4ueda:oder|5ienda:ender{t,c,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|7uerma:ormirse|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|3a:guir|2ga:enir,alir|3ga:acer{h,f}|5iga:eguir|2iga:aer|1a:ver|3ja:gir|4ija:egir|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|6évase:everse|6uévase:overse|6ídase:idirse|7óndase:onderse|7úrrase:urrirse|6óngase:oponerse|6órese:orarse|6árese:ararse|6iéguese:egarse|6équese:ecarse|6óquese:ocarse|6íquese:icarse|7érquese:ercarse|5éese:earse|6údese:udarse|7uérdese:ordarse|6ídese:idarse|7íllese:illarse|7állese:hallarse|7óllese:ollarse|7úrlese:urlarse|7úntese:guntarse|7ántese:antarse|7iértese:ertarse|7áctese:actarse|7áchese:acharse|7échese:echarse|7ánsese:ansarse|6ásese:asarse|7éinese:einarse|6ámese:amarse|7érmese:ermarse|7álmese:almarse|6éjese:ejarse|4iese:esar{v,f}|5iense:ensar|4úse:husar|2ue:gar|4iegue:negar|4uegue:ogar|5uelgue:olgar|3que:car|4üere:gorar|5ierre:errar|6uestre:ostrar|6uentre:ontrar|7iebre:ebrarse|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|5uerde:cordar|5iende:endar|3íe:iar{u,r,f,ac,nv}|5ierne:ernar|4uene:sonar|4uele:volar|3úe:uar|4uebe:probar|3üe:guar~3cerse:ezca{aqu,j}|3cir:uzca|1er:a{p,et,ed,nd,rr,em,om,añ,e,s,eb}|1ir:a{mit,sist,cid,urr}|5entirse:pienta|5ertirse:ivierta|2er:ga{ten,on,val}|2erse:detenga|3ecir:diga|3ír:oiga|2gir:ija{ir,fl,x}|2ger:oja,eja|1irse:lla|1arse:e{ter,egr,mbr,junt,eit,fad,ued,em,sm,call,icul}|5ostarse:acueste|2uarse:dúe~4ga:ponerse|7ienta:sentirse|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|4iera:querer|5iente:sentar|1a:ser|5yerre:errar|2vaya:ir|4váyase:irse|3egue:jugar",
-      "thirdPlural": "2an:er|2gan:ner,ler|4ieran:erer|4uevan:over|3jan:ger|4ieguen:negar|5ierten:ertar|2en:cuar|5uerman:ormir|3zcan:cir|4igan:ecir|2igan:ír|4gan:erse|5zcan:cerse|4an:rse{de,i}|4en:arse|7ienten:entarse|7uesten:ostarse|5quen:carse~2an:ir|3zcan:cer|6uevan:overse|5uelvan:olver|5irvan:ervir|5iervan:hervir|2yan:uir|4epan:aber|5quepan:caber|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|4uedan:oder|5iendan:ender{t,c,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|7uerman:ormirse|4iñan:eñir|3an:guir|2gan:enir,alir|3gan:acer{h,f}|5igan:eguir|2igan:aer|1an:ver|3jan:gir|4ijan:egir|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|6ieguen:egarse|4ueguen:ogar|5uelguen:olgar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|7ierten:ertarse|4ieten:apretar|5ierren:errar|6uestren:ostrar|6uentren:ontrar|5iebren:uebrar|4üeren:gorar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|5uerden:cordar|5ienden:endar|3íen:iar{u,r,f,ac,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar|6érense:erarse|6órense:orarse|8ístrense:istrarse|7égrense:egrarse|7iébrense:ebrarse|5éense:earse|6équense:ecarse|6údense:udarse|6édense:edarse|7uérdense:ordarse|6ádense:adarse|6ídense:idarse|7íllense:illarse|7úrlense:urlarse|5íense:riarse|7úntense:guntarse|7éitense:eitarse|7ústense:ustarse|7áctense:actarse|7ánsense:ansarse|6ásense:asarse|7éinense:einarse|6ójense:ojarse|7úchense:ucharse|7échense:echarse|5úense:uarse|6áñense:añarse|7álmense:almarse|7ásmense:asmarse|6ávense:avarse|7iéntanse:entirse|7ístanse:estirse|7iértanse:ertirse|6ézcanse:uecerse|6évanse:everse|7úrranse:urrirse~4cerse:jezcan|4cir:uzcan|5over:luevan|2er:an{p,et,ed,nd,rr,em,om,añ,e,s,eb}|2ir:an{mit,sist,urr}|2irse:cidan,llan|3er:gan{ten,on,val}|3erse:detengan|4ecir:digan|4ír:oigan|3gir:ijan{ir,fl,x}|3ger:jan{o,e}|4carse:erquen|6ostarse:acuesten|2arse:en{junt,mbr,uej,erm,em,lam,ll,icul,ach}|2ar:illen~4gan:ponerse|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|4ieran:querer|5ienten:sentar|1an:ser|5yerren:errar|2vayan:ir|4váyanse:irse|3eguen:jugar"
+      "third": "2a:er|2ga:ner,ler|4iera:erer|3ja:ger|5iebre:uebrar|2e:cuar|5ista:estir|5uerma:ormir|3zca:cir|4iga:ecir|2iga:ír|4ga:erse|5zca:cerse|4e:arse|7iente:entarse|7ueste:ostarse|5íe:riarse|5úe:uarse|4a:irse|7ienta:entirse|7ierta:ertirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|4epa:aber|5quepa:caber|4ita:etir|5ienta:entir|7ista:estirse|5ierta:ertir|4ueda:oder|5ienda:ender{t,c,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|7uerma:ormirse|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|3a:guir|2ga:enir,alir|3ga:acer{h,f}|5iga:eguir|2iga:aer|1a:ver|3ja:gir|4ija:egir|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|6évase:everse|6uévase:overse|6ídase:idirse|7óndase:onderse|7úrrase:urrirse|6óngase:oponerse|6órese:orarse|6árese:ararse|6iéguese:egarse|6équese:ecarse|6óquese:ocarse|6íquese:icarse|7érquese:ercarse|5éese:earse|6údese:udarse|7uérdese:ordarse|6ídese:idarse|7íllese:illarse|7állese:hallarse|7óllese:ollarse|7úrlese:urlarse|7úntese:guntarse|7ántese:antarse|7iértese:ertarse|7áctese:actarse|7áchese:acharse|7échese:echarse|7ánsese:ansarse|6ásese:asarse|7éinese:einarse|6ámese:amarse|7érmese:ermarse|7álmese:almarse|6éjese:ejarse|4iese:esar{v,f}|5iense:ensar|4úse:husar|2ue:gar|4iegue:negar|4uegue:ogar|5uelgue:olgar|3que:car|4üere:gorar|5ierre:errar|6uestre:ostrar|6uentre:ontrar|7iebre:ebrarse|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|5uerde:cordar|5iende:endar|3íe:iar{u,r,f,ac,nv}|5ierne:ernar|4uene:sonar|4uele:volar|3úe:uar|4uebe:probar|3üe:guar~3cerse:ezca{aqu,j}|3cir:uzca|1er:a{p,et,ed,nd,rr,em,om,añ,e,s,eb}|1ir:a{mit,sist,cid,urr}|5entirse:pienta|5ertirse:ivierta|2er:ga{ten,on,val}|2erse:detenga|3ecir:diga|3ír:oiga|2gir:ija{ir,fl,x}|2ger:oja,eja|1irse:lla|1arse:e{ter,egr,mbr,junt,eit,fad,ued,em,sm,call,icul}|5ostarse:acueste|2uarse:dúe~4ga:ponerse|7ienta:sentirse|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|4iera:querer|5iente:sentar|1a:ser|5yerre:errar|2vaya:ir|4váyase:irse|3egue:jugar",
+      "thirdPlural": "2an:er|2gan:ner,ler|4ieran:erer|4uevan:over|3jan:ger|4ieguen:negar|5ierten:ertar|2en:cuar|5uerman:ormir|3zcan:cir|4igan:ecir|2igan:ír|4gan:erse|5zcan:cerse|4an:rse{de,i}|4en:arse|7ienten:entarse|7uesten:ostarse|5quen:carse~2an:ir|3zcan:cer|6uevan:overse|5uelvan:olver|5irvan:ervir|5iervan:hervir|2yan:uir|3yan:haber|4epan:aber|5quepan:caber|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|4uedan:oder|5iendan:ender{t,c,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|7uerman:ormirse|4iñan:eñir|3an:guir|2gan:enir,alir|3gan:acer{h,f}|5igan:eguir|2igan:aer|1an:ver|3jan:gir|4ijan:egir|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|6ieguen:egarse|4ueguen:ogar|5uelguen:olgar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|7ierten:ertarse|4ieten:apretar|5ierren:errar|6uestren:ostrar|6uentren:ontrar|5iebren:uebrar|4üeren:gorar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|5uerden:cordar|5ienden:endar|3íen:iar{u,r,f,ac,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar|6érense:erarse|6órense:orarse|8ístrense:istrarse|7égrense:egrarse|7iébrense:ebrarse|5éense:earse|6équense:ecarse|6údense:udarse|6édense:edarse|7uérdense:ordarse|6ádense:adarse|6ídense:idarse|7íllense:illarse|7úrlense:urlarse|5íense:riarse|7úntense:guntarse|7éitense:eitarse|7ústense:ustarse|7áctense:actarse|7ánsense:ansarse|6ásense:asarse|7éinense:einarse|6ójense:ojarse|7úchense:ucharse|7échense:echarse|5úense:uarse|6áñense:añarse|7álmense:almarse|7ásmense:asmarse|6ávense:avarse|7iéntanse:entirse|7ístanse:estirse|7iértanse:ertirse|6ézcanse:uecerse|6évanse:everse|7úrranse:urrirse~4cerse:jezcan|4cir:uzcan|5over:luevan|2er:an{p,et,ed,nd,rr,em,om,añ,e,s,eb}|2ir:an{mit,sist,urr}|2irse:cidan,llan|3er:gan{ten,on,val}|3erse:detengan|4ecir:digan|4ír:oigan|3gir:ijan{ir,fl,x}|3ger:jan{o,e}|4carse:erquen|6ostarse:acuesten|2arse:en{junt,mbr,uej,erm,em,lam,ll,icul,ach}|2ar:illen~4gan:ponerse|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|4ieran:querer|5ienten:sentar|1an:ser|5yerren:errar|2vayan:ir|4váyanse:irse|3eguen:jugar"
     },
     "gerunds": {
       "gerunds": "2yendo:oer|1ndo:ñer|1endo:ir|4ibiendo:ebir|3uyendo:üir|3iendo:eír~1ndo:r|2iendo:er|4iniendo:enir|5istiendo:estir|5irtiendo:ertir|4itiendo:etir|5intiendo:entir|4iciendo:ecir|1endo:ir{gu,qu,red}|5iguiendo:eguir|5indiendo:endir|4udiendo:poder|4idiendo:edir|4igiendo:egir|5urmiendo:ormir|5irviendo:ervir|4iriendo:erir|4uriendo:orir|5udriendo:odrir|2yendo:r{í,ui,ee,ae}|4iñendo:eñir|2endo:llir~4r:iendo{ib,ub,mb,un,fin,rn,t{,sis,xis,mi},uc,unc,arc,d{un,an,cin,u,a,ci,vi,si},g{i{ir,er,fl,x},n,ur,umer,u},l{sa,p,bo,u},im,um,iv,r{ur,qui{d,n},uf,b,t},as,p}|7ebir:ncibiendo|5er:endo{i{ert,et,er,rr,omp},roy}|5eír:riendo|6üir:guyendo~2yendo:ir"
@@ -9566,7 +9566,7 @@ designate
     return stripReflexive$2(str)
   };
 
-  const fromSubjunctive = (str, form) => {
+  const fromSubjunctive$1 = (str, form) => {
     const forms = {
       'FirstPerson': (s) => safe(s, subjunctRev.first, subjunctive.first),
       'SecondPerson': (s) => safe(s, subjunctRev.second, subjunctive.second),
@@ -9705,7 +9705,7 @@ designate
       fromImperfect,
       fromFuture,
       fromConditional,
-      fromSubjunctive,
+      fromSubjunctive: fromSubjunctive$1,
       fromImperative,
       toPresent: toPresent$1,
       toPast: toPast$1,
@@ -9960,6 +9960,38 @@ designate
     return str
   };
 
+  const persons$2 = {
+    FirstPerson: 'first',
+    SecondPerson: 'second',
+    ThirdPerson: 'third',
+    FirstPersonPlural: 'firstPlural',
+    SecondPersonPlural: 'secondPlural',
+    ThirdPersonPlural: 'thirdPlural',
+  };
+
+  // 'haber' is our auxiliary verb - the tagger gives it no tense
+  let haber = null;
+  const isHaber = function (str, verb) {
+    if (haber === null) {
+      haber = new Set(verb.all('haber'));
+      haber.add('hay');
+    }
+    return haber.has(str)
+  };
+
+  // the subjunctive is often person-ambiguous ('hable' is 1st or 3rd)
+  // so try each person, and keep an infinitive that conjugates back to our word
+  const fromSubjunctive = function (str, form, verb) {
+    const order = [form].concat(Object.keys(persons$2)).filter((s) => s);
+    for (let i = 0; i < order.length; i += 1) {
+      const inf = verb.fromSubjunctive(str, order[i]);
+      if (inf && inf !== str && verb.toSubjunctive(inf)[persons$2[order[i]]] === str) {
+        return inf
+      }
+    }
+    return verb.fromPresent(str, form)
+  };
+
   const root = function (view) {
     const { verb, noun, adjective } = view.world.methods.two.transform;
     view.docs.forEach((terms) => {
@@ -9978,8 +10010,14 @@ designate
             term.root = stripReflexive$1(str);
             return
           }
+          if (isHaber(str, verb)) {
+            term.root = 'haber';
+            return
+          }
           const form = verbForm(term);
-          if (term.tags.has('Gerund')) {
+          if (term.tags.has('Subjunctive')) {
+            term.root = fromSubjunctive(str, form, verb);
+          } else if (term.tags.has('Gerund')) {
             term.root = verb.fromGerund(str, form);
           } else if (term.tags.has('Perfecto')) {
             term.root = verb.fromPerfecto(str, form);
@@ -10329,7 +10367,7 @@ designate
   const deAccent = (str) => str.replace(/[áéíóú]/g, (c) => accents[c]);
 
   const isGerund = /(ando|iendo|yendo)$/;
-  const isInfinitive = /(ar|er|ir)$/;
+  const isInfinitive$2 = /(ar|er|ir)$/;
 
   const verbish = ['Imperative', 'PresentTense', 'Infinitive', 'Verb', 'Copula', 'Subjunctive'];
   const isVerb = function (entry) {
@@ -10348,7 +10386,7 @@ designate
     }
     // 'quemarme', 'mezclarlo' - verify against the lexicon,
     // or accept a long-enough infinitive shape ('bloguearlo')
-    if (isInfinitive.test(plain)) {
+    if (isInfinitive$2.test(plain)) {
       if (isVerb(lexicon[plain]) || plain.length >= 5) {
         return { tags: ['Infinitive'], stem: plain }
       }
@@ -10570,7 +10608,7 @@ designate
     return 0
   });
 
-  const forms = [
+  const forms$1 = [
     'FirstPerson',
     'SecondPerson',
     'ThirdPerson',
@@ -10612,7 +10650,7 @@ designate
         return
       }
       // do we already have both?
-      if (forms.filter(tag => term.tags.has(tag)).length >= 2) {
+      if (forms$1.filter(tag => term.tags.has(tag)).length >= 2) {
         return
       }
       let str = term.machine || term.normal;
@@ -10817,6 +10855,159 @@ designate
     }
   };
 
+  // 'yo como' - 'como' is usually a conjunction, 'vivo' an adjective, 'trabajo' a noun
+  // but 'yo' and 'tú' are only ever the subject of a verb,
+  // so a first-person form of a known verb, after 'yo', is that verb.
+  const subjects$1 = {
+    yo: ['FirstPerson', 'first'],
+    tú: ['SecondPerson', 'second'],
+  };
+
+  // words that sit between a subject and its verb - 'yo no lo como'
+  const fillers$2 = new Set([
+    'no', 'nunca', 'ya', 'también', 'tampoco', 'siempre', 'casi', 'solo', 'sólo',
+    'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
+  ]);
+
+  const tenses = [
+    ['PresentTense', 'fromPresent', 'toPresent'],
+    ['PastTense', 'fromPast', 'toPast'],
+    ['Imperfect', 'fromImperfect', 'toImperfect'],
+    ['FutureTense', 'fromFuture', 'toFuture'],
+  ];
+
+  const isInfinitive$1 = function (str, lexicon) {
+    if (!lexicon.hasOwnProperty(str)) {
+      return false
+    }
+    const tags = lexicon[str];
+    return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
+  };
+
+  const subjectVerb = function (terms, i, world) {
+    const found = subjects$1[terms[i].normal];
+    if (!found) {
+      return
+    }
+    let n = i + 1;
+    while (terms[n] && fillers$2.has(terms[n].normal)) {
+      n += 1;
+    }
+    const term = terms[n];
+    if (!term || term.tags.has('Verb')) {
+      return
+    }
+    const [tag, form] = found;
+    const verb = world.methods.two.transform.verb;
+    const lexicon = world.model.one.lexicon;
+    const str = term.normal;
+    for (let k = 0; k < tenses.length; k += 1) {
+      const [tense, from, to] = tenses[k];
+      const inf = verb[from](str, tag);
+      // it has to be a known verb, that conjugates back to this word
+      if (inf && inf !== str && isInfinitive$1(inf, lexicon) && verb[to](inf)[form] === str) {
+        world.methods.one.setTag([term], ['Verb', tense, tag], world, false, '3-subject-verb');
+        return
+      }
+    }
+  };
+
+  // 'quiero que vengas' - 'vengas' is the subjunctive of 'venir', but also the present-tense of 'vengar'
+  // after a verb of wanting, hoping or doubting, '.. que' takes the subjunctive.
+  const triggers = [
+    'querer', 'esperar', 'desear', 'necesitar', 'pedir', 'preferir', 'dudar', 'temer', 'sugerir', 'recomendar',
+    'exigir', 'permitir', 'prohibir', 'rogar', 'mandar', 'ordenar', 'aconsejar', 'insistir', 'gustar', 'importar',
+    'molestar', 'alegrar',
+  ];
+  // 'para que sepas', 'ojalá que llueva'
+  const before = new Set(['para', 'sin', 'ojalá', 'aunque']);
+  // 'es importante que estudies'
+  const impersonal = new Set(['importante', 'necesario', 'posible', 'imposible', 'mejor', 'probable', 'bueno', 'malo']);
+
+  // words that sit between 'que' and its verb - 'que ella no lo haga'
+  const fillers$1 = new Set([
+    'yo', 'tú', 'él', 'ella', 'usted', 'nosotros', 'nosotras', 'vosotros', 'vosotras', 'ellos', 'ellas', 'ustedes',
+    'no', 'nunca', 'ya', 'también', 'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
+  ]);
+
+  const persons$1 = [
+    ['ThirdPerson', 'third'],
+    ['FirstPerson', 'first'],
+    ['SecondPerson', 'second'],
+    ['FirstPersonPlural', 'firstPlural'],
+    ['SecondPersonPlural', 'secondPlural'],
+    ['ThirdPersonPlural', 'thirdPlural'],
+  ];
+
+  const isInfinitive = function (str, lexicon) {
+    if (!lexicon.hasOwnProperty(str)) {
+      return false
+    }
+    const tags = lexicon[str];
+    return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
+  };
+
+  // every conjugation of our trigger verbs
+  let forms = null;
+  const isTrigger = function (str, verb) {
+    if (forms === null) {
+      forms = new Set();
+      triggers.forEach((inf) => verb.all(inf).forEach((w) => forms.add(w)));
+    }
+    return forms.has(str)
+  };
+
+  // does this 'que' follow something that wants a subjunctive?
+  const hasTrigger = function (terms, i, verb) {
+    const prev = terms[i - 1];
+    if (!prev) {
+      return false
+    }
+    if (before.has(prev.normal) || impersonal.has(prev.normal)) {
+      return true
+    }
+    // 'quiero que', 'te pido a ti que'
+    for (let k = i - 1; k >= 0 && k >= i - 4; k -= 1) {
+      if (isTrigger(terms[k].normal, verb)) {
+        return true
+      }
+    }
+    return false
+  };
+
+  const checkSubjunctive = function (terms, i, world) {
+    if (terms[i].normal !== 'que') {
+      return
+    }
+    let n = i + 1;
+    while (terms[n] && fillers$1.has(terms[n].normal)) {
+      n += 1;
+    }
+    const term = terms[n];
+    if (!term || !term.tags.has('Verb') || term.tags.has('Subjunctive') || term.tags.has('Infinitive')) {
+      return
+    }
+    const verb = world.methods.two.transform.verb;
+    if (!hasTrigger(terms, i, verb)) {
+      return
+    }
+    const lexicon = world.model.one.lexicon;
+    const str = term.normal;
+    // prefer the person it already has
+    const order = persons$1.filter((a) => term.tags.has(a[0])).concat(persons$1.filter((a) => !term.tags.has(a[0])));
+    for (let k = 0; k < order.length; k += 1) {
+      const [tag, form] = order[k];
+      const inf = verb.fromSubjunctive(str, tag);
+      if (inf && inf !== str && isInfinitive(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
+        const { setTag, unTag } = world.methods.one;
+        const old = ['PresentTense', 'Imperative'].concat(persons$1.map((a) => a[0]));
+        old.forEach((t) => unTag([term], t, world.model.one.tagSet));
+        setTag([term], ['Verb', 'Subjunctive', tag], world, false, '3-que-subjunctive');
+        return
+      }
+    }
+  };
+
   // 1st pass
 
   // these methods don't care about word-neighbours
@@ -10852,12 +11043,21 @@ designate
     }
   };
 
+  // these methods look at the words before them
+  const fourthPass = function (terms, world) {
+    for (let i = 0; i < terms.length; i += 1) {
+      subjectVerb(terms, i, world);
+      checkSubjunctive(terms, i, world);
+    }
+  };
+
   const tagger = function (view) {
     const world = view.world;
     view.docs.forEach((terms) => {
       firstPass(terms, world);
       secondPass(terms, world);
       thirdPass(terms, world);
+      fourthPass(terms, world);
     });
     return view
   };
@@ -12795,7 +12995,7 @@ designate
   const getNth$1 = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc);
 
   // get root form of adjective
-  const getRoot$1 = function (m, methods) {
+  const getRoot$2 = function (m, methods) {
     const str = m.text('normal');
     const isPlural = m.has('#PluralAdjective');
     const isFemale = m.has('#FemaleAdjective');
@@ -12818,7 +13018,7 @@ designate
       conjugate(n) {
         const methods = this.methods.two.transform.adjective;
         return getNth$1(this, n).map(m => {
-          const str = getRoot$1(m, methods);
+          const str = getRoot$2(m, methods);
           return {
             male: str,
             female: methods.toFemale(str),
@@ -12838,6 +13038,292 @@ designate
 
   var adjectives = {
     api: api$1,
+  };
+
+  // re-conjugate a verb-phrase into another tense, in-place
+  // 'yo hablo' -> 'yo hablé' -> 'yo hablaré'
+  //
+  // only the finite verb is changed - 'quiero ir' -> 'quise ir'
+  // and its grammatical person is kept - 'hablamos' -> 'hablaremos'
+  // spanish drops its subject pronouns, so the person is read from the verb itself
+
+  const persons = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural'];
+
+  const personTags = {
+    FirstPerson: 'first',
+    SecondPerson: 'second',
+    ThirdPerson: 'third',
+    FirstPersonPlural: 'firstPlural',
+    SecondPersonPlural: 'secondPlural',
+    ThirdPersonPlural: 'thirdPlural',
+  };
+  const toPersonTag = Object.keys(personTags).reduce((h, k) => {
+    h[personTags[k]] = k;
+    return h
+  }, {});
+
+  const tenseTags = {
+    present: 'PresentTense',
+    past: 'PastTense',
+    imperfect: 'Imperfect',
+    future: 'FutureTense',
+    conditional: 'Conditional',
+  };
+
+  const subjects = {
+    yo: 'first',
+    tú: 'second',
+    él: 'third',
+    ella: 'third',
+    usted: 'third',
+    nosotros: 'firstPlural',
+    nosotras: 'firstPlural',
+    vosotros: 'secondPlural',
+    vosotras: 'secondPlural',
+    ellos: 'thirdPlural',
+    ellas: 'thirdPlural',
+    ustedes: 'thirdPlural',
+  };
+
+  // object-pronouns sit between the subject and its verb - 'yo no lo sé'
+  const clitics = new Set(['me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os']);
+  // other words allowed between a subject and its verb - 'yo nunca hablaba'
+  const fillers = new Set(['no', 'nunca', 'ya', 'también', 'tampoco', 'siempre', 'casi', 'solo', 'sólo', 'aún', 'todavía']);
+
+  // the preterites of 'ser' and 'ir' are identical - 'fui feliz' vs 'fui a casa'
+  const serOrIr = new Set(['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron']);
+  const afterIr = new Set(['a', 'al', 'hacia', 'hasta', 'para', 'allí', 'allá', 'ahí']);
+
+  // verb-forms that are not an indicative tense
+  const skipTags = ['Infinitive', 'Gerund', 'Perfecto', 'Participle', 'Imperative', 'Subjunctive'];
+
+  // every indicative form of this verb
+  const getForms = function (root, methods) {
+    return {
+      present: methods.toPresent(root),
+      past: methods.toPast(root),
+      imperfect: methods.toImperfect(root),
+      future: methods.toFuture(root),
+      conditional: methods.toConditional(root),
+    }
+  };
+
+  const getRoot$1 = function (term, next) {
+    const str = term.normal;
+    if (serOrIr.has(str) && next && (afterIr.has(next.normal) || next.tags.has('Infinitive'))) {
+      return 'ir'
+    }
+    return term.root
+  };
+
+  const fromTense = {
+    present: 'fromPresent',
+    past: 'fromPast',
+    imperfect: 'fromImperfect',
+    future: 'fromFuture',
+    conditional: 'fromConditional',
+  };
+
+  // find the word in the conjugation table of this infinitive
+  const findHits = function (str, root, methods) {
+    const forms = getForms(root, methods);
+    const hits = [];
+    Object.keys(forms).forEach((tense) => {
+      persons.forEach((person) => {
+        if (forms[tense][person] === str) {
+          hits.push({ tense, person });
+        }
+      });
+    });
+    return hits
+  };
+
+  // the tagger gives some verbs no tense, and so no root - 'sabe', 'pude'
+  // try each tense, and keep an infinitive that conjugates back to our word
+  const guessRoot = function (str, methods, lexicon) {
+    const tenses = Object.keys(fromTense);
+    let found = null;
+    for (let i = 0; i < tenses.length; i += 1) {
+      for (let k = 0; k < persons.length; k += 1) {
+        const root = methods[fromTense[tenses[i]]](str, toPersonTag[persons[k]]);
+        if (root && root !== str && /[aeií]r$/.test(root)) {
+          const hits = findHits(str, root, methods);
+          if (hits.length > 0) {
+            // prefer a real verb - 'pude' is 'poder', not 'pudir'
+            if (lexicon.hasOwnProperty(root)) {
+              return { root, hits }
+            }
+            found = found || { root, hits };
+          }
+        }
+      }
+    }
+    return found
+  };
+
+  // which tense + person is this word?
+  const parseTerm = function (term, next, methods, lexicon) {
+    const str = term.normal;
+    if (!term.tags.has('Verb') || clitics.has(str) || skipTags.some((tag) => term.tags.has(tag))) {
+      return null
+    }
+    const root = getRoot$1(term, next);
+    if (!root) {
+      return null
+    }
+    // the existential 'hay un gato'
+    if (str === 'hay') {
+      return { root, hits: [{ tense: 'present', person: 'third' }] }
+    }
+    // find the word in its own conjugation table
+    // no root was found for this one
+    if (root === str) {
+      return guessRoot(str, methods, lexicon)
+    }
+    const hits = findHits(str, root, methods);
+    if (hits.length > 0) {
+      return { root, hits }
+    }
+    // otherwise, trust the tagger
+    // most-specific first - an #Imperfect is also a #PastTense
+    const tense = ['imperfect', 'conditional', 'future', 'past', 'present'].find((k) => term.tags.has(tenseTags[k]));
+    if (!tense) {
+      return null
+    }
+    const tag = Object.keys(personTags).find((k) => term.tags.has(k));
+    const found = tag ? [personTags[tag]] : ['first', 'third'];
+    return { root, hits: found.map((person) => ({ tense, person })) }
+  };
+
+  // look backwards for a subject-pronoun - 'yo no lo [sé]'
+  const getSubject = function (terms, i) {
+    for (let k = i - 1; k >= 0; k -= 1) {
+      const str = terms[k].normal;
+      if (subjects.hasOwnProperty(str)) {
+        return subjects[str]
+      }
+      if (!clitics.has(str) && !fillers.has(str)) {
+        return null
+      }
+    }
+    return null
+  };
+
+  // 'hablaba' is both first and third person
+  const choosePerson = function (hits, term, terms, i) {
+    const found = hits.map((o) => o.person).filter((p, k, arr) => arr.indexOf(p) === k);
+    if (found.length === 1) {
+      return found[0]
+    }
+    const tag = Object.keys(personTags).find((k) => term.tags.has(k));
+    if (tag && found.includes(personTags[tag])) {
+      return personTags[tag]
+    }
+    const subj = getSubject(terms, i);
+    if (subj && found.includes(subj)) {
+      return subj
+    }
+    return found.includes('third') ? 'third' : found[0]
+  };
+
+  // 'Hablo' -> 'Hablé'
+  const matchCase = function (str, term) {
+    const orig = term.text || '';
+    if (orig.length > 1 && orig === orig.toUpperCase() && orig !== orig.toLowerCase()) {
+      return str.toUpperCase()
+    }
+    if (orig && orig[0] !== orig[0].toLowerCase()) {
+      return str[0].toUpperCase() + str.slice(1)
+    }
+    return str
+  };
+
+  // 'comido', and also 'estado' - which the tagger calls a copula
+  const isParticiple = function (term, methods) {
+    if (term.tags.has('Perfecto') || term.tags.has('Participle')) {
+      return true
+    }
+    return Boolean(term.root) && term.root !== term.normal && methods.toPerfecto(term.root) === term.normal
+  };
+
+  // returns the (possibly shorter) pointer of the new verb-phrase
+  const convertOne = function (vb, want, methods, lexicon) {
+    const ptr = vb.fullPointer[0];
+    if (!ptr) {
+      return null
+    }
+    vb.compute('root');
+    const [n, start, end] = ptr;
+    const same = [n, start, end];
+    const terms = vb.document[n];
+    // the first conjugated verb in the phrase is the finite one
+    let index = null;
+    let parsed = null;
+    for (let i = start; i < end; i += 1) {
+      parsed = parseTerm(terms[i], terms[i + 1], methods, lexicon);
+      if (parsed) {
+        index = i;
+        break
+      }
+    }
+    if (!parsed) {
+      return same
+    }
+    const term = terms[index];
+    const tenses = parsed.hits.map((o) => o.tense);
+    // the conditional is a mood, not a tense - 'hablaría'
+    if (tenses.every((t) => t === 'conditional')) {
+      return same
+    }
+    const person = choosePerson(parsed.hits, term, terms, index);
+    let root = parsed.root;
+    let len = 1;
+    const next = terms[index + 1];
+    const isPerfect = root === 'haber' && Boolean(next) && index + 1 < end && isParticiple(next, methods);
+    if (isPerfect) {
+      // 'he comido' and 'había comido' are already in the past
+      if (want === 'past') {
+        return same
+      }
+      // 'habré comido' is already in the future
+      if (want === 'future' && tenses.includes('future')) {
+        return same
+      }
+      // collapse it to a simple tense - 'he comido' -> 'como'
+      root = next.root;
+      len = 2;
+    } else if (tenses.includes(want) || (want === 'past' && tenses.includes('imperfect'))) {
+      // already there
+      return same
+    }
+    let str = getForms(root, methods)[want][person];
+    // existential - 'había un gato' -> 'hay un gato'
+    if (root === 'haber' && want === 'present' && person === 'third' && !isPerfect) {
+      str = 'hay';
+    }
+    if (!str) {
+      return same
+    }
+    str = matchCase(str, term);
+    const m = vb.update([[n, index, index + len]]);
+    m.replaceWith(str);
+    // the new word may not be in our lexicon
+    vb.update([[n, index, index + 1]]).tag(['Verb', tenseTags[want], toPersonTag[person]], 'to-' + want);
+    return [n, start, end - (len - 1)]
+  };
+
+  const convertTo = function (view, want) {
+    const methods = view.methods.two.transform.verb;
+    // replacing a word orphans the pointer that held it, so rebuild them as we go
+    const lexicon = view.model.one.lexicon;
+    const ptrs = [];
+    view.forEach((vb) => {
+      const ptr = convertOne(vb, want, methods, lexicon);
+      if (ptr) {
+        ptrs.push(ptr);
+      }
+    });
+    return view.update(ptrs)
   };
 
   const getNth = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc);
@@ -12871,6 +13357,24 @@ designate
             subjunctive: toSubjunctive(str),
           }
         }, [])
+      }
+      /** 'hablo' -> 'hablé' (pretérito) */
+      toPastTense(n) {
+        return convertTo(getNth(this, n), 'past')
+      }
+      /** 'hablé' -> 'hablo' */
+      toPresentTense(n) {
+        return convertTo(getNth(this, n), 'present')
+      }
+      /** 'hablo' -> 'hablaré' */
+      toFutureTense(n) {
+        return convertTo(getNth(this, n), 'future')
+      }
+      // overloaded - keep Verb class
+      update(pointer) {
+        const m = new Verbs(this.document, pointer);
+        m._cache = this._cache;
+        return m
       }
     }
 
