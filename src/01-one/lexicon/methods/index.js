@@ -19,8 +19,9 @@ import {
   fromSubjunctive,
   fromImperative
 } from './verbs/toRoot.js'
-import { toPlural, toSingular, all as allNoun } from './nouns/index.js'
+import { toPlural, fromPlural, all as allNoun } from './nouns/index.js'
 import toMasculine from './nouns/toMasculine.js'
+import { takesEl } from './nouns/rules.js'
 import adjective from './adjectives/index.js'
 import { fromGerund, toGerund } from './verbs/gerund.js'
 import { fromPerfecto, toPerfecto } from './verbs/perfecto.js'
@@ -59,8 +60,10 @@ export default {
   },
   noun: {
     toPlural,
-    toSingular,
+    fromPlural,
+    toSingular: fromPlural,
     toMasculine,
+    takesEl,
     all: allNoun
   },
   adjective

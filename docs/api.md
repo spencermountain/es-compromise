@@ -171,8 +171,11 @@ Se escriben para cada idioma, así que las disponibles aquí no son las mismas q
 - **`.nouns()`** — devuelve los sustantivos del documento
 - **`.nouns().conjugate()`** — da el singular y el plural de cada sustantivo
 - **`.nouns().isPlural()`** — devuelve solo los sustantivos en plural
-- **`.nouns().toPlural()`** — pone los sustantivos en plural
-- **`.nouns().toSingular()`** — pone los sustantivos en singular
+- **`.nouns().toPlural()`** — pone los sustantivos en plural, con su artículo — 'el gato' → 'los gatos', 'el agua' → 'las aguas', 'del lápiz' → 'de los lápices'
+- **`.nouns().toSingular()`** — pone los sustantivos en singular, con su artículo — 'las canciones' → 'la canción'
+
+Los pronombres no cambian, y tampoco los adjetivos ni los verbos que acompañan al sustantivo.
+Un sustantivo invariable recibe el número de su artículo — 'los lunes' es plural, 'el lunes' no.
 
 ### `.verbs()`
 
@@ -182,7 +185,7 @@ Se escriben para cada idioma, así que las disponibles aquí no son las mismas q
 ### `.adjectives()`
 
 - **`.adjectives()`** — devuelve los adjetivos del documento
-- **`.adjectives().conjugate()`** — da el masculino, el femenino y los plurales de cada adjetivo
+- **`.adjectives().conjugate()`** — da el masculino, el femenino y los plurales de cada adjetivo — `{ male: 'rojo', female: 'roja', plural: 'rojos', femalePlural: 'rojas' }`. Un adjetivo de una sola terminación repite su forma — 'feliz', 'feliz', 'felices', 'felices'
 
 ### `.numbers()`
 

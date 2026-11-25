@@ -24,6 +24,6 @@ const f = new Set([
   'fecha', 'sede', 'sociedad', 'noche',
   'gente', 'calle', 'ley', 'clase',
   'mano', 'foto', 'moto', 'flor', 'radio',
-  'sal', 'piel', 'miel', 'nube', 'sangre',
+  'sal', 'piel', 'miel', 'nube', 'sangre', 'tos',
 ])
 export default { f, m }

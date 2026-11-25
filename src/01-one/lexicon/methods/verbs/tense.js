@@ -5,7 +5,11 @@ import { toPerfecto } from './perfecto.js'
 import { toReflexive } from './reflexive.js'
 const { presentTense, pastTense, imperfectTense, futureTense, conditional, subjunctive, imperfectSubjunctive, imperative } = model
 
+// the pronoun is not part of the conjugation - 'acostarse' conjugates as 'acostar'
+const plain = (str) => str.replace(/([aeií]r)se$/, '$1')
+
 const doEach = function (str, m) {
+  str = plain(str)
   return {
     first: convert(str, m.first),
     second: convert(str, m.second),

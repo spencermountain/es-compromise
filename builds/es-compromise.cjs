@@ -53,15 +53,15 @@
   // wrappers for loops in javascript arrays
 
   // call the callback with a one-match view
-  const wrap$2 = (view, cb) => (ptr, i) => cb(view.update([ptr]), i);
+  const wrap$3 = (view, cb) => (ptr, i) => cb(view.update([ptr]), i);
 
   const forEach = function (cb) {
-    this.fullPointer.forEach(wrap$2(this, cb));
+    this.fullPointer.forEach(wrap$3(this, cb));
     return this
   };
 
   const map = function (cb, empty) {
-    const run = wrap$2(this, cb);
+    const run = wrap$3(this, cb);
     const res = this.fullPointer.map((ptr, i) => {
       const out = run(ptr, i);
       // if we returned nothing, return a view
@@ -94,11 +94,11 @@
   };
 
   const filter = function (cb) {
-    return this.update(this.fullPointer.filter(wrap$2(this, cb)))
+    return this.update(this.fullPointer.filter(wrap$3(this, cb)))
   };
 
   const find = function (cb) {
-    const found = this.fullPointer.find(wrap$2(this, cb));
+    const found = this.fullPointer.find(wrap$3(this, cb));
     if (found === undefined) {
       return this.update([])
     }
@@ -106,7 +106,7 @@
   };
 
   const some$1 = function (cb) {
-    return this.fullPointer.some(wrap$2(this, cb))
+    return this.fullPointer.some(wrap$3(this, cb))
   };
 
   const random = function (n = 1) {
@@ -416,7 +416,7 @@
 
   var version$1 = '14.20.0';
 
-  const isObject$1 = function (item) {
+  const isObject$2 = function (item) {
     return item && typeof item === 'object' && !Array.isArray(item)
   };
 
@@ -424,13 +424,13 @@
 
   // recursive merge of objects
   function mergeDeep(model, plugin) {
-    if (isObject$1(plugin)) {
+    if (isObject$2(plugin)) {
       for (const key in plugin) {
         // prevent prototype pollution
         if (isUnsafeKey(key)) {
           continue
         }
-        if (isObject$1(plugin[key])) {
+        if (isObject$2(plugin[key])) {
           if (!model[key]) {
             model[key] = {};
           }
@@ -543,6 +543,8 @@
   const blue = color(34);
   const cyan = color(36);
   const yellow = color(33);
+  // used by name, from the tagset colors
+  const magenta = color(35);
   const dim = color(2);
   const i$1 = color(3);
   const b = color(1);
@@ -558,6 +560,7 @@
     green: green,
     grey: grey,
     i: i$1,
+    magenta: magenta,
     red: red,
     ul: ul,
     yellow: yellow
@@ -567,7 +570,7 @@
   const debug$2 = { tags: Boolean(env.DEBUG_TAGS) };
 
   // Capture only the requested terms, and only while tracing.
-  const before$1 = term => {
+  const before$3 = term => {
     if (debug$2.tags && (!debug$2.word || debug$2.word === (term.normal || term.text || term.implicit || '').toLowerCase())) {
       return [...term.tags]
     }
@@ -604,7 +607,7 @@
     print(added, '+', green);
   };
 
-  debug$2.before = before$1;
+  debug$2.before = before$3;
   debug$2.log = log;
 
   // Install only while verbose matching is enabled; restore the original hot path.
@@ -727,7 +730,7 @@
   };
 
   // a plain object - not an array, null, or class instance
-  const isObject = val => Object.prototype.toString.call(val) === '[object Object]';
+  const isObject$1 = val => Object.prototype.toString.call(val) === '[object Object]';
 
   // internal Term objects are slightly different
   const fromJson = function (json) {
@@ -774,7 +777,7 @@
       return new View(document)
     }
     // handle compromise View
-    if (isObject(input) && input.isView) {
+    if (isObject$1(input) && input.isView) {
       return new View(input.document, input.ptrs)
     }
     // handle json input
@@ -921,7 +924,7 @@
     }
   };
 
-  var cache$1 = {
+  var cache$4 = {
     api: addAPI$3,
     compute: compute$6,
     methods: methods$m,
@@ -980,6 +983,70 @@
   const toTitleCase = str => str.replace(/^\p{Ll}/u, x => x.toUpperCase());
   const toLowerCase = str => str.replace(/^\p{Lu}/u, x => x.toLowerCase());
 
+  // give a new word the case of the one it replaced: 'Danes' -> 'Dane', 'DANES' -> 'DANE'
+  const matchCase$1 = (original, str) => {
+    if (original.length > 1 && original === original.toUpperCase() && original !== original.toLowerCase()) {
+      return str.toUpperCase()
+    }
+    return /^\p{Lu}/u.test(original) ? toTitleCase(str) : str
+  };
+
+  // Heal the edges of a sentence, when its first or last words change.
+  // Shared by insert and remove, and by the noun and verb conversions.
+
+  // a capital of its own, not the sentence's - 'Spencer', 'NASA', 'I', or 'Plan B'
+  const ownsCapital = function (term) {
+    if (term.tags.has('ProperNoun') || term.tags.has('Acronym')) {
+      return true
+    }
+    return term.text.length === 1 || !isTitleCase(term.text)
+  };
+
+  // the first word of a sentence lends its capital to a new first word
+  const passCapital = function (from, to, drop) {
+    if (!/^\p{Lu}/u.test(from.text)) {
+      return
+    }
+    to.text = toTitleCase(to.text);
+    if (drop && !ownsCapital(from)) {
+      from.text = toLowerCase(from.text);
+    }
+  };
+
+  // quotes, brackets and newlines open a phrase, so they stay in front of it
+  const passOpening = function (from, to) {
+    to.pre = from.pre + to.pre;
+    from.pre = '';
+  };
+
+  // a bare hyphen joins two words - 'well-fed'
+  const isJoiner = post => /^[-–]$/.test(post);
+
+  // "dogs' bowls" - with no opening quote before it, an apostrophe belongs to its word
+  const isPossessive = function (terms, i) {
+    if (!/^['’]/.test(terms[i].post)) {
+      return false
+    }
+    return !terms.slice(0, i + 1).some(term => /['‘]/.test(term.pre))
+  };
+
+  // periods, commas, closing quotes and brackets end a phrase, so they stay behind it
+  const passClosing = function (terms, i, to) {
+    const from = terms[i];
+    // nothing to move, or it is part of the word
+    if (!from.post || isJoiner(from.post) || isPossessive(terms, i)) {
+      return false
+    }
+    let post = from.post;
+    // the new words may bring their own ending - 'loudly!'
+    if (/[.?!…]/.test(to.post)) {
+      post = post.replace(/^[.?!…]+/, '');
+    }
+    to.post = to.post.trimEnd() + post;
+    from.post = ' ';
+    return true
+  };
+
   // splice an array into an array
   const spliceArr = (parent, index, child) => {
     // tag them as dirty
@@ -1000,44 +1067,8 @@
     }
   };
 
-  // sentence-ending punctuation should move in append
-  const movePunct = (source, end, needle) => {
-    const juicy = /[-.?!,;:)–—'"]/g;
-    const wasLast = source[end - 1];
-    if (!wasLast) {
-      return
-    }
-    const post = wasLast.post;
-    if (juicy.test(post)) {
-      const punct = post.match(juicy).join(''); //not perfect
-      const last = needle.at(-1);
-      last.post = punct + last.post;
-      // remove it, from source
-      wasLast.post = wasLast.post.replace(juicy, '');
-    }
-  };
-
-
-  const moveTitleCase = function (home, start, needle) {
-    const from = home[start];
-    // should we bother?
-    if (start !== 0 || !isTitleCase(from.text)) {
-      return
-    }
-    // titlecase new first term
-    needle[0].text = toTitleCase(needle[0].text);
-    // should we un-titlecase the old word?
-    const old = home[start];
-    if (old.tags.has('ProperNoun') || old.tags.has('Acronym')) {
-      return
-    }
-    if (isTitleCase(old.text) && old.text.length > 1) {
-      old.text = toLowerCase(old.text);
-    }
-  };
-
   // put these words before the others
-  const cleanPrepend = function (home, ptr, needle, document) {
+  const cleanPrepend = function (home, ptr, needle, document, agree) {
     const [n, start, end] = ptr;
     // introduce spaces appropriately
     if (start === 0) {
@@ -1051,25 +1082,28 @@
       endSpace(needle);
       endSpace([home[ptr[1]]]);
     }
-    moveTitleCase(home, start, needle);
-    // movePunct(home, end, needle)
+    if (agree) {
+      // '"dogs' -> '"the dogs'
+      passOpening(home[start], needle[0]);
+      // 'Dogs' -> 'The dogs'
+      if (start === 0) {
+        passCapital(home[start], needle[0], true);
+      }
+    }
     spliceArr(home, start, needle);
   };
 
-  const cleanAppend = function (home, ptr, needle, document) {
+  const cleanAppend = function (home, ptr, needle, document, agree) {
     const [n, , end] = ptr;
     const total = (document[n] || []).length;
-    if (end < total) {
-      // are we in the middle?
-      // add trailing space on self
-      movePunct(home, end, needle);
+    // 'bark.' -> 'bark loudly.'
+    const moved = agree && home[end - 1] && passClosing(home, end - 1, needle.at(-1));
+    if (!moved && end < total) {
+      // in the middle - add trailing space on self
       endSpace(needle);
-    } else if (total === end) {
-      // are we at the end?
-      // add a space to predecessor
+    } else if (!moved) {
+      // at the end - add a space to predecessor
       endSpace(home);
-      // very end, move period
-      movePunct(home, end, needle);
       // is there another sentence after?
       if (document[n + 1]) {
         needle.at(-1).post += ' ';
@@ -1175,7 +1209,9 @@
     return []
   };
 
-  const insert = function (input, view, prepend) {
+  // {agree: false} skips moving any capitals or punctuation
+  const insert = function (input, view, prepend, opts = {}) {
+    const agree = opts.agree !== false;
     const { document, world } = view;
     view.uncache();
     // insert words at end of each doc
@@ -1194,10 +1230,10 @@
       terms = addIds$2(terms);
       if (prepend) {
         expandContraction(view.update([ptr]).firstTerm());
-        cleanPrepend(home, ptr, terms, document);
+        cleanPrepend(home, ptr, terms, document, agree);
       } else {
         expandContraction(view.update([ptr]).lastTerm());
-        cleanAppend(home, ptr, terms, document);
+        cleanAppend(home, ptr, terms, document, agree);
       }
       // harden the pointer
       if (document[n]?.[ptr[1]]) {
@@ -1217,11 +1253,11 @@
   };
 
   const fns$3 = {
-    insertAfter: function (input) {
-      return insert(input, this, false)
+    insertAfter: function (input, opts) {
+      return insert(input, this, false, opts)
     },
-    insertBefore: function (input) {
-      return insert(input, this, true)
+    insertBefore: function (input, opts) {
+      return insert(input, this, true, opts)
     },
   };
   fns$3.append = fns$3.insertAfter;
@@ -1267,6 +1303,7 @@
       pre: terms[0].pre,
       post: last.post,
       isTitleCase: isTitleCase(terms[0].text),
+      text: terms[0].text,
       isPossessive: last.tags.has('Possessive'),
       tags: terms.map(term => Array.from(term.tags)),
     }
@@ -1330,7 +1367,9 @@
     if (typeof input === 'string') {
       input = this.fromText(input).compute('id');
     }
-    main.insertAfter(input);
+    // {agree: false} swaps the words, and nothing else
+    const agree = keep.agree !== false;
+    main.insertAfter(input, { agree });
     // New terms follow each old match; stop at an existing term to separate nearby matches.
     if (replacements) {
       replacements.forEach(group => {
@@ -1347,10 +1386,15 @@
       more.contractions().expand();
     }
     // delete the original terms
-    main.delete(original); //science.
+    // (we restore the start of the phrase ourselves, below)
+    // the new words take the sentence's capital, unless {case: false}
+    // (we restore the punctuation ourselves, below)
+    main.delete(original, { agree, start: keep.case !== false, end: false }); //science.
 
     // main now points at only the new terms
-    main.docs.forEach((terms, i) => restoreOriginal(terms, originals[i], keep));
+    if (agree) {
+      main.docs.forEach((terms, i) => restoreOriginal(terms, originals[i], keep));
+    }
 
     // what should we return?
     const m = retag(main.toView(), ['index']);
@@ -1364,7 +1408,8 @@
     if (keep.case) {
       m.docs.forEach((terms, i) => {
         const transformCase = originals[i].isTitleCase ? toTitleCase : toLowerCase;
-        terms[0].text = transformCase(terms[0].text);
+        // 'DOGS' -> 'CATS'
+        terms[0].text = matchCase$1(originals[i].text, transformCase(terms[0].text));
       });
     }
     // Transfer plugin metadata after replacement text, punctuation, and case are finalized.
@@ -1377,7 +1422,7 @@
   };
 
   fns$2.replace = function (match, input, keep) {
-    if (match && !input) {
+    if (match && input === undefined) {
       return this.replaceWith(match, keep)
     }
     const m = this.match(match);
@@ -1412,22 +1457,68 @@
     const to = terms[last - len];
     if (to && from) {
       to.post += from.post; //this isn't perfect.
-      to.post = removeRunBefore(to.post, ' ', '.?!,;:');
+      to.post = removeRunBefore(to.post, ' ', '.?!,;:"”)]');
       // don't allow any silly punctuation outcomes like ',!'
       to.post = removeRunBefore(to.post, ',;:', '.?!');
     }
   };
 
+  const pairs$2 = { '(': ')', '[': ']', '"': '"', '“': '”', '‘': '’' };
+
+  // a quote or bracket that opens and closes on the removed words leaves with them - '(loudly)'
+  const dropPairs = function (terms, start, end) {
+    const first = terms[start];
+    const last = terms[end - 1];
+    Object.keys(pairs$2).forEach(open => {
+      if (first.pre.includes(open) && last.post.includes(pairs$2[open])) {
+        first.pre = first.pre.replace(open, '');
+        last.post = last.post.replace(pairs$2[open], '');
+      }
+    });
+  };
+
+  // the word before us becomes the end of the phrase - 'bark loudly, and' -> 'bark, and'
+  const repairEnd = function (terms, start, end) {
+    const prev = terms[start - 1];
+    const post = terms[end - 1].post;
+    // is there anything to keep, and room to keep it?
+    if (prev && /\S/.test(post) && !/\S/.test(prev.post)) {
+      prev.post = post;
+    }
+  };
+
+  // the words after us become the start of the phrase
+  const repairStart = function (terms, start, end) {
+    const next = terms[end];
+    if (!next) {
+      return
+    }
+    // '"the dogs' -> '"dogs'
+    passOpening(terms[start], next);
+    // 'The dogs' -> 'Dogs'
+    if (start === 0) {
+      passCapital(terms[start], next);
+    }
+  };
+
   // remove terms from document json
-  const pluckOut = function (document, nots) {
+  const pluckOut = function (document, nots, opts = {}) {
     nots.forEach(ptr => {
       const [n, start, end] = ptr;
       const len = end - start;
       if (!document[n]) {
         return // weird!
       }
-      if (end === document[n].length && end > 1) {
-        repairPunct(document[n], len);
+      if (opts.agree !== false) {
+        dropPairs(document[n], start, end);
+        if (end === document[n].length && end > 1) {
+          repairPunct(document[n], len);
+        } else if (opts.end !== false) {
+          repairEnd(document[n], start, end);
+        }
+        if (opts.start !== false) {
+          repairStart(document[n], start, end);
+        }
       }
       document[n].splice(start, len); // replaces len terms at index start
     });
@@ -1489,9 +1580,14 @@
   };
 
   const methods$k = {
-    /** */
-    remove: function (reg) {
+    // {agree: false} skips moving any capitals or punctuation
+    remove: function (reg, opts) {
       const { indexN } = this.methods.one.pointer;
+      // allow .remove({agree: false})
+      if (reg && Object.hasOwn(reg, 'agree')) {
+        opts = reg;
+        reg = undefined;
+      }
       this.uncache();
       // two modes:
       //  - a. remove self, from full parent
@@ -1511,7 +1607,7 @@
       const gonePtrs = indexN(nots);
       const emptied = getEmptied(gonePtrs, this.document);
       // remove them from the actual document)
-      const document = pluckOut(this.document, nots);
+      const document = pluckOut(this.document, nots, opts);
       // repair our pointers
       ptrs = fixPointers$1(ptrs, gonePtrs, emptied);
       // clean up our original inputs
@@ -1548,7 +1644,7 @@
   };
 
   // put these characters around each match
-  const wrap$1 = function (view, start, end) {
+  const wrap$2 = function (view, start, end) {
     view.docs.forEach(terms => {
       terms[0].pre = start + terms[0].pre;
       const last = terms.at(-1);
@@ -1617,12 +1713,12 @@
 
     /** add quotations around these matches */
     toQuotations: function (start, end) {
-      return wrap$1(this, start || '"', end || '"')
+      return wrap$2(this, start || '"', end || '"')
     },
 
     /** add brackets around these matches */
     toParentheses: function (start, end) {
-      return wrap$1(this, start || '(', end || ')')
+      return wrap$2(this, start || '(', end || ')')
     },
   };
 
@@ -1647,8 +1743,8 @@
   /** count the # of terms in each match - most first */
   const wordCount$1 = (a, b) => b.words - a.words;
 
-  /** count the # of terms in each match */
-  const sequential = (a, b) => b[0] - a[0] || (a[1] > b[1] ? 1 : -1);
+  /** document order - sentence, then start, then end of each match */
+  const sequential = (a, b) => a.pointer[0] - b.pointer[0] || a.pointer[1] - b.pointer[1] || a.pointer[2] - b.pointer[2];
 
   /** sort by # of duplicates in the document*/
   const byFreq = function (arr) {
@@ -2749,7 +2845,7 @@ er
       if (typeof input === 'string') {
         input = [input];
       }
-      const trie = isObject(input) ? input : buildTrie(input, this.world);
+      const trie = isObject$1(input) ? input : buildTrie(input, this.world);
       let res = scan(this, trie, opts);
       res = res.settle();
       return res
@@ -2795,7 +2891,7 @@ er
   // add alias
   lib$4.compile = lib$4.buildTrie;
 
-  var lookup = {
+  var lookup$1 = {
     api: api$6,
     lib: lib$4
   };
@@ -2841,9 +2937,9 @@ er
   };
 
   // did they pass-in a compromise object?
-  const isView = val => val && isObject(val) && val.isView === true;
+  const isView = val => val && isObject$1(val) && val.isView === true;
 
-  const isNet = val => val && isObject(val) && val.isNet === true;
+  const isNet = val => val && isObject$1(val) && val.isNet === true;
 
   // sweep options when only finding, not tagging
   const noTag = { tagger: false };
@@ -2886,7 +2982,7 @@ er
     return asView(this, doMatch(this, regs, group, opts, true))
   };
 
-  const has = function (regs, group, opts) {
+  const has$1 = function (regs, group, opts) {
     // support view as input
     if (isView(regs)) {
       return this.intersection(regs).fullPointer.length > 0
@@ -2923,7 +3019,7 @@ er
     return view
   };
 
-  var match$2 = { matchOne, match: match$1, has, if: ifBy(true), ifNo: ifBy(false) };
+  var match$2 = { matchOne, match: match$1, has: has$1, if: ifBy(true), ifNo: ifBy(false) };
 
   // the words before (or after) each match, in its sentence
   const lookaround = function (view, isAfter, regs, group, opts) {
@@ -5222,7 +5318,7 @@ er
   };
   // console.log(md5('food-safety'))
 
-  const defaults$1 = {
+  const defaults$2 = {
     text: true,
     terms: true,
   };
@@ -5270,7 +5366,7 @@ er
     if (typeof option === 'string') {
       option = {};
     }
-    option = { ...defaults$1, ...option };
+    option = { ...defaults$2, ...option };
     // run any necessary upfront steps
     if (option.offset) {
       view.compute('offset');
@@ -5325,7 +5421,7 @@ er
     return starts
   };
 
-  const wrap = function (doc, obj) {
+  const wrap$1 = function (doc, obj) {
     // index ids to highlight
     const starts = findStarts(doc, obj);
     let text = '';
@@ -5465,8 +5561,8 @@ er
   /** some named output formats */
   const out = function (method) {
     // support custom outputs
-    if (isObject(method)) {
-      return wrap(this, method)
+    if (isObject$1(method)) {
+      return wrap$1(this, method)
     }
     if (Object.hasOwn(outputs, method)) {
       return outputs[method](this)
@@ -5481,7 +5577,7 @@ er
     out,
     /** */
     wrap: function (obj) {
-      return wrap(this, obj)
+      return wrap$1(this, obj)
     },
   };
 
@@ -5494,7 +5590,7 @@ er
       let opts = {};
       if (fmt && typeof fmt === 'string' && Object.hasOwn(fmts, fmt)) {
         opts = { ...fmts[fmt] };
-      } else if (fmt && isObject(fmt)) {
+      } else if (fmt && isObject$1(fmt)) {
         opts = { ...fmt }; //todo: fixme
       }
       // is it a full document?
@@ -5536,8 +5632,9 @@ er
         if (!Object.hasOwn(model.one.tagSet, tag)) {
           return tag
         }
-        const c = model.one.tagSet[tag].color || 'blue';
-        return cli[c](tag)
+        // an unknown color should not break the output
+        const paint = cli[model.one.tagSet[tag].color] || blue;
+        return paint(tag)
       });
     }
     return tags.join(', ')
@@ -5677,9 +5774,86 @@ er
     highlight: showHighlight,
   };
 
+  const lastBrace = /\{(?=[^{]*$)/; // split on the last { only
+  const comment = /\}[ \t]*#(.*)$/s; // an optional '# comment' after the last {tags} block
+
+
+  // parse the spec output
+  const parseLine = function (line = '') {
+    let [text, tags] = line.split(lastBrace); // eslint-disable-line prefer-const
+    if (tags === undefined) {
+      const note = text.match(/\s#(.*)$/s)?.[1] || '';
+      // no {tags} block on this line
+      return { text: text.replace(/\s#.*$/s, '').trim(), tags: null, comment: note.trim() }
+    }
+    const note = (tags.match(comment)?.[1] || '').trim();
+    tags = tags.replace(comment, '}'); // drop the comment - only ever one, always last
+    tags = tags.split(',').map(tag => tag.trim());
+    const lastTag = tags[tags.length - 1];
+    tags[tags.length - 1] = lastTag.replace(/\}$/, '');
+    tags = tags.map(tag => tag.split('|').map(t => t.trim()));
+    if (tags.length === 1 && tags[0].length === 1 && tags[0][0] === '') {
+      tags = []; // empty '{}'; retain empty slots in nonempty lists
+    }
+    return { text: text.trim(), tags, comment: note }
+  };
+
+  // parse a whole spec into [{ line, text, tags, comment }], skipping blank and comment lines
+  const parseSpec = function (spec = '') {
+    const list = [];
+    spec.split('\n').forEach((str, i) => {
+      if (str.trim() && !/^\s*#/.test(str)) {
+        list.push({ line: i + 1, ...parseLine(str) });
+      }
+    });
+    return list
+  };
+
+  // make a match syntax looping through the arrays of tags
+  const toMatchString = function (tags, aliases) {
+    // Slots accept tags and '.', never match-syntax quantifiers or groups.
+    if (tags.some(slot => slot.some(tag => tag !== '.' && !/^!?#?[a-z][a-z0-9]*$/i.test(tag)))) {
+      return null
+    }
+    return tags.map(arr => {
+      arr = arr.map(str => {
+        if (str === '.') {
+          return '.'
+        }
+        const negative = str.startsWith('!');
+        const tag = str.replace(/^!?#?/, '');
+        const prefix = negative ? '!#' : '#';
+        return prefix + (aliases[tag] || tag)
+      });
+      if (arr.length > 1) {
+        return `(${arr.join(' && ')})`
+      }
+      return arr[0]
+    }).join(' ')
+  };
+
+  // Apply only positive constraints; negatives remain assertions.
+  const applyTags = (doc, slots, aliases) => {
+    const terms = doc.terms();
+    // Tokenization can supply structural tags; literal slots replace them.
+    doc.docs.flat().forEach(term => term.tags.clear());
+    slots?.forEach((slot, i) => {
+      const tags = slot.filter(tag => tag !== '.' && !tag.startsWith('!')).map(tag => {
+        tag = tag.replace(/^#/, '');
+        return aliases[tag] || tag
+      });
+      terms.eq(i).tag(tags, 'fromSpec');
+    });
+  };
+
   // Diagnostics describe the original parse, before the returned View is mutated.
-  const specFailures = (doc, slots, patterns, aliases) => {
+  const specFailures = (doc, slots, aliases) => {
     const terms = doc.docs.flat();
+    const patterns = slots.map(slot => toMatchString([slot], aliases));
+    const pattern = toMatchString(slots, aliases);
+    if (terms.length === slots.length && pattern !== null && doc.has(pattern)) {
+      return [] // valid
+    }
     const failures = [];
     if (terms.length !== slots.length) {
       failures.push({
@@ -5774,64 +5948,6 @@ er
     return `${green('✓')} ${green(dim(text))}${dim(block)}`
   };
 
-  const lastBrace = /\{(?=[^{]*$)/; // split on the last { only
-  const comment = /\}[ \t]*#.*$/s; // an optional '# comment' after the last {tags} block
-
-
-  // parse the spec output
-  const parseLine = function (line = '') {
-    let [text, tags] = line.split(lastBrace); // eslint-disable-line prefer-const
-    if (tags === undefined) {
-      return { text: text.replace(/\s#.*$/s, '').trimEnd(), tags: null } // no {tags} block on this line
-    }
-    tags = tags.replace(comment, '}'); // drop the comment - only ever one, always last
-    tags = tags.split(',').map(tag => tag.trim());
-    const lastTag = tags[tags.length - 1];
-    tags[tags.length - 1] = lastTag.replace(/\}$/, '');
-    tags = tags.map(tag => tag.split('|').map(t => t.trim()));
-    if (tags.length === 1 && tags[0].length === 1 && tags[0][0] === '') {
-      tags = []; // empty '{}'; retain empty slots in nonempty lists
-    }
-    return { text, tags }
-  };
-
-  // make a match syntax looping through the arrays of tags
-  const toMatchString = function (tags, aliases) {
-    // Slots accept tags and '.', never match-syntax quantifiers or groups.
-    if (tags.some(slot => slot.some(tag => tag !== '.' && !/^!?#?[a-z][a-z0-9]*$/i.test(tag)))) {
-      return null
-    }
-    return tags.map(arr => {
-      arr = arr.map(str => {
-        if (str === '.') {
-          return '.'
-        }
-        const negative = str.startsWith('!');
-        const tag = str.replace(/^!?#?/, '');
-        const prefix = negative ? '!#' : '#';
-        return prefix + (aliases[tag] || tag)
-      });
-      if (arr.length > 1) {
-        return `(${arr.join(' && ')})`
-      }
-      return arr[0]
-    }).join(' ')
-  };
-
-  // Apply only positive constraints; negatives remain assertions.
-  const applyTags = (doc, slots, aliases) => {
-    const terms = doc.terms();
-    // Tokenization can supply structural tags; literal slots replace them.
-    doc.docs.flat().forEach(term => term.tags.clear());
-    slots?.forEach((slot, i) => {
-      const tags = slot.filter(tag => tag !== '.' && !tag.startsWith('!')).map(tag => {
-        tag = tag.replace(/^#/, '');
-        return aliases[tag] || tag
-      });
-      terms.eq(i).tag(tags, 'fromSpec');
-    });
-  };
-
   const fromSpec = function (spec, { tags: tagMode = 'ignore', failures: failureMode = 'ignore', verbose = false } = {}) {
     if (!['ignore', 'use'].includes(tagMode) || !['ignore', 'throw', 'retain', 'log'].includes(failureMode)) {
       throw new Error('Invalid fromSpec options')
@@ -5839,29 +5955,24 @@ er
     const aliases = this.world().model.one.tagAliases;
     const result = this('');
     result.failures = [];
-    spec.split('\n').forEach((line, index) => {
-      if (!line.trim() || /^\s*#/.test(line)) {
-        return
-      }
-      const { text, tags } = parseLine(line);
+    parseSpec(spec).forEach(({ line, text, tags }) => {
       const doc = tagMode === 'use' ? this.tokenize(text) : this(text);
       let failures = [];
       if (tags !== null && (tagMode === 'use' || failureMode !== 'ignore')) {
         const count = doc.docs.reduce((sum, terms) => sum + terms.length, 0);
-        const patterns = tags.map(slot => toMatchString([slot], aliases));
         const pattern = toMatchString(tags, aliases);
         // Assigning slots is unsafe when the shape or syntax is invalid.
         const canApply = count === tags.length && pattern !== null;
         if (tagMode === 'use' && !canApply && failureMode !== 'log') {
-          const invalid = specFailures(doc, tags, patterns, aliases);
-          throw new Error(`${text.trim()} - ${invalid.map(failure => failure.message).join('; ')}`)
+          const invalid = specFailures(doc, tags, aliases);
+          throw new Error(`${text} - ${invalid.map(failure => failure.message).join('; ')}`)
         }
         if (tagMode === 'use') {
           applyTags(doc, canApply ? tags : null, aliases);
         }
-        if (failureMode !== 'ignore' && (count !== tags.length || pattern === null || !doc.has(pattern))) {
-          failures = specFailures(doc, tags, patterns, aliases)
-            .map(failure => ({ line: index + 1, text: text.trim(), ...failure }));
+        if (failureMode !== 'ignore') {
+          failures = specFailures(doc, tags, aliases)
+            .map(failure => ({ line, text, ...failure }));
           result.failures.push(...failures);
         }
       } else if (tagMode === 'use') {
@@ -5874,7 +5985,7 @@ er
         console.log(logLine(text, tags, detail)); //eslint-disable-line no-console
       }
       if (failures.length > 0 && failureMode === 'throw') {
-        throw new Error(`${text.trim()} - ${detail}`)
+        throw new Error(`${text} - ${detail}`)
       }
       if (failureMode === 'retain' && tags !== null && failures.length === 0) {
         return
@@ -5911,6 +6022,7 @@ er
       one: {
         hash: md5,
         debug,
+        parseSpec,
       },
     },
   };
@@ -6249,7 +6361,7 @@ er
           o.pointer = [
             term.index[0],
             term.index[1],
-            ptr[1] + len
+            term.index[1] + len
           ];
         }
         return o
@@ -7054,7 +7166,7 @@ er
     }, false);
   };
 
-  const toArray$1 = function (json) {
+  const toArray$2 = function (json) {
     // The tag formatter only reads these graph-owned nodes.
     const nodes = byDepth(json);
     // should we show the root?
@@ -7087,7 +7199,7 @@ er
     // the graph's nodes, parents first
     toArray() {
       // fillDown changes properties, so the cached graph relationships still hold.
-      return toArray$1(this.json)
+      return toArray$2(this.json)
     }
   }
 
@@ -7615,47 +7727,59 @@ er
     return sentences
   };
 
-  /* eslint-disable regexp/no-dupe-characters-character-class */
-
   // merge embedded quotes into 1 sentence
   // like - 'he said "no!" and left.'
-  const MAX_QUOTE = 280;// ¯\_(ツ)_/¯
+  const MAX_QUOTE = 280; // ¯\_(ツ)_/¯
+  const MAX_AHEAD = 5;
 
+  // each opening quote, and the marks that may close it
+  // (some marks open a quote in one language, and close it in another)
+  // a third mark means 'not an opener, when that one is around'
   // don't support single-quotes for multi-sentences
-  const pairs = {
-    '\u0022': '\u0022', // 'StraightDoubleQuotes'
-    '\uFF02': '\uFF02', // 'StraightDoubleQuotesWide'
-    // '\u0027': '\u0027', // 'StraightSingleQuotes'
-    '\u201C': '\u201D', // 'CommaDoubleQuotes'
-    // '\u2018': '\u2019', // 'CommaSingleQuotes'
-    '\u201F': '\u201D', // 'CurlyDoubleQuotesReversed'
-    // '\u201B': '\u2019', // 'CurlySingleQuotesReversed'
-    '\u201E': '\u201D', // 'LowCurlyDoubleQuotes'
-    '\u2E42': '\u201D', // 'LowCurlyDoubleQuotesReversed'
-    '\u201A': '\u2019', // 'LowCurlySingleQuotes'
-    '\u00AB': '\u00BB', // 'AngleDoubleQuotes'
-    '\u2039': '\u203A', // 'AngleSingleQuotes'
-    '\u2035': '\u2032', // 'PrimeSingleQuotes'
-    '\u2036': '\u2033', // 'PrimeDoubleQuotes'
-    '\u2037': '\u2034', // 'PrimeTripleQuotes'
-    '\u301D': '\u301E', // 'PrimeDoubleQuotes'
-    // '\u0060': '\u00B4', // 'PrimeSingleQuotes'
-    '\u301F': '\u301E', // 'LowPrimeDoubleQuotesReversed'
-    '\u300C': '\u300D', // 'CornerBrackets' 「」
-    '\u300E': '\u300F', // 'WhiteCornerBrackets' 『』
-  };
-  const openQuote = RegExp('[' + Object.keys(pairs).join('') + ']', 'g');
-  const closeQuote = RegExp('[' + Object.values(pairs).join('') + ']', 'g');
+  const pairs$1 = [
+    ['\u0022', '\u0022'], // straight
+    ['\uFF02', '\uFF02'], // wide
+    ['\u201C', '\u201D', '\u201E'], // english (but it closes a german one)
+    ['\u201F', '\u201D'], // reversed
+    ['\u201E', '\u201D\u201C'], // polish, german
+    ['\u2E42', '\u201D'], // low-reversed
+    ['\u201A', '\u2019\u2018'], // low-single, german
+    ['\u00AB', '\u00BB'], // french
+    ['\u00BB', '\u00AB'], // german
+    ['\u2039', '\u203A'], // single
+    ['\u203A', '\u2039'], // single, reversed
+    ['\u2035', '\u2032'], // prime
+    ['\u2036', '\u2033'], // double-prime
+    ['\u2037', '\u2034'], // triple-prime
+    ['\u301D', '\u301E'], // prime
+    ['\u301F', '\u301E'], // low-prime
+    ['\u300C', '\u300D'], // corner
+    ['\u300E', '\u300F'], // white-corner
+  ];
 
-  const closesQuote = function (str) {
-    if (!str) {
-      return false
+  const count$1 = function (str, chars) {
+    let n = 0;
+    for (const c of str) {
+      if (chars.includes(c)) {
+        n += 1;
+      }
     }
-    const m = str.match(closeQuote);
-    if (m !== null && m.length === 1) {
-      return true
-    }
-    return false
+    return n
+  };
+
+  // is there a quotation here, that hasn't closed yet?
+  const isOpen = function (str) {
+    return pairs$1.some(([open, close, unless]) => {
+      const n = count$1(str, open);
+      if (n === 0 || (unless && str.includes(unless))) {
+        return false
+      }
+      // the same mark opens and closes
+      if (open === close) {
+        return n % 2 === 1
+      }
+      return n > count$1(str, close)
+    })
   };
 
   // allow micro-sentences when inside a quotation, like:
@@ -7663,40 +7787,25 @@ er
   const quoteMerge = function (splits) {
     const arr = [];
     for (let i = 0; i < splits.length; i += 1) {
-      const split = splits[i];
-      // do we have an open-quote and not a closed one?
-      const m = split.match(openQuote);
-      if (m !== null && m.length === 1) {
-        // is the quote already closed in this chunk? - '“Yes!” said Tom. “No!” said Ann.'
-        const closed = split.match(closeQuote);
-        if (closed !== null && closed[0] !== m[0]) {
-          arr.push(split);
-          continue
-        }
-
-        // look at the next sentence for a closing quote,
-        if (closesQuote(splits[i + 1]) && splits[i + 1].length < MAX_QUOTE) {
-          splits[i] += splits[i + 1];// merge them
-          arr.push(splits[i]);
-          splits[i + 1] = '';
-          i += 1;
-          continue
-        }
-        // look at n+2 for a closing quote,
-        if (closesQuote(splits[i + 2])) {
-          const toAdd = splits[i + 1] + splits[i + 2];// merge them all
+      let str = splits[i];
+      if (isOpen(str)) {
+        // look ahead for the sentence that closes it
+        let toAdd = '';
+        for (let n = i + 1; n < splits.length && n - i <= MAX_AHEAD; n += 1) {
+          toAdd += splits[n];
           //make sure it's not too-long
-          if (toAdd.length < MAX_QUOTE) {
-            splits[i] += toAdd;
-            arr.push(splits[i]);
-            splits[i + 1] = '';
-            splits[i + 2] = '';
-            i += 2;
-            continue
+          if (toAdd.length >= MAX_QUOTE) {
+            break
+          }
+          if (!isOpen(str + toAdd)) {
+            // merge them all
+            str += toAdd;
+            i = n;
+            break
           }
         }
       }
-      arr.push(splits[i]);
+      arr.push(str);
     }
     return arr
   };
@@ -8118,7 +8227,9 @@ er
   const hasEllipse = /(?:\u2026|\.{2}) *$/; // '...'
   const hasLetter = /\p{L}/u;
   const hasPeriod = /\. *$/;
-  const leadInit = /^[A-Z]\. $/; // "W. Kensington"
+  const leadInit = /^\p{Lu}\. $/u; // "W. Kensington"
+  // an initial in any alphabet - 'А. С. Пушкин'
+  const isInitial = /[ .]\p{Lu}\. *$/u;
 
   /** does this look like a sentence? - str can be the end of it, if foundLetter is given */
   const isSentence = function (str, abbrevs, foundLetter = hasLetter.test(str)) {
@@ -8127,7 +8238,7 @@ er
       return false
     }
     // check for 'F.B.I.'
-    if (isAcronym$1.test(str)) {
+    if (isAcronym$1.test(str) || isInitial.test(str)) {
       return false
     }
     // check for leading initial - "W. Kensington"
@@ -8424,14 +8535,14 @@ yb
     [places, 'Place'],
   ];
   // create key-val for sentence-tokenizer
-  const abbreviations = {};
+  const abbreviations$1 = {};
   // add them to a future lexicon
   const lexicon$2 = {};
 
   list.forEach(a => {
     a[0].forEach(w => {
       // sentence abbrevs
-      abbreviations[w] = true;
+      abbreviations$1[w] = true;
       // future-lexicon
       lexicon$2[w] = 'Abbreviation';
       if (a[1] !== undefined) {
@@ -8552,7 +8663,7 @@ designate
   var model$3 = {
     one: {
       aliases,
-      abbreviations,
+      abbreviations: abbreviations$1,
       prefixes,
       suffixes: suffixes$1,
       prePunctuation,
@@ -8786,15 +8897,15 @@ designate
     return index
   };
 
-  const defaults = {
+  const defaults$1 = {
     safe: true,
     min: 3,
   };
 
   const prepare = function (words = [], opts = {}) {
     const model = this.model();
-    opts = { ...defaults, ...opts };
-    if (isObject(words)) {
+    opts = { ...defaults$1, ...opts };
+    if (isObject$1(words)) {
       Object.assign(model.one.lexicon, words);
       words = Object.keys(words);
     }
@@ -8837,11 +8948,569 @@ designate
   nlp.plugin(plugin); //~6kb
   nlp.extend(tokenize); //7kb
   nlp.extend(freeze); //
-  nlp.plugin(cache$1); //~1kb
-  nlp.extend(lookup); //7kb
+  nlp.plugin(cache$4); //~1kb
+  nlp.extend(lookup$1); //7kb
   nlp.extend(typeahead); //1kb
   nlp.extend(lexicon$3); //1kb
   nlp.extend(sweep); //1kb
+
+  // a leading '-', or the real minus-sign, or one after a symbol - '$-5'
+  const minus = /^\s*[-−]|\P{L}[-−]$/u;
+  const signs = /[-−]/g;
+  // any currency symbol - '$', '€', '₽'
+  const currency = /\p{Sc}/u;
+
+  // a decimal-comma, unless the language's model says otherwise.
+  // `ordinal` is regex-source for the ending of a numeric ordinal - '[ºª°]'
+  // `loose` reads a lone decimal-mark before three digits as thousands - '7,938'
+  const defaults = { decimal: ',', group: '.', ordinal: '', loose: false };
+
+  // the mark that groups thousands can't also be the decimal
+  const groupMark = function (group, decimal) {
+    if (group !== decimal) {
+      return group
+    }
+    return decimal === '.' ? ',' : '.'
+  };
+
+  // '1234567' → '1.234.567'
+  const addGroups = function (int, mark) {
+    const out = [];
+    for (let end = int.length; end > 0; end -= 3) {
+      out.unshift(int.slice(Math.max(end - 3, 0), end));
+    }
+    return out.join(mark)
+  };
+
+  // floating-point noise - 0.1 + 0.2
+  const tidy = num => Number(num.toPrecision(15));
+
+  // compile each ordinal-ending once
+  const cache$3 = {};
+  const isOrdinal = function (suffix, src) {
+    if (!src || !suffix) {
+      return false
+    }
+    cache$3[src] = cache$3[src] || new RegExp('^(?:' + src + ')$', 'iu');
+    return cache$3[src].test(suffix)
+  };
+
+  // digits, and any mark that sits between two of them - '1.234,56', '1 000', "1'000"
+  const body = /^[0-9](?:[0-9]|[.,'’\s](?=[0-9]))*/;
+  const count = (str, char) => str.split(char).length - 1;
+
+  // which mark is the decimal, and which one groups the thousands?
+  // two different marks, or a repeated one, say so themselves - '1.234,56', '1.234.567'
+  // a lone '.' or ',' is the only real guess, and the locale makes it
+  const findMarks = function (str, locale) {
+    const dots = count(str, '.');
+    const commas = count(str, ',');
+    // a space or an apostrophe is only ever a thousands-group
+    const soft = str.match(/[ ']/);
+    let decimal = null;
+    let group = soft ? soft[0] : null;
+    if (dots && commas) {
+      // the last one is the decimal
+      decimal = str.lastIndexOf(',') > str.lastIndexOf('.') ? ',' : '.';
+      group = decimal === ',' ? '.' : ',';
+      if (soft) {
+        return null
+      }
+    } else if (dots + commas > 1) {
+      group = dots ? '.' : ',';
+      if (soft) {
+        return null
+      }
+    } else if (dots + commas === 1) {
+      const mark = dots ? '.' : ',';
+      const isGroup = /^[1-9][0-9]{0,2}[.,][0-9]{3}$/.test(str);
+      const isDecimal = mark === locale.decimal && !(locale.loose && isGroup);
+      if (soft || isDecimal || !isGroup) {
+        decimal = mark; // '3,5', and '3.5' anywhere
+      } else {
+        group = mark; // '1.000' where the decimal is a comma
+      }
+    }
+    return { decimal, group }
+  };
+
+  // '1.234,56' → 1234.56, or null for something that isn't one number - '1.2.3'
+  const toNumber$2 = function (str, marks) {
+    let int = str;
+    let fraction = '';
+    if (marks.decimal) {
+      const parts = str.split(marks.decimal);
+      if (parts.length !== 2) {
+        return null
+      }
+      int = parts[0];
+      fraction = parts[1];
+    }
+    // thousands come in threes
+    if (marks.group) {
+      const groups = int.split(marks.group);
+      if (groups[0].length > 3 || groups.slice(1).some(s => s.length !== 3)) {
+        return null
+      }
+      int = groups.join('');
+    }
+    if (!/^[0-9]+$/.test(int) || !/^[0-9]*$/.test(fraction)) {
+      return null
+    }
+    return Number(fraction ? int + '.' + fraction : int)
+  };
+
+  /**
+   * pull-apart a number written in digits - '-5', '1.234,56 €', '3,5%', '2ª'
+   * `pre` is any punctuation that the tokenizer left in front of it - '(-'
+   * `locale` is model.two.europeanNumbers
+   */
+  const read = function (str, pre = '', locale = defaults) {
+    const res = {
+      num: null,
+      prefix: '',
+      suffix: '',
+      hasComma: false,
+      decimal: null,
+      group: null,
+      ordinal: null,
+      currency: null,
+      isPercent: false,
+      isFraction: false,
+    };
+    str = String(str).trim();
+    const begin = str.search(/[0-9]/);
+    if (begin === -1) {
+      return res
+    }
+    let prefix = str.slice(0, begin);
+    const raw = str.slice(begin).match(body)[0];
+    let suffix = str.slice(begin + raw.length);
+    // every kind of space, and both kinds of apostrophe
+    let digits = raw.replace(/\s/g, ' ').replace(/’/g, "'");
+    // a decimal with nothing in front of it - '.5', ',5'
+    const lead = prefix.slice(-1);
+    if ((lead === '.' || lead === ',') && /^[0-9]+$/.test(digits)) {
+      digits = '0' + lead + digits;
+      prefix = prefix.slice(0, -1);
+    }
+    const marks = findMarks(digits, locale);
+    let num = marks ? toNumber$2(digits, marks) : null;
+    if (num === null) {
+      return res
+    }
+    // a fraction - '1/2'
+    const frac = suffix.match(/^\/([0-9]+)$/);
+    if (frac && Number(frac[1]) !== 0) {
+      num /= Number(frac[1]);
+      suffix = '';
+      res.isFraction = true;
+    }
+    // the sign may be hiding in the punctuation - '(-5)'
+    // .. on either side of the currency - '-$5', '$-5' - but not 'covid-19'
+    if (minus.test(prefix) || /[-−]$/.test(pre)) {
+      num *= -1;
+    }
+    // a numeric ordinal - '2ª', '5-го', '3e'
+    if (isOrdinal(suffix, locale.ordinal)) {
+      res.ordinal = suffix;
+      suffix = '';
+    }
+    res.num = num;
+    res.prefix = prefix.replace(signs, '');
+    res.suffix = suffix;
+    res.decimal = marks.decimal;
+    res.group = marks.group;
+    res.hasComma = marks.group !== null;
+    // remember which space it was - a non-breaking one is put back as one
+    if (marks.group === ' ') {
+      res.group = raw.match(/\s/)[0];
+    }
+    const money = [res.prefix, suffix].find(s => currency.test(s));
+    res.currency = money ? money.trim() : null;
+    res.isPercent = /^\s*[%％]/.test(suffix);
+    return res
+  };
+
+  /**
+   * write a number in digits - 1234.5 → '1.234,5'
+   * `how` is the result of read(), so a number goes back the way it was found.
+   * thousands are only grouped when `how.hasComma` is set
+   */
+  const write$1 = function (num, how = {}, locale = defaults) {
+    if (typeof num !== 'number' || !isFinite(num)) {
+      return ''
+    }
+    num = tidy(num);
+    let str = String(Math.abs(num));
+    // leave '1e+21' alone
+    if (/^[0-9]+(?:\.[0-9]+)?$/.test(str)) {
+      let decimal = how.decimal || locale.decimal;
+      // '7,938' was grouped with a comma, so its decimal is a period
+      if (!how.decimal && how.group === decimal) {
+        decimal = groupMark(decimal, decimal);
+      }
+      const parts = str.split('.');
+      let int = parts[0];
+      const fraction = parts[1];
+      if (how.hasComma) {
+        int = addGroups(int, groupMark(how.group || locale.group, decimal));
+      }
+      str = fraction ? int + decimal + fraction : int;
+    }
+    // the sign goes ahead of any currency - '-$5'
+    const sign = num < 0 ? '-' : '';
+    return sign + (how.prefix || '') + str + (how.suffix || '')
+  };
+
+  const sign = '[-+−]?';
+  // '1.234.567,89', or '1234,5' - either mark, the reader sorts-out which is which
+  const digits = "(?:[0-9]{1,3}(?:[.,'’][0-9]{3})+(?:[.,][0-9]+)?|[0-9]+(?:[.,][0-9]+)?)";
+  // 'R$', 'US$', '€'
+  const symbol = '(?:[a-z]{1,2})?\\p{Sc}';
+
+  const cardinal = ['Cardinal', 'NumericValue'];
+  const percent = ['Percent', 'Cardinal', 'NumericValue'];
+  const money = ['Money', 'Value'];
+
+  // build them once per language
+  const cache$2 = new WeakMap();
+
+  /**
+   * tagging rules for numbers written in digits, as [regex, tags, example].
+   * test them on the term's text, not its 'normal' - which has lost its commas
+   */
+  const regexes = function (locale = defaults) {
+    if (cache$2.has(locale)) {
+      return cache$2.get(locale)
+    }
+    const reg = str => new RegExp('^' + str + '$', 'iu');
+    const out = [
+      [reg(sign + symbol + ' ?' + sign + digits + '(?:[kmb]|bn)?\\+?'), money, '€5,30'],
+      [reg(sign + digits + ' ?' + symbol + '\\+?'), money, '5,30€'],
+      [reg(sign + digits + '\\+?'), cardinal, '1.234,56'],
+      [reg(sign + '[.,][0-9]+\\+?'), cardinal, ',5'],
+      [reg(sign + digits + ' ?[%％]\\+?'), percent, '3,5%'],
+      [reg(sign + '[.,][0-9]+[%％]'), percent, ',5%'],
+    ];
+    // '2ª', '5-го', '3e'
+    if (locale.ordinal) {
+      out.push([reg('[0-9]+(?:' + locale.ordinal + ')'), ['Ordinal', 'NumericValue'], 'ordinal']);
+    }
+    cache$2.set(locale, out);
+    return out
+  };
+
+  const reason = 'european-number';
+  // leave these to the language's own tagger - '12.05.2020', '15.30', '555-1234'
+  // .. and a german ordinal keeps its period outside of the term - '3.'
+  const skip = ['Date', 'PhoneNumber', 'NumberRange', 'Ordinal'];
+
+  // tag numbers written in digits, from their raw text - '1.234,56', '3,5%', '5,30€'
+  const tagNumbers = function (view) {
+    const { world, model, methods } = view;
+    const regs = regexes(model.two.europeanNumbers);
+    const setTag = methods.one.setTag;
+    view.docs.forEach(terms => {
+      terms.forEach(term => {
+        if (!/[0-9]/.test(term.text) || skip.some(tag => term.tags.has(tag))) {
+          return
+        }
+        const found = regs.find(a => a[0].test(term.text));
+        if (found) {
+          setTag([term], found[1], world, false, reason);
+        }
+      });
+    });
+  };
+
+  /**
+   * numbers written in digits, with a decimal-comma - '1.234,56', '3,5%', '5,30 €'
+   * tags them, and adds a reader and writer:
+   *   const { read, write } = doc.methods.two.europeanNumbers
+   *   const locale = doc.model.two.europeanNumbers
+   *   read('1.234,56', term.pre, locale).num // 1234.56
+   *   write(1234.56, { hasComma: true }, locale) // '1.234,56'
+   * a language sets its own marks in model.two.europeanNumbers - { group: ' ', ordinal: 'er?' }
+   */
+  var europeanNumbers = {
+    model: { two: { europeanNumbers: { ...defaults } } },
+    methods: { two: { europeanNumbers: { read, write: write$1, regexes } } },
+    compute: { europeanNumbers: tagNumbers },
+    hooks: ['europeanNumbers'],
+  };
+
+  /* eslint-disable no-empty */
+  const BASE$1 = 36;
+  const seq$1 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  const cache$1 = seq$1.split('').reduce(function (h, c, i) {
+    h[c] = i;
+    return h
+  }, {});
+
+  // 0, 1, 2, ..., A, B, C, ..., 00, 01, ... AA, AB, AC, ..., AAA, AAB, ...
+  const toAlphaCode$1 = function (n) {
+    if (seq$1[n] !== undefined) {
+      return seq$1[n]
+    }
+    let places = 1;
+    let range = BASE$1;
+    let s = '';
+    for (; n >= range; n -= range, places++, range *= BASE$1) {}
+    for (; places > 0; places--) {
+      const d = n % BASE$1;
+      s = String.fromCharCode((d < 10 ? 48 : 55) + d) + s;
+      n = (n - d) / BASE$1;
+    }
+    return s
+  };
+
+  const fromAlphaCode$1 = function (s) {
+    if (cache$1[s] !== undefined) {
+      return cache$1[s]
+    }
+    let n = 0;
+    let places = 1;
+    let range = BASE$1;
+    let pow = 1;
+    for (; places < s.length; n += range, places++, range *= BASE$1) {}
+    for (let i = s.length - 1; i >= 0; i--, pow *= BASE$1) {
+      let d = s.charCodeAt(i) - 48;
+      if (d > 10) {
+        d -= 7;
+      }
+      n += d * pow;
+    }
+    return n
+  };
+
+  var encoding$1 = {
+    toAlphaCode: toAlphaCode$1,
+    fromAlphaCode: fromAlphaCode$1
+  };
+
+  const symbols$1 = function (t) {
+    const reSymbol = /^([0-9A-Z]+):([0-9A-Z]+)$/;
+    for (let i = 0; i < t.nodes.length; i++) {
+      if (!t.nodes[i].includes(':')) {
+        break
+      }
+      const m = reSymbol.exec(t.nodes[i]);
+      if (!m || m[0].length !== t.nodes[i].length || encoding$1.fromAlphaCode(m[1]) !== i) {
+        throw new SyntaxError('Invalid efrt packed data: symbol definition')
+      }
+      t.syms.push(encoding$1.fromAlphaCode(m[2]));
+    }
+    t.symCount = t.syms.length;
+    t.nodes = t.nodes.slice(t.symCount);
+    if (t.nodes.length === 0 || t.syms.some((index) => !Number.isSafeInteger(index) || index >= t.nodes.length)) {
+      throw new SyntaxError('Invalid efrt packed data: symbol target')
+    }
+  };
+
+  const unescapeLabel$1 = function (text) {
+    return text.replace(/\\([\s\S]|$)/g, (match, char) => {
+      if (char === '\\') {
+        return '\\'
+      }
+      if (char >= 'a' && char <= 'j') {
+        return String(char.charCodeAt(0) - 97)
+      }
+      throw new SyntaxError('Invalid efrt packed data: label escape')
+    })
+  };
+
+  const dictionary$1 = function (trie) {
+    if (!trie.nodes[0].startsWith('!1:')) {
+      return
+    }
+    const header = trie.nodes.shift().split(':');
+    const tokens = Array.from(header[1]);
+    const fragments = (header[2] || '').split(',');
+    if (header.length !== 3 || tokens.length === 0 || tokens.length !== fragments.length ||
+      new Set(tokens).size !== tokens.length || trie.nodes.length === 0 ||
+      tokens.some((token) => token.length !== 1 || token.charCodeAt(0) < 33 ||
+        token.charCodeAt(0) > 126 || /[A-Za-z0-9,;!:|]/.test(token) ||
+        (trie.versioned && token === '\\')) ||
+      fragments.some((text) => !text || /[A-Z0-9,;!:|¦]/.test(text))) {
+      throw new SyntaxError('Invalid efrt packed data: fragment dictionary')
+    }
+    trie.dictionary = Object.create(null);
+    for (let i = 0; i < tokens.length; i++) {
+      trie.dictionary[tokens[i]] = trie.versioned ? unescapeLabel$1(fragments[i]) : fragments[i];
+    }
+  };
+
+  // References are either absolute (symbol) or relative (1 - based)
+  const indexFromRef$1 = function (trie, ref, index) {
+    const dnode = encoding$1.fromAlphaCode(ref);
+    const target = dnode < trie.symCount ? trie.syms[dnode] : index + dnode + 1 - trie.symCount;
+    // The encoder emits nodes in topological order. Every edge must point
+    // forward, which also rules out cycles before expansion starts.
+    if (!Number.isSafeInteger(target) || target <= index || target >= trie.nodes.length) {
+      throw new SyntaxError('Invalid efrt packed data: node reference')
+    }
+    return target
+  };
+
+  const parseNodes$1 = function (trie) {
+    return trie.nodes.map((node, index) => {
+      if (node === '' && trie.nodes.length !== 1) {
+        throw new SyntaxError('Invalid efrt packed data: empty node')
+      }
+      const terminal = node[0] === '!';
+      const body = terminal ? node.slice(1) : node;
+      const edges = [];
+      // Match only at the current offset. Searching later positions would
+      // repeatedly rescan a long malformed fragment before rejecting it.
+      const token = /([^A-Z0-9,;!:|¦]+)([A-Z0-9]+|,|$)/y;
+      for (let offset = 0; offset < body.length; offset = token.lastIndex) {
+        const match = token.exec(body);
+        if (!match || match.index !== offset || (match[2] === ',' && token.lastIndex === body.length)) {
+          throw new SyntaxError('Invalid efrt packed data: node syntax')
+        }
+        const ref = match[2];
+        const label = trie.versioned ? unescapeLabel$1(match[1]) : match[1];
+        const text = trie.dictionary ? Array.from(label,
+          (char) => trie.dictionary[char] || char).join('') : label;
+        edges.push({
+          text,
+          target: ref === '' || ref === ',' ? -1 : indexFromRef$1(trie, ref, index)
+        });
+      }
+      return { terminal, edges }
+    })
+  };
+
+  const toArray$1 = function (trie) {
+    const nodes = parseNodes$1(trie);
+    const all = [];
+    const stack = [{ index: 0, pref: '', edge: -1 }];
+    for (; stack.length > 0;) {
+      const frame = stack[stack.length - 1];
+      const node = nodes[frame.index];
+      if (frame.edge === -1) {
+        if (node.terminal) {
+          all.push(frame.pref);
+        }
+        frame.edge = 0;
+      }
+      if (frame.edge === node.edges.length) {
+        stack.pop();
+        continue
+      }
+      const edge = node.edges[frame.edge++];
+      const word = frame.pref + edge.text;
+      if (edge.target === -1) {
+        all.push(word);
+      } else {
+        stack.push({ index: edge.target, pref: word, edge: -1 });
+      }
+    }
+    return all
+  };
+
+  //PackedTrie - Trie traversal of the Trie packed-string representation.
+  const unpack$3 = function (str, versioned = false) {
+    const trie = {
+      nodes: str.split(';'),
+      syms: [],
+      symCount: 0,
+      versioned
+    };
+    dictionary$1(trie);
+    //process symbols, if they have them
+    if (str.match(':')) {
+      symbols$1(trie);
+    }
+    return toArray$1(trie)
+  };
+
+  const unpack$2 = function (str) {
+    if (str === '' || str === null || str === undefined) {
+      return {}
+    }
+    if (typeof str !== 'string') {
+      throw new TypeError('efrt unpack expects a string')
+    }
+    //turn the weird string into a key-value object again
+    const obj = str.split('|').reduce((h, s) => {
+      const arr = s.split('¦');
+      if (arr.length !== 2 || Object.prototype.hasOwnProperty.call(h, arr[0])) {
+        throw new SyntaxError('Invalid efrt packed data: category separator or duplicate category')
+      }
+      h[arr[0]] = arr[1];
+      return h
+    }, Object.create(null));
+    const all = {};
+    Object.keys(obj).forEach(function (cat) {
+      let data = obj[cat];
+      const versioned = data.startsWith('!2;');
+      if (versioned) {
+        data = data.slice(3);
+        if (!data || data === ':') {
+          throw new SyntaxError('Invalid efrt packed data: missing versioned trie')
+        }
+      }
+      const reversed = data[0] === ':';
+      const arr = unpack$3(reversed ? data.slice(1) : data, versioned);
+      //special case, for botched-boolean
+      if (cat === 'true') {
+        cat = true;
+      }
+      for (let i = 0; i < arr.length; i++) {
+        const k = reversed ? Array.from(arr[i]).reverse().join('') : arr[i];
+        if (Object.prototype.hasOwnProperty.call(all, k)) {
+          if (Array.isArray(all[k]) === false) {
+            if (all[k] !== cat) {
+              all[k] = [all[k], cat];
+            }
+          } else if (!all[k].includes(cat)) {
+            all[k].push(cat);
+          }
+        } else {
+          Object.defineProperty(all, k, {
+            value: cat,
+            writable: true,
+            enumerable: true,
+            configurable: true
+          });
+        }
+      }
+    });
+    return all
+  };
+
+  // Generated by scripts/pack/index.js; see data/README.md for source files.
+  var packed = {
+    "ProperNoun": "true¦aIbDc8dalhousHe7f5gosford,h4kirby,landsdowne,m2nis,r1s0wembF;herwood,paldiB;iel,othwe1;cgi0ercedes,issy;ll;intBudsB;airview,lorence,ra0;mpt9nco;lmo,uro;a1h0;arlt6es5risti;rl0talina;et4i0;ng;arb3e0;et1nt0rke0;ley;on;ie;bid,jax",
+    "Organization": "true¦0:4Q;1:3Z;a3Vb3Dc2Md2Fe2Af25g1Yh1Ri1Nj1Lk1Jl1Gm13n0Ro0Op0Equ0Dr04sStIuDvAw4xiaomi,y2;amaha,mca,ou2wca;gov,tube;a5e3iki2orld trade organization;leaRpedia;lls fargo,st2;field,inghouse;l2rner bros;greens,l street journal,m1C;an halPerizon,isa,o2;dafone,l2;kswagNvo;b5kip,n3ps,s2;a today,ps;esco,i2;lever,ted nations;er,s; mobile,aco beTd bQe8gi fridays,he 4im hortons,mz,o2witter;shiba,y2;ota,s r us;b3carpen3Mdaily ma1holli0s2who;mashing pumpkins,uprem0;ea2lack eyed peas,yrds;ch boys,tl0;l3n3Us2xas instruments;co,la m1F;efonica,us;aCcBe8iemens,mirnoff,np,o6p5quare0Dt2ubaru;a2eer02;rbuc2to1;ks;eci2Cice gir5;ny,undgard2;en;a3x pisto2;ls;g1Wrs;hool1Sientology;feway,insburys,lesforce,msung;adiohead,b9e5o2yanair;man empire,yal 2;b2dutch she5;ank;a4d 2max,vlon;bu2c2Bhot chili peppers,lobster;ll;ders digest,l madrid;c,s;antas,iznos;a9bs,e6fizer,hilip5i4r2;emier 2udential;leagTo1;nk floyd,zza hut; morrCs;psi3tro2ugeot;bras,china,nas;!co;lantir,n2ypal; 3asonic,da2Q;ld navy,pec,range juli3xf2;am;us;aAb9e8fl,h7i6o2sa,vid5wa;k4minat3tre dame,vart2;is;ing1F;ia;ke,ntendo,ssan,vV;l,s;c,stle,tflix,wsweek;a,c;ndos,s3t2;o,west;a,car,daq;aDeAi7lb,o4tv,y2;spa2;ce;b1nsanto,ody blu0t2;ley cr2or0T;ue;c3t2;as,subisM;helin,rosoft;dica3rcedes benz,talli2;ca;id,re;cs milk,ttel,zda;a presse,e2g,ittle caesars; oreal,novo,x2;is,mark,us;atv,fc,kk,lm,m2odak;art;iffy lube,oy division,pmorgan2sa;! chase;bm,hop,k4n2tv;g,te2;l,rpol;ea;a7e6i4o2sbc,yundai;me dep2nda;ot;tac2zbollah;hi;althYwlett pack1V;lliburton,sbro;eneral 6hq,ithub,l5mb,o2reen day,ucci;ldman sachs,o2;dye2gle;ar;axo smith kline,encoZ;electric,m2;otors;a5bi,c barcelo4da,edex,i3leetwood mac,o2rito lay;rd,xcon;at,fa,restone;na;cebook,nnie mae;bay,sa,u5x2;ecutiveYxon2; m2m2;ob1;!rosceptics;aimler,e6isney,o5u2;nkin donu3pont,ran dur2;an;ts;j,w jon0;a,f lepp17ll,peche mode,r spiegel,stiny's chi2;ld;aObc,entrMhIiGloudflaFnn,o4r2;aigsli8eedence clearwater reviv2ossra1;al;cAinba9l7m3n2ors,stco;ferenceJgressionI;ca4merce3p2;aq; bo0Y;st;dplVg2;ate;se;a c2o chanT;ola;re;a,sco2tigroup;! systems;ev3i2;ck fil a,na daily;r2y;on;al2; committee;d3pital o2rls jr;ne;bury,ill2;ac;aFbc,eCfAl6mw,ni,o2p,rexiteeV;ei4mbardiJston 2;glo2pizza;be;ng;o3ue c2;roW;ckbuster video,omingda2;le; g2g2;oodriM;cht3e ge0rkshire hathaw2;ay;el;cardi,idu,nana republ4s2xt6y6;f,kin robbi2;ns;ic;bYcUdidTerosmith,iSlLmFnheuser busEol,ppleBr7s5u4v3y2;er;is,on;di,todesk;hland o1sociated F;il;b4g3m2;co;os;ys; compu2be0;te2;rs;ch;c,d,erican4t2;!r2;ak; ex2;pre2;ss; 6catel3ta2;ir;! lu2;ce2;nt;jazeera,qae2;da;g,rbnb;as;/dc,ademy of scienc0er,tivision2;! blizz2;ard;es;ba",
+    "City": "true¦0:75;1:62;2:6H;3:6K;4:5T;5:5M;a6Ab55c4Kd4Ae46f3Yg3Jh3Bi33j2Yk2Gl24m1Nn1Do1Ap0Xq0Vr0Ps06tSuRvMwExiCyAz6;a8h6ibo,urich;a6e6ongsh0;ng3J;greb,nzibar;ang2e6okohama,unfu;katerin3Jrev0;a6n0R;m5n;arsCeBi7roclCu6;h0xi,zhou;c8n6;d6nipeg,terth4;hoek,sor;hita,klow;l65xford;aw;a9e7i6ladivostok,olgograd;en3lnius;nice,r6;o3sailles;lencia,ncouver,r3ughn;lan bator,rumqi,trecht;aGbilisi,eFheEiCoAr8u6;lsa,nis,r6;in,ku;i6ondh64;este,poli;kyo,msk,ronto,ulo6;n,uT;an6jua3l2Vmisoara,ra3;jin,shui; hague,ssaloniki;gucigalpa,hr0l aviv;briz,i7llinn,mpere,ng6rtu,shk2T;ier,sh0;an,chu1n0pei,yu0;aFeEh9kopje,oweto,t8u6;ra6zhou;baya,t;aten is57ockholm,rasbourg,uttgart;an9e7i6;jiazhua1llo1mla,y0;f52n6;ya1zh5;ghai,tou;attle,oul,v46;cramento,int DlCn6o paulo,pporo,rajevo; 8aa,t6;a 6o domingo;a3fe,m1O;antonio,diego,francisco,j6pedro,salvador;o6u0;se;em,t lake city,z27;louis,peters26;aAe9i7o6;me,stov,t5B;ga,o6yadh;! de janeiro;cife,ims,nnes,ykjavik;bat,ip4leigh,nchi,walpindi;ingdao,u6;ez2ito;aGeFhEiDoAr8u7yong6;ya1;ebla,ya1;a6etoria;gue,to;rt6zn0; 6land,o;au prince,elizabeth,said;ls5raeus,tts28;iladelphia,nom penh,oenix;ki1tah tikva;dua,lerZnaji,ris,t6;na,ras;ak46dessa,msk,r7s6ttawa;aka,lo;an,dos;a8ew6ingbo,ovosibirsk,yc; 6castle;delhi,orleans,taipei;g9irobi,n6ples,shv35tchez,v0;ch7ji1t6;es,o1;a1o1;a7o6p4;ya;no,saki;aFeDiAo7u6;mbai,nich,scat;gadishu,nt7s6;cow,ul;evideo,pellier,real;ami,l7nsk,s6;kolc,sissauga;an,waukee;cca,d6lbourne,mphis,ndoza,ssi3;an,ellin,i3;cau,drBkassar,lAn9r6shhad;aca7ib6rakesh,se2N;or;ibo,y;aus,chGdalay,ila;mo;id;aEeBi9o7u6vUy2;anNcknow,dhia3;n6s angeles;d2g beach;brev2Dege,ma6nz,sb2verpool;!ssol; mans,i6;c6pzig;ester; p7g6hore,n0Es vegas,usanne;os;az,lata;aJharHiDlaipeCoArakow,u8y6;iv,o6;to;ala lump4n6;mi1sh0;hima,lkata,pavog4si6wlo2;ce;da;ev,n7r6;kuk,ov;gst2sha6;sa;k6toum;iv;bIdu3llakurichi,mpala,n7ohsiu1ra6unas,waguchi;chi,j;d6o,p4;ahar,y;a8e7i6ohannesW;lin,n0;ddah,rusalem;ip4k6;arta;bad0mphal,nBrkutVs8taYz6;mir,tapala6;pa;fah0l7tanb6;ul;am30i2I;che2d6;ianap2Nore;aBe8o6yder2X; chi mi6ms,nolulu;nh;f7lsin6rakli2;ki;ei;ifa,lifax,mDn6rbin,va3;g9nover,oi;aGdanFenEhDiQlasgCoAraz,u6;a6jrat;dal7ng6yaquil;zhou;ajara,upe;ld coast,then6;burg;ow;ent;eva,oa;sk;lw8n6za;dhi6gtok;nagar;ay;aisal2Aes,o9r7ukuya6;ma;ankfu6esno;rt;rt6sh0; wor7ale6;za;th;d6indhov5l paso,ss5;in6mont2;bur6;gh;aCe9haka,isp4o8resd5u6;b6esseldorf,nkirk,rb0shanbe;ai,lin;ha,nggu0rtmund;hradTl7nv6troit;er;hi;donghJe7kar,l6mascus,r es salaam,ugavpiZ;i0lV;gu,je2;aKebu,hBleve0Wo6raiova,uritiba;lo8n7penhag5r6;doba,k;akLst0W;gVm6;bo;aCen9i7ongqi1ristchur6;ch;ang m8ca6ttago1;go;g7n6;ai;du,zho1;ng6ttogram;ch9sha,zhou;gliari,iAlga9mayenKn7pe town,r6tanP;acDdiff;berra,c6;un;ry;ro;aXeOhLirmingham,oKrAu6;chareUdapeUenos air8r6s0tu0;g6sa;as;es;aAis7usse6;ls;ba7t6;ol;ne;sil9tisla8zzav6;il6;le;va;ia;gota,st2;op7ubaneshw6;ar;al;iDlAng9r6;g5l6n;in;en;aluru,hazi;fa7grade,o horizon6;te;st;ji1rut;ghdad,kGnAot9r8s7yan n4;ur;el,rah;celo3i,ranquilla;ou;du1g7ja lu6;ka;alo7k6;ok;re;ng;ers6u;field;a06b03ccra,ddis ababa,gartala,hmedYizawl,lTmQnIqaba,rFsCt8uck6;la6;nd;he8l6;an6;ta;ns;h6unci2;dod,gab6;at;li6;ngt2;on;a9c6kaPtwerp;hora7o3;na;ge;h8p6;ol6;is;eim;aravati,m0s6;terd6;am; 8buquerq7eppo,giers,ma6;ty;ue;basrah al qadim6mawsil al jadid6;ah;ab6;ad;la;ba;ra;idj0u dha6;bi;an;lbo7rh6;us;rg",
+    "Place": "true¦0:4Y;1:50;2:4A;3:4H;4:3O;5:30;6:4Q;a4Mb3Oc31d2Oe2Ef2Cg22h1Qi1Mjapa2Sk1Il19m0Xn0Po0Lp0Br07sVtPuNvLw9y7;a7ork,yz;kutsk,ngtze;aFeEhitDiBo7upatki,ycombe;king,o7;d7l1I;b3Xs7;i4tock;c0UllowbroEn7;c2Ygh2;by,church;ed0ntw3Os2A;ke8r40t7;erf1f1; is0If43;auxhall,irgin is0Lost7;ok;laanbaatar,pto7xb3M;n,wn;aBeotihuacan,h9ive4Go8ruro,sarskoe selo,u7;lum,zigoot;nto,rquay,tt2S;am3e 7orn3N;bronx,hamptons;hiti,j mahal,u1V;aHcotts bluff,eFfo,hEoCpringBt9u7yd2O;dbury,ez,n7;der05set3K;aff1ock2Vr7;atf1oud;hill,w5;ho,uth7; 1Qam27wold;erbroKopping1G;a7ine;f30t0;int lawrence riv6khalin;ayleigh,ed9i7oc26;chmond,o gran4ver7;bend,fr0Esi4; sea,cliffe,hill;aDeAhx,i7ompeii,utn2;c8ne7tcairn; 2Wc0M;kering,t0;k,lh2mbr8n7rth;n1Pzance;oke;cif3Gpahanaumokuakea,r7;k7then0;si4w5;ak9ld t2Jr8x7;f1ley;ange county,f1inoco;mZw5;eAile,o7;r7tt2V;th7wich; 10am1H;gev,uschwanstein,w7; eng8a7h2markKport;rk;land;aAco,e8i7uc;dt26ll17;adow7kong;lands;chu picchu,gadan,iBlAn9ple8r7;kh2; 1Kw5;hattan,sf2J;ibu,t0vern;dstone,n st7;!re7;et;aBeAgw,hr,i7owlSynd06;n7ttle italy;coln memori7dley;al;asi4w3;kefr9mbeth,n7;ca2Mg7sing;f1ley,t0;ont;azan kremlin,e9itchen6o8rasnoyar7ul;sk;re0Xsrae;ns0Ks1X;ax,lf1n8ps7;wiP;d7glew5verness;ian2Aochina;aFeDi8kg,nd,ov7unti2J;d,enweep;gh8llc7;reN;bury,l7;and7;!s;r7yw5;ef1tf1;libu26mp8r7stings;f1lem,row;stead,t0;aFodavari,r7uelph;avenCe7imsW;at Aen7; 8f1Iwi7;ch;acr3valley;britain,lak3;hur7;st;ng3y village;airhavKinancial7ra; district;aCgliBnf19ppiAu9ver8x7;et6f1;glad3t0;rope,st0;ng;nt0;rls1Ms7;t 7;e7si4;nd;aEeCfw,igBo9ryd8u7xb;mfri3nstable,rh2tt0;en;nca1ArcMv6w7;nt0C;by;nh2r7vonport;ry;nuAr7;l8t7;f1moor;ingt0;be;aNdg,eLgk,hElDo7royd0;l8m7rnwall;pt0;c9lingw5osse7;um;ood;he0U;earwat6t;aBel9i7uuk;chen itza,mney rock,n7ricahua;atT;m0Zt7;enh2;mor7rlottetQth2;ro;dar 7ntervilB;grove;ldBmAr7versh2;lis8rizo pla7;in;le;bNpbellf1;weT;a01eQingley,kk,lackOoNr7uckX;aIiCo7;ckt0ok7wns cany0;lyn,s7;i4to7;ne;de;dge8gh7;am,t0;n8t7;own;or7;th;ceb8m7;lPpt0;rid7;ge;ardwalk,lt0;bu7pool,waA;rn;aconsfFdf1lCrAverly9x7;hi7;ll; hills;wi7;ck; air,l7;ingh2;am;ie7;ld;ltimore,rnsl8tters7;ea;ey;bMct0driadic,frica,ginKlHmericas,nBrcAs9tl8ylePzor3;es;!antA;hcroft,ia; de triomphe,t8;adyr,caAdov6tarct7;ic7; oce7;an;st6;er;be8dersh7hambra,list0;ot;rt0;cou7;rt;bot9i7;ngd0;on;sf1;ord",
+    "Region": "true¦0:2J;1:2G;2:2P;3:2A;a2Nb2Ac1Wd1Res1Qf1Og1Jh1Fi1Aj16k11l0Ym0Nn07o05pYqUrRsJtEuBverAw6y4zacatecas;akut0ork3u4;cat1kon;a5est 4isconsin,yoming;bengal,virgin0;rwick3shington4;! dc;acruz,mont;dmurt0t4;ah,tar4; 2Ka0X;a6e5laxcala,ripura,u4;scaDva;langa2nnessee,xas;basco,m4smOtar24;aulipas,il nadu;a8elangor,i6o5taf11u4ylhet;ffXrrey,s19;me1Bnora,uth V;ber0c4kkim,naloa;hu1ily;n5rawak,skatchew1xo4;ny; luis potosi,ta catari2;a4hode i9;j4ngpur;asth1shahi;inghai,u4;e4intana roo;bec,en4retaro;sl0E;a8e4unjab;i,n5r4;ak,nambuco;ang,nsylv4;an0;hang,ra4;!na;axaca,disha,h4klahoma,ntar4reg7ss0Ax0F;io;aIeBo6u4;evo le4navut;on;r4tt15va scot0;f6mandy,th4; 4ampton3;caroli2dakota;olk;braska,vada,w4; 6foundland4;! and labrad4;or;brunswick,hamp3jers5mexiTyork4;! state;ey;galPyarit;aAeghalaya,i6o4;nta2r4;dov0elos;ch6dlanDn5ss4zoram;issippi,ouri;as geraPnesota;ig1oac1;dhy12harashtra,ine,lacca,ni5r4ssachusetts;anhao,i el,ylG;p4toba;ur;anca3e4incoln3ouisI;e4iR;ds;a6e5h4omi;aka06ul2;dah,lant1ntucky,rala;bardino,lmyk0nsas,r4;achay,el0nataka;alis6har4iangxi;kh4;and;co;daho,llino7n4owa;d5gush4;et0;ia2;is;a6ert5i4un1;dalFm0D;ford3;mp3rya2waii;ansu,eorg0lou7oa,u4;an4izhou,jarat;ajuato,gdo4;ng;cester3;lori4uji1;da;sex;ageUe7o5uran4;go;rs4;et;lawaMrby3;aFeaEh9o4rimea,umbr0;ahui7l6nnectic5rsi4ventry;ca;ut;ima,orado;la;e5hattisgarh,i4uvash0;apRhuahua;chn5rke4;ss0;ya;ra;lGm4;bridge3peche;a9ihar,r8u4;ck4ryat0;ingham3;shi4;re;emen,itish columb0;h0ja cal8lk7s4v7;hkorto4que;st1;an;ar0;iforn0;ia;dygHguascalientes,lBndhr9r5ss4;am;izo2kans5un4;achal 7;as;na;a 4;pradesh;a6ber5t4;ai;ta;ba5s4;ka;ma;ea",
+    "FemaleName": "true¦0:I4;1:I8;2:HG;3:HY;4:HH;5:HL;6:IL;7:IP;8:G8;9:IH;A:G1;B:GZ;C:HQ;D:IE;E:AF;F:HU;G:H1;aFSbEOcCVdC4eARfA9g9Kh92i8Sj7Pk6Rl5Cm3Sn39o36p2Uqu2Tr22s11t0Bu09vZwSxi30yOzH;aLeIineb,oHsof4;e3Df4la,ra;h2iKlIna,ynH;ab,ep;da,ma;da,h2iHra;nab;aJeIing,olACu0vH;et8onCT;le0sen4;el,gmur,n,s89;aMendD6hiCNiH;lJnH;if3TniHo0;e,f3S;helmi0lHma;a,ow;ka0nB;aNeKiHusa5;ck7JkIl8oleAviH;anEenI4;ky,toriAT;da,lma,rHs0;a,nHonica;a,ice;leHnesG9;nHLrH;i1y;g9rHs7;su5te;aXeThQiMoKrHu5y2;acI4iHudy;c4na,sH;hEta;nHr0F;iEya;aJffany,nHs7;a,gtiH;ng;!nEUra;aIeHomasi0;a,lma,o7Pres1;l4ndolwethu;gan,o7NrIssH;!a,ie;eHi,ri6;sa,za;bOlMmKnIrHs7tia0wa0;a7Gyn;iHya;a,ka,s7;arEe2iHm6Nra;!ka;a,iH;a,t7;at7it7;a0Bcarlett,e07hViSkye,neza0oQri,tNuIyH;bil,lvi1;ha,niAsIzH;an39et8ie,y;anHi6;!a,e,nH;aCe;aIeH;fan3l4Wphan5U;cH6r5;fi9KnHphi1;d2ia,ja,ya;er2lv4mon1nIobhan,tH;a,i;dy;aMeIirHo0y5;a,lCU;ba,e0i5lJrH;iHr60yl;!dan;ia,lD7;imaa,ki2nJrIu0w0yH;la,na;i,le9on,ron,yn;aIda,ia,nHon;a,on;!ya;lJrIvH;da,inj;e0ife;en1i0ma;anvi,bLd57har,iBkKlJmInd2rHs7vannaC;aCi0;ant7i2;lCYma,ome;ineh,u2;in1ri0;a03eYhWiToHuthCW;bRcQl7XnPsJwIxH;anAEie,y;an,e0;aIeHie,lD;ann6ll1marCQtA;!lHnn1;iHyn;e,nH;a,dE;da,i,na;hel5Rio;bin,erAyn;a,cIkHmas,nEta,ya;ki,o;h8Bki;ea,iannon,oH;da,n1F;an0bIemEgi0i0nHta,y0;a7Oee;a,eH;cHkaC;a,ca;chIe,i0mo0nHquel,y0;di,ia;ael,elHiB;!e,le;een3ia0;aOeNhKia,oIrH;iscil3Audence;lHrt4;i0ly;iloIoebe,ylH;is,lis;me0;ggy,nelope,r5t2;ige,m0Nn59o5rvati,tIulH;a,et8in1;ricHt4F;a,e,ia;ctav4deIfCCksa0lHphCCumou;a,ga,iv4;l4t8;aTeRiLoIurHy5;!ay,ul;a,eIor,rHur;aCeFma;ll1mi;aLcJharika,kIlaHna,s7ta;!y;a,iDBki;hoGk9HolH;a,e4G;!mh;hir,lHna,rissa;!a,lBD;dLima,nKomi6rges,tH;aHhal3;lHs7;i1ya;cy,et8;e9iECya;a08ckenz3e00iMoJuriel,yH;a,rH;a,iMna,tG;i2llB2nH;a,iH;ca,ka,que;a,cSdori,kaRlMmi,nKrHtzi;aIiH;am;!nB;dy,eHh,n3;nhGrva;aKdJe0ica,lH;iHy;cent,e;red;!gros;!e5;ae5hH;ae5el3T;agan,gNi,lKrH;edith,iIon,yH;em,l;em,ssa;an3iHlisa;nHsBY;a,da;!an,han;b07cADd05e,g03ha,i02ja,l00nZrLsoumeh,tKuIvis,xB0yHz3;bell,ra,soun;d6rH;a,eF;h82ild1t3;a,cTgPiKjor3l7Gn3s7tJwa,yH;!aHbeth,ja9lou;m,nB0;a,ha,in1;!aJbel,eIja,lDna,sHtza;!a,ol,sa;!l1A;!h,m,nH;!a,e,n1;arJeIie,oHr3Yueri8;!t;!ry;et3Wi36;el4Li6Zy;dy,on,ue5;ak,en,iHlory;a,ka,nB;a,re,s3te;daHg3;!len1;alDd3elHge,ison,on0;ei9in1yn;el,le;a0Me0BiWoQuLyH;d4la,nH;!a,dIe2KnHsey;!a,e2J;a,sey;ann,cJel0Ois1lIna,pHz;e,iA;a,u;iHy;a2Oe,ja,l2JnB;is,l1QrItt1HuH;el5is1;aJeIi6na,rH;a9Vi6;lei,n1tA;!in1;aTbb95dSepa,lNnKsJvIzH;!a,beth,et8z3;!ia;a,et8;!a,dH;a,sHy;ay,ey,i,y;a,iJja,lH;iHy;a9Qe;!aH;!nE;ia,ya;!nH;!a,ne;aPda,e0iNjYla,nMoKsJtHx8Ry5;iHt3;c4t4;edi,lC6;la,nHra;a,ie,o2;a,or1;a,gh,laH;!ni;!h,nH;a,d2e,n5K;cOdon0iNkes7mija,na,rMtJurIvHxmi,y5;ern1in4;a,e4Zie,yn;as7iIoH;nya,ya;fa,s7;a,is9R;a,la;ey,ie,y;a01eWhaViNlea,oMrJyH;lHra;a,ee,ie;istHy67;a,en,iHy1E;!e,n55;nul,ri,urtney;aNerMley,mJrHzzy;a,stH;en,in;!berlH;eHi,y;e,y;a,stF;!na,ra;dij1w5;el7LiKlJnIrH;a,i,ri;d2na,za;ey,i,lB6s3y;ra,s7;cey,diatou,ede,iSlQmPrNss6EtKviAyH;!e,lH;a,eH;e,igh;!a68eIhHi4LlDri0y;ar83er83ie,leFrAVy;!lyn89ri0;a,en,iHl5Poli0yn;!ma,nEssa;a5il1;eigh,i,lH;e,ie;a,tl6F;a0AeZiWoOuH;anMdLlHst7U;es,iH;a88eHssa;!n9tH;!a,te;ith,y;a,iA;!anNcelDdMelGhan7HleLni,sIva0yH;a,ce;eHie;fHlDph7K;a,in1;en,n1;i6y;!a,e,n3X;lHng;!ian,lH;!ian;anNle0nKrJsH;ica,sH;!e,ica;i,ri;!a,elGifer,nH;a,et8iHy;!e,fer;a,eJiInH;a,eIiH;e,n1;!t8;cMda,mi,nIque27sminEvie2y9zH;min6;a6eIiH;ce,e,n1s;!lHssa,t0A;e,le;inIk68lDquelH;in1yn;da,ta;da,lPmOnNo0rMsIvaHwo0;!na;aIiHla,obel;do2;belHdo2;!a,e,l34;ati,en1i0ma;di2es,grid;a9elBoge9;a,e9ia0o0se;aQeNiIoHyacinth;da,ll3rtense;lImaH;ri;aIdHlaI;a,egard;ry;ather,iIlHnrietArmi9ster;en2Rga,mi;di;biba,iley,lNnMrJsnItHwa,yley;ice,t3;aa;iHmony,ri4Z;etH;!te;aCnaC;a,ey,l3;a01eViQlOoNrKunJwH;enHyneth;!dolD;ay,el;acieIetHiselB;a,chF;!la;ld1Aogoosh;adys,enHor4ynis;a,da,na;aKgi,lIna,ov85selHta;a,e,le;da,liH;an;!n0;mLnJorgIrH;ald5Ki,m3Btrud6;et8i4U;a,eHna;sis,vieve;ma;bHle,rnet,yG;iIrielH;a,l1;!ja;aTeQiPlorOoz4rH;anJeIiH;da,eB;da,ja;!cH;esIiHoise;n1sca;!ca;a,enc4;en,o0;lIn0rnH;anB;ec4ic4;nArKtHy6;emIiHma,oumaA;ha,ma,n;eh;ah,iBrah,za0;crin,d0Qevi,ileFk0Ol07mXnid,rUsOtNuMvHwa;aKelIiH;!e,ta;inEyn;!a;!ngel4O;geni1nice;hel,ien9ta;mLperanKtH;eIhHrel5;er;l2Zr6;za;a,eralB;iHma,ne4Eyn;cHka,n;a,ka;aPeOiLmH;aIeHie,y;li9;!li9nuH;elG;lHn1;e6iHy;a,e,ja;ly,rald;!nue5;aWeUiNlMma,no2oKsJvH;a,iH;na,ra;a,ie;iHuiH;se;a,en,ie,y;a0c4da,e,f,nMsJzaH;!betHveA;e,h;aHe,ka;!beH;th;!a,or;anor,nH;!a,i;!in1na;ate1Pta;vi;eIiHna,wi0;e,th;l,n;aYeMiLjeneKoH;lores,minique,n39rHtt3;a,eFis,la,othHthy;ea,y;ba;an09naCon9ya;anQbPde,eOiMlJmetr4nHsiree;a,iH;ce,se;a,iIla,orHphi9;es,is;a,lah;dHrdH;re;!dee,na;!b2EoraCraC;a,d2nH;!a,e;hl4i0lal,mNnLphn1rIvi1VyH;le,na;a,by,cIia,lH;a,en1;ey,ie;a,et8iH;!ca,el19ka;arHia;is;a0Qe0Mh04i02lUoJristIynH;di,th4;al,i0;lPnMrIurH;tn1C;aJd2IiHn2Iri9;!nH;a,e,n1;!l3;cepcion,n3sH;tanHuelo;ce,za;eHleF;en,t8;aJeoIotH;ilde;!pat2;ir6rJudH;et8iH;a,ne;a,e,iH;ce,sY;a2er2ndH;i,y;aQeNloe,rH;isJyH;stH;al;sy,tH;a1Men,iHy;an1e,n1;lseIrH;!i6yl;a,y;nMrH;isKlImH;ai9;a,eHot8;n1t8;!sa;d2elGtH;al,elG;cIlH;es8i41;el4ilH;e,ia,y;itlYlXmilWndVrMsKtHy5;aIeIhHri0;er1DleFrDy;ri0;a32sH;a31ie;a,iOlLmeJolIrH;ie,ol;!e,in1yn;lHn;!a,la;a,eIie,otHy;a,ta;ne,y;na,ssa;ace,ice;a,e,l1;isAl3;in,yn;arb0Je02iZlXoUrH;andi6eRiJoIyH;an0nn;nwDoke;an3BdgMgiLtH;ney,tH;!aInH;ey,i,y;ny;d,t8;etH;!t6;an0e,nH;da,na;bbi6glarInH;iAn3;ka;ancHythe;a,he;anca,lja0nH;iAtH;ou;aVcUlinBniArPssOtJulaCvH;!erlH;ey,y;hJsy,tH;e,iHy6;e,na;!anH;ie,y;!ie;nItHyl;ha,ie;adIiH;ce;et8i9;ca,ky;!triH;ce,z;a2o2ra;a2Sb2Md23g1Zi1Qj5l16m0Xn09oi,r04sVtUuOvNwa,yHz2;aKes7gJlIn,seH;!l;in;un;!nH;a,na;a,i2J;drLguJrIsteH;ja;el4;stH;in1;a,ey,y;aahua,he0;hIiya,ja,miAtrH;id;aLlHton;eIi6yH;!n;e,iHy;gh;!nH;ti;iJleIo7piA;ta;en,n1t8;aHelG;!n1J;a01dje5eZgViTjRnKtoHya;inet8nH;el5ia;te;!aKeIiHmJ;e,ka;!mHtt6;ar3;!belIliHmU;sa;!l1;a,eliH;ca;ka,sHta;a,sa;elHie;a,iH;a,ca,n1qH;ue;!tH;a,te;!bImHstasiMya;ar4;el;aLberKeliJiHy;e,l4naH;!ta;a,ja;!ly;hGiIl4nB;da;a,ra;le;aWba,ePiMlKthJyH;a,c4sH;a,on,sa;ea;iHyson;e,son;a,cIn1sHza;a,e,ha,on,sa;e,ia,ja;c4is7jaKksaKna,sJxH;aHia;!nd2;ia,saH;nd2;ra;ia;i0nIyH;ah,na;a,is,naC;la;c7da,leFmNnLsH;haClH;inHyY;g,n;!h;a,o,slH;ey;ee;en;at7g3nIusH;ti0;es;ie;aWdiTelMrH;eJiH;anMenH;a,e,ne;an0;na;!aLeKiIyH;nn;a,n1;a,e;!ne;!iH;de;e,lDsH;on;yn;!lH;i9yn;ne;aKbIiHrL;!e,gaK;ey,i6y;!e;gaH;il;dKliyJradhIs7;ha;ya;ah;a,ya",
+    "FirstName": "true¦aTblair,cQdOfrancoZgabMhinaLilya,jHkClBm6ni4quinn,re3s0;h0umit,yd;ay,e0iloh;a,lby;g9ne;co,ko0;!s;a1el0ina,org6;!okuhF;ds,naia,r1tt0xiB;i,y;ion,lo;ashawn,eif,uca;a3e1ir0rM;an;lsFn0rry;dall,yat5;i,sD;a0essIie,ude;i1m0;ie,mG;me;ta;rie0y;le;arcy,ev0;an,on;as1h0;arl8eyenne;ey,sidy;drien,kira,l4nd1ubr0vi;ey;i,r0;a,e0;a,y;ex2f1o0;is;ie;ei,is",
+    "LastName": "true¦0:96;1:8Q;2:90;3:8Y;4:8R;5:8I;6:8G;7:8L;8:6N;9:6D;a8Sb7Oc6Nd62e5Wf5Jg4Xh4Fi4Cj45k3Ml37m2Cn23o1Vp1Hquispe,r0Ys0At02vWwMxLyDzA;hAimmerm4L;aAou,u;ng,o;aEeun71iBoAun;koyama,shida;!lA;diAmaz;rim,z;maAng;da,g3Omoto,sAza9;a9hita;iao,u;aFeDiBoAright,u;jcik,lff,ng;lAmm0nkl0sniews9;ki8Hliams25s3;bAiss,lt0;b,er,st0;age,gn0lBtA;anabe,s3;k0sh,tA;ers,on;aCesel6RiAogt;dal,llalAss0valdi;ba,obos;lBn dArgas;en b4Gijk,yk;enzuela,verde;aGeix18hDi1j7oCrBsui,urA;c1n0;an,emblay,ynis9;lstoy,m5rr2th;atch0ill,oA;mArlacius;ps3s3;kah7Anaka,te,var2;aSchNeMhKiImGoEtBuAvoboda,zabo;bot5lliv1zu9;aBeAoica;ele,in1Pphe8vens1H;l7rm0;sa,to,uA;ng,sa;itAyth;!h;lva,mmo8nArbu;at6clair,gh;aAehu,imizu;la,rma;gu6infeld,oh,pulveda,rrano;evi4iltz,miBneid0roed0uAwarz;bert,lz;dBtA;!t,z;!t;h7ito,ka3AlDnAr5sa9to,unders;dBtAz;ana,e,os;b3Kers;as,o;aPeMiJoDuByA;a4oo,u;bio,iz,sA;so,u;bEcha,drigu2gers,jas,mDosevelt,sCtBux,wA;e,li4;ari,h;enb3Bsi;ano,ero;erts0Ni6Z;beiro,cBes,vAzzo;as,e6;ci,hards0K;ag1es,iBut0yA;es,nolds;s,t0;dBmAv4K;os;ic,u;aLeIhGiDoCrAut7;asad,ifti,ochazA;ka;p23rti58well;cBero,nA;as,to;asso,hl0;aAillips;k,m,n4P;a6PeteWna,rAters04;eAic,ki8;i6ra,tz;h66k,rk0tA;el,te6L;bGconnor,g1RlDneill,rBsborne,we8zA;demir,turk;ellana,tAwell;ega,iz;iAs3;vAynyk;ei6;aIrien;aFeEiDoAun2ym1;rBvAwak;ak,otn4I;odahl,ris;cholsNemi,kol5x3;ils3mec;gy,kaAray1sh,varro;jiAmu6shiA;ma;aXcUePiOoFuByeA;rs;lCnBrAssolini;ati,pTray;oz,te3R;d0l0;h1lHnGore,rBsAzart;er,s;aDeCiBrisAt3;!on;!n0C;au,i6no,tti;!l2;roe,tgomery;ina,l0;crachi,ll0;hmeti,iDjia,lBnd2rci0ssiAyer1J;!er;nAo;yk;er,j0;cartBlA;aughl7e1;hy;drigal,eda,i0jerus,kela,mani,nFrCtByA;er,r;ei,ic,su11th5C;iAqu2roqu7ti8;ani,c,nA;!o;cini,n;aNeIiFoDuByA;!nch;k5nAo;d,gu;mbarAp2vr5we;di;!nAu,yanage;coln,dA;b11holm,strom;feChm0Fitn0kaBn7rAwis;oy;!j;bvAvA;re;ine,mmy,ng,u,voie,ws3;aNeMh1iKlIoFrDuBvar1woA;k,n;ce6marA;!a;aAem0ishna,yeziu;m0sniqi,us2F;bay3Rch,vaAwals9;cAl;!ic,s;e7uiveA;rt;eff0kAl5mu6;uchi;ll0nnedy;hn,llDmins9ne,pBstrati,to,ur,yA;a,s0;l1oA;or;oe;aEenDha4oBuA;ng,r5;hnsAn2u4;on,t3;ki8nings;cAnsse8;ks3obs;glesias,keda,l07noTonBshikAto,vanou;awa;escu;aJeIiHjaltal7oCuA;!aAb0gh2ynh;m1ng;a4dz5fCjgaard,k,lBpIrAwe,xha;ak,vat;m2t;er,fm2WmA;ann;ggi8tchcock;ikkila,mingway,nde3Rrre6ss;dz5gen,qGrFsDuCwByA;ashi,es;ki8;gen,ng;ani,hiA;moto;di4p0ris,t;ue;aNeorgMheorghe,iLjonKoFrDuAw3;errAo,zm1;a,eA;ro;ayli4eene,g5iffithAub0;!s;ldCm2nBodA;e,m1;calv2zal2;bAs02;erg;aj,i;bs3l,ordaH;ieva;gnGlDmaCndhi,o,rAshi,uthi0;cAdn0za;ia;ge;eaBlA;agh0i,o;no;e,on;aLerIiFjeldsted,lEoCrBuA;chs,ent2jita,ll0;eem1iedm1;ntaArt7urni0wl0;na;emi4or2;sBtzgeraA;ld;ch0h0;nand2rA;arAei6;a,i;b0rrell;dDinsCsAva8;cobar,pAtrada;inoza,osiJ;te7;er,is3warA;ds;aQeJiHjurhuGoEriscoll,uBvorA;ak;arte,boBmitru,nn,rAtta;and,ic;is;g1he0DtA;to;us;aAcki1Wssanayake,x3;s,z; CbnaBlAmir,rvishi,vi,w1;gado,ic;th;bo0groot,jo4lBsilAvri2;va;a cruz,e3uA;ca;hl,mcevs9nBtta,viA;ds3es,s;iels,kula;ki;a03eYhLiobKlarkJoCrAunningham;awford,ivAuz;elli;hen,lEntDoCrAsta,x;byn,reA;a,ia;ke,p0;i,reras;em1li8;ns;!e;anu;aGeEiu,oAu4we;i,ng,p6uBwAy;!dB;dAng;huD;!n,onAu4;!g;kDnCpm1ttBudhA;ry;erjee,o0O;!d,g;ma,raboA;rty;bDlZng5rA;eghetBnA;a,y;ti;an,otari;cer2lder3mpbeFrCstAvadiX;iAro;llo;doBr,t0uAvalho;so;so,zo;ll;a00eOhLiKlJoHrEuCyA;rFtyA;qi;chan1rA;ke;iem,oAyant;oks,wA;ne;nFruya,su,uchaAyko,z5;rd;anco,ondal;ancLdMshwas;aZoAuiy1;umAwmA;ik;ckJethovIgu,ktGnnOrA;gCisBnascoA;ni;ha;er,mA;anA;!n;asA;hi;en;er,hA;am;b5ch,hKiley,kk0ldw7nFrBshAt2u0;ir;bCnBtlAua;ett;es,i0;ieSosa;dAik;a6yoA;padhyA;ay;ra;k,ng;ic;bbYcosXdVgSkhtTlPnJrFsl1tDyA;aBd7;in;la;chis3kiA;ns3;aCmstro4sl1;an;ng;ujo,ya;dBsaA;ri;eBrA;ews;rs3;on;meiBv2;es;da;arwBuilA;ar;al;ams,l0;er;ta;as",
+    "MaleName": "true¦0:GJ;1:FD;2:DD;3:G3;4:D0;5:G9;6:CJ;7:F5;8:EB;9:BL;A:FZ;B:FR;aEQbDMcC9dB5eACf9Lg8Lh7Wi7Kj6Ik63l5Dm40n3Mo3Dp2Zqu2Xr22s1Bt0Pu0Mv0AwRxavi2yHzC;aCor0;cChid,karia,nAC;!hDkC;!ary;!ar72ery;aIevgenBBoEuC;en,rFBsCval;if,uf;nCsef,ussef;aCg;s,tC;an,h0;nCrosDNss08;is,nC;!ick;aPeNiDoCyatt;jciech,lfgang,odrFutR;lFnC;f8IsC;lCt1;ow;bGey,frEhelm,lC;ard,iCy;am,e,s;ed5iC;d,ed;e9ur;i,ndell,rn2sC;!l8t1;lDyC;l1ne;lDtC;!er;ace,y;aKernCXiFladDoC;jtech,lodymyr;!iC;mir,sCY;cFha0ktor,nceDrgil,vC;a0ek;!nC;t,zo;!e4Mtor;lCnce,sily;!entC;in94;lCm6Qri,sm0;riCysses;ch,k;aVeQhMiKoFrDurki,yC;!l2rone,s1;avis,eCist0oy,um0;ntCFvor,y;bFdAImCny;!asDmC;aso,ie,y;!z;ias,y;mCt6;!my,othy;adEeoDiago,omC;!as;!dor8N;!de6;dFrC;ence,rC;ance,eCy;ll,nce;!dy;dgh,ha,iCnn2req,tsuki;chi,ka;aXcotVeShOiLlobod0oKpenc2tEurDvenA0yCzym1;ed,lvest2;aj,esh;anFeDuC;!a9;fan15phE6vCwa9;e6Xie;!islaCl8;v,w;lom1rBuleymane;dDgmund,lCm1yabonga;as,vio;!dhartha,n8;aEeClomo;lCrm0;d1t1;hid,ne,qu1Hun,wn,yne;aDbastiDUkou,lim,pp,rgCth,ymour;e1Bio;m6n;!tC;!ie,y;eed,lFmEnCqib,toshi,ul;dCjay,tino;eep,ro;!iAHkelo,mBQu4;!vatore;aZeUhett,iRoGuDyC;an,ou;b8WdDf6pe9ssC;!elDX;ol00y;an,bLcco,dJel,geIh0lHmGnEry,sDyC;!ce;ario,coe,s;!aCnBG;ld,n;an,eo;a72f;lio,r;e38g2n8olfo,riC;go;bB9eCZ;cCl8;ardo,c7Th4WkCo;!ey,ie,y;cFece,gDid,ubByCza;ansh,n05;gie,iC;nald,s;ep;chid,fa4hHin2jesh,lGmFndEoHpha4sDul,wiri,yC;an,mond;had,m6;alD9olph;iro,on;f,ph;ul;e90inC;cy,t1;aNeKhilIiErCyoF;akash,eC;m,st1;eDoC;tr;rre,tC;er,ro;!ipClip;!p6I;dro,rcy,tC;ar,e98rC;!o7;blo,draig,olo,scal,tri5RulCv86;!ie,o;ctavio,i2lHmGndrej,rFsDtCumAwB;is,to;ama,cAkAm0vCwald;aldo;i,vR;ar,er;aDeksandr,ivC;er,i2;f,v;atNeLguyBiFoC;aDel,l0rC;be9m0;h,m;cFels,g4ilo,kDlC;es,s;!hil,las,olaC;!i,y;hCkColas;olas;al,d,il,ls1vC;ille;e,hanC;!a4i4;aXeUiLoGuDyC;les,r1;hamDrad,staC;fa,pha;ed,mG;dibo,e,hamEises,ntDritz,sCussa;es,he;e,y;ad,ed,mC;ad,ed;cFgu4hai,kElDnato,tchC;!ell;house,o7t1;aere,eBPhail,olaj;ah,hDkC;!ey,y;aDeC;al,l;el,l;hDlv3rC;le,rill,v4M;di,met;ay0c00gn6hWjd,ksim,lTmadZnSrKsXtDuric7OxC;imilB6well;eHhEias,tCus,yas;!eo,hCia7;ew,ias;eDiC;as,eu,s;us,w;j,o;cHiGkFlEquis,shall,tCv3;iCy;!m,n;in,on;el,o7us;ano,o7us;!elCin,o7us;!l5o;fred,ish,ny,u4;acDcoCik;lm;hy;amDdi,esh,mC;oud;adCmad;ou;aulCiej;ay;aXePiNloyd,oJuDyC;le,nd1;cFdEiDkCth2uk;a7e;gi,s,z;ovic,vig,wig;!as,iC;ano,en;g0nnie,renEuCvro,well;!iC;e,s;!zo;am,n6oC;n4r;a9Kevi,land,nHoFst2thaEvC;eCi;nte;bo;nCpold;!a7Sel,id;!nC;a9y;mEnd1rDszlo,urenCwr6C;ce,t;ry,s;ar,be9ont;aMeHhalGiEla6onrad,rCu5Jyle;istCzysztof;i0oph2;er0ngsl8p,rC;il9Vk;ed,id;en0iFnCrmit,v4R;!dDnCt1;eth,y;rick;r,th;cp2mErDspAuC;ri;im,l;al,il;a03eXiVoFuC;an,lCst3;en,iC;an,en,o,us;aQeOhKnIrGsDzC;ef;eDhCiah,ue;!ua;!f,ph;dCge;i,on;!aCny;h,s,th6E;anDnC;!ath6Cie,n6U;!nC;!es;!l,sCy;ph;o,qu3;an,mC;!i,m6N;d,ffFns,rCs6;ald,emDmaine,oCry;me,nimo;iah,y;!ery,rC;ey,y;cKdBkImHrEsDvi2yC;dBs1;on,p2;ed,oDrCvis;ett,od;d,s5W;al,es5Ris1;a,e,oCub;b,v;ob,ques;aRbLgKke4Xlija,onut,rIsEtCv0;ai,suC;ki;aDha0iah,maCsac;el,il;ac,iaC;h,s;a,vinCw3;!g;nacio,or;ai,rahC;im;aReLoIuC;be9gGmFsC;eyDsC;a3e3;in,n;berto;h,o;m2raDsse3wC;ard,ie;c45tio;ath,ctor,iGnDrC;be9man07;drik,rC;iCy2I;!k,que;n0Ptor;bJlImza,nHo,rEsDyC;ato,dB;an,s0;lDold,r2DuCv8;hito,ki,to;an,ey;k,s;!im;ib;a07eZiUlenToQrMuCyorgy;iHnFsC;!taC;f,vC;!e,o;nAtC;er,h2;do,lC;herDlC;auCerP;me;aEegCov2;!g,orC;!io,y;dy,ham;dfr8nzalo,rDttfC;ried;an,d45;!n;acoFlDno,oCuseppe;rgi5vanni;be6Aes,lC;es;mo;oFrC;aDhard,rCt;it,y;ld,rd5;ffErgC;!e7iCy;!os;!r8;bElBrCv3;eCland,r4Dth,y;th;e,ri4;aXeSiQlOorrest,rCyodor;aHedFiC;edDtC;s,z;rich;!d40eri10riC;ck,k;nCs2;cEkC;ie,lC;in,yn;esLisC;!co,zek;etch2oC;ri0yd;d4lConn;ip;deriFliEng,rC;dinaCg6nando;nd5;pe,x;co;bCdi,hd;iEriC;ce,zC;io;an,en,o;benez2dYfrXit0lSmLnIo3rEsteb0th0ugenDvCzra;an,erett,geny;!e;iDnCrol,v3w3;est5ie,st;cCk;!h,k;och,riCzo;co,qC;ue;aHerGiDmC;aGett;lCrh0;!iC;ano,o,s;s1y;nu4;be9d1iEliDm2t1viCwood;n,s;ot2As;!as,jah,ot,sC;ha;a3en;!dGgAmFoDua2PwC;a2Oin;arC;do;oZuZ;ie;a04eTiOmitrNoFrag0uEwDylC;an,l0;ayne,ight;ane,dl8nc0st3;minFnDri0ugCvydGyle;!lF;!ald,nCov0;ell,ie,y;go,iDykC;as;cCk;!k;i,y;armuFetDll1mitri7neCon,rk;sh;er,mAriC;ch;id;andLepak,j0lbe9metri6nIon,rGsEvDwCxt2;ayne,ey;en,in;hawn,moC;nd;ek,riC;ck;is,nC;is,y;rt;re;an,le,mKnIrEvC;e,iC;!d;en,iEnell,rCyl;eCin,yl;l3Zn;n,o,us;!iCny;el,lo;iCon;an,en,on;a0He0Eh04iar0lSoKrFuDyrC;il,us;rtC;!is;aFistC;iaDobC;al;no;ig;dy,lInErC;ey,neliCy;s,us;nEor,rDstaC;nt3;ad;or;by,e,in,l3t1;aHeEiCyde;fCnt,ve;ford,t1;menDt6;us;s,t;rFuDyC;!t1;dCs;e,io;enC;ce;aHeGrisC;!toC;phCs;!eC;!r;st2t;d,rCs;b4leC;s,y;el;cDdrCsA;ic;il;lHmFrC;ey,lDroCy;ll;!o7t1;er1iC;lo;!eb,v3;a06eWilVjorn,laUoSrEuCyr1;ddy,rtKst2;er;aKeFiEuDyC;an,ce,on;ce,no;an,ce;nDtC;!t;dDtC;!on;an,on;dFnC;dDisC;lav;en,on;!foLl8y;bby,gd0rCyd;is;ine,ke;al,lK;nIrC;at,nEtC;!raC;m,nd;aDhaCie;rd;rd5;!iDjam3nCs1;ie,y;to;kaMlazs,nHrC;n8rDtC;!holomew;eCy;tt;ey;dCeD;ar,iC;le;ar1Hb18d11fonso,gust3hm0Xi0Ul07m05nRrGsaFugustEveDyCziz;a0kh0;ry;o,us;hi;ata,chiKiJjun,mHnEon,tCy0;em,hCie,ur5;ur;aDoC;!ld;ud,v;aCin;an,nd5;!el,ki;baCe;ld;aMdHgel5tCwA;hoFoC;iDnC;!i5y;ne;ny;er7rCy;eDzC;ej;!as,i,j,s,w;!s;s,tolC;iCy;!y;ar,iCmAos;ne,r,t;aVbSdBeJfHiGl00onFphonsEt1vC;aPin;on;e,o;so,zo;!sR;!onYrC;ed;c,jaHksFssaHxC;!andC;er,rC;e,os,u;andCei;ar,er,r;ndC;ro;en;eDrecC;ht;rt5;dd3in,n,sC;taC;ir;dDmA;ar;an,en;ad,eC;d,t;in;so;aGi,olErDvC;ik;ian5;f5ph;!o;mCn;!a;dGeFraDuC;!bakr;hCm;am;!l;allEel,oulaye,ulC;!lDrahm0;an;ah;av,on",
+    "Person": "true¦0:1Q;a21b1Tc1Hd1Ae14f11g0Zh0Ni0Mj0Jk0Gl0Dm07n04o03pYrOsItCusain bolt,v9w4xzibit,y1;anni,oko on2uji,v1;an,es;en,o;a3ednesday adams,i2o1;lfram,ode;ll ferrell,z khalifa;lt disney,r1;hol,ren;a2i1oltaire;n diesel,rginia wo12;lentino rossi,n gogh;a4h3i2ripp,u1yra banks;lXpac shakur;mba03pper gore;eresa may,or;kashi,t1ylor;um,yana;a4carlett johanss0h3i2lobodan milosevic,noop dogg,ocrates,pider1uperman,wami; man,man;egfried,nbad;akespeare,erlock holmes,ia labeouf;ddam hussain,nt1;a claus,ig8;a9e5i4o2u1za;mi,paul;bin hood,d stew12nald1thko;inho,o;hanna,ngo starr,valdo;ese witherspo0i1mbrandt;ll2nh1;old;ey,y;chmaninoff,ffi,iIshid,y romano;a4e3i2lato,o1uff daddy;cahontas,e;lar,per;le,rX;lmer,ris hilt0;leg,prah winfrey,ra;a2e1iles crane,ostradamus; yo,l5ttie,wmL;pole0s;a5e4i2o1ubarek;by,liere,net,rrissey;randa ju1tt romney;ly;rlin,ssia9;cklemore,rkov,s0ta hari,ya angelou;ady gaga,e1iberace,u;bron james,ch wale1e;sa;anye west,e2iefer suther1obe bryant;land;ats,sha;a2effers0fk,k rowling,rr tolki1;en;ck the ripper,waharlal nehru,y z;liSnez;a7e6i4u1;lk hog2mphrey1saZ;! bog03;an;l1tler;de;dwig,nry 3;ile selassFlle ber4m3rrison1;! 1;ford;id,mond;ry;ast0iannis,o1;odwNtye;ergus0lorence nightingale,r1;an1ederic chopL;s,z;ff5m2nya,ustaTzeki1;el;eril lagasse,i1;le zatop1nem;ek;ie;a5e3i1rake;ck w1ego maradoB;olf;g1mi lovaLnzel washingt0;as;l1nGrth vadO;ai lKt0;a7h4lint0o1thulhu;n1olio;an,fuci1;us;aucIop2ristian baKy1;na;in;millo,ptain beefhe4r1;dinal wols2s0;on;ey;art;a6e3hatt,ing crosby,oFro1;ck,n1;te;ck,nazir bhut2rtil,yon1;ce;to;nksy,rack ob1;ama;l 6r3shton kutch2vril lavig9yn ra1;nd;er;chimed2istot1;le;es;capo3go2paci1;no;re;ne"
+  };
+
+  // add names of people and places, but only under words the build already has
+  const mutate = function (world, nlp) {
+    const lexicon = world.model.one.lexicon;
+    const words = {};
+    Object.keys(packed).forEach(tag => {
+      Object.keys(unpack$2(packed[tag])).forEach(word => {
+        if (!Object.hasOwn(lexicon, word)) {
+          words[word] = tag;
+        }
+      });
+    });
+    nlp.addWords(words);
+  };
+
+  var names$1 = { mutate };
 
   // generated in ./lib/lexicon
   var lexData = {
@@ -8858,18 +9527,18 @@ designate
     "Copula": "true¦eAfu5s0érE;e2i1o0;is,mPn,y;do,endo;a0d,rJáis;!mMn,s;e1i0ér8;!mKsC;!r0;a0on;is,n,s;rHs0;!t0;a9emEoy,uv2á0éG;!b0is,n,s;amC;e,i0o;e3mAs2é0;r0sem9;am8em8;te5;r0se8;a7e7on;ba6do,m4r0;em3á2é1ía0;!is,m2n,s;!is;!n,s;os;a0es;!is,n,s",
     "Auxiliary": "true¦h0;a3e2ub0;e,i0o;eron,mAste8;!m9;!b2n,s,y0;a0á2;!m6n,s;er,r1é0ía2;is;em3á2é1ía0;!is,m2n,s;!is;!n,s;os",
     "Modal": "true¦:aCe6n5o4s0és;aBe5i1om0;aAe1;a9é0;b7dBlos,re4;b9d5l4r2;a6e0;b4d3l2r0;ei0;uq;eus;eup;as,ed;ír0;d1eb0;ed;op",
-    "Infinitive": "true¦:!1:#$%&()*+./<=>?@[]^_`~:er,ne,xe,ed,oc,ni,la,se,ro,us,na,id,ba,ar,sa,om,re,me,ma,da,uq;0:UN;1:UZ;2:V8;3:UO;4:QR;5:V7;6:TV;7:SM;8:U5;9:UF;A:UI;B:VD;C:TW;D:RQ;E:UC;F:T1;G:V3;H:US;I:TS;J:V6;esrVHon[,rKtimov;a60e2TiRopMíKôp;#Ko;!f,nI;eNmMo3WsL/K%;!+2;=,<C;i,(U3;d,rP2;!a2Ib2Cc26d1Sg1El19m14n10p0Xr0Jssot,t01uPvNzudMñKügH;eKurg;r,t;aCe27nFor26;!iv2Vo2]Kuo;h,s,t9;birtQPgSh,lO)mGCq.t%,rLssop,titsK;bBeOYnM/;!f/u,tsK;bo,&,nK;i,(4;cMfL=,oK;p,ve;!a,);nF%;esL)tK;s8%;!n0o2rAso2;aZcelf5eXimVnSrPsLucK;),]p5s8;evMiK;sK%I5;a,bBeOJnFrA@;!#,);apLevKuc;`,#,=,nF;!#,mF;a5SeK;m7sK;!e2n0+2;`,eLS=,o,rAsK;aC<C;lf5pKrr1;#,m0;bKl;!&,m0;!ap,bVdup,eRfBgen1i~QoOpNrKtun;os,uK;>,cK;#,n0o,sPU;muc,/;lKm;f,(;`,);`,fLgKhDXs9~5;!=,),/;!a,eK=,nFo2rSFsPN;d9rMQ;a4(7EucK;!$,sP;luc6murrLsK;&,uc;et9i;ab,evMifL]GQuK;!#,p;&4;!e2n0rS5;eJRiL.d,/K;!a,#MFn0@;d5rK%;=,pK;eNGmFo,/,%;aNepMoLpK;mucPY/;>,g3m1p;#,%;f,sEW;aWeViSnPrLuK;f,r;eK/4;mLvK;=,n0;bBe,/;iKu;f,rKtQA;f9ts5;d5lLrK%;e,=4r0;fOX(;le,rFN;!#,(,rRH;aVeSiPnMolpCKuK;alEca19lK;a,e,i7;ap%,#,icsNuK;fKh;!=,nF;cLl0sKv8;#LL;&,)G9;m,pLrgK;a,#,o2;!mi7s1%;/KvECña;=,rAs8;&Orap6uK;dKl;a1YeLnForK;p4t9;d,r,s;!?RSe2lD$b;e3SiKmucB/;cNhM),o2rcsK%;eK),/;!d,#;o2%;#,rA;c,rtLsK;!+DR;!a,bBnHRs8%;a2Ob2Kc1Pd17e16g13h10jet,l0Xm0Un0Mo0Lpmor0Jr0Ds0Bt04ug],vQ%m,zKñat;aL=K(;!?RGe2n0;fLrK;p,t;!#,sK;&,itas;!aWeRivQloNoLrK;ef,os>;hc,ll,mKrp;!#,n0o2;sLvK;!eLR$7;>,#,=,s8;!#LLn0;d,rKt<;!csKp;bBeLnK;aCi;!d,#,rp;ce2#,h;!abPbo,eLn07]vKsB;!bB#,nFrA;d,mLrK;!r1t3;!bB#,oK;cOKrpJVs;!a,&,m0;!oK;c,t;c,e~4fIrK;aNoK;cKm;!eL6nFoKrA+;!s;b,v;!rK;et9(;d,m,rDQ;etOopK;!#,mMoLrPJsK/,%;=,op;!rp;i,(7;!bo,eLnKsI;am,(;d,r58;al,eK(;g,rKt;p6t;!av,eLoK;!d,mPKs;p5r;c$Ll(K;!a,#,$,+;!e2;eL<rK(AF]^;!>,tN1;le,r,to2;l,rc,sop,vo2;eYnLop,rK;a,ep,[;eLoK;c6psD0;cR#pQfPpNrLtKv4;!a,e2$,+,%;!pK;!a4mMNrI;&,sK;&,/;&,o;a,#,mMJrB;a4$,sK;aK&,<C;!rt;cKf;!a,ca,e2n0orKrOJ/,%;p,t5;a0DeR$QoPrNsK;an4eK;d,$vuj5rK;cOQolf;e6LotK;!n0s8;c,nA8;trAvDJ;d03fMHh02jHRlZmYnWo`,p.t3rNtM~K;aKir3+,uol3;!lf3rf3;!eEnoG._,@>4;aQc,doEePfo,ga^,oN.>,uK;csLdKf3;a_,$;bo,e,o;lf,vK;af,*;fo,m,p;c,lc6pK;!aDJm0;amKeOY.f;a,rA;eK9.`;aLbKebKlLX[a;at68;f,t.f,ve2;lH8nG2;aKebo7<l1C;p,rga7;fsitas,hD9lpHLn4y;aMeK_l,.s>;bIYcKd;#,n0rA;c,s;c4rtK;!a,n0s8%;bOEcLPdKGeJ9fJ2gHXhGTiFDjEVlD8mCNnAPoAEp9Yr78s69t2Xu2Jv21x1Vy1Tz01çPñK;aMeKos,uG;pmMFsK;=,$;b,d,g3pmoGrtK;$7%;aTeSiR*QnMoLrKulI;afs8of4;b6c,`,m*,rt;aKugab;c*,d,lKva;!abK;!?NZ;c,#;!drG7ta;mFDpoCr&3;c,d._,e_,gL8rK;abGU>,t;a17e14iP*4nNoM.LuK;ac3rc;f4m*;b6g,llIrts1;aKem0ogr6T;c*,ifa,l4va;!?3c.%,dnufo2l07m04nXrQtLvaK;rc6/;aNeL<Konpih,._,uab;rag;fo2rKt)s;cn0;b,f3motua,pmis,rc6Zvi2;aOeMitas,oK]ta,tacic;getJ*v7^m,pav,r5HtK;in[,ua;tKvlup;c?JuJ;ili_f,luK;c=ir,g5;aPeOm&9oL]K;d[,t?fn0;l0mraLrKt)s;c)s,`p;!h;bIH_;g.4muh,rg;an8iKon(e,.finu;)m,tKxD;o,po;aSiLoKs1ucatsbo;bmis,pon[;bMga,]t6tL~JAvK;ic,[;]f,u4;aKis$s,[;snoLtK;n0+7;ps5;cZ#,gel,iXm.WnRrOtiNuLvK;ir;div=9siv,tK;a,ca;g8pJv5;ap,eLtK;$c7uen;bil,$g;aBBep,iNoK;icKsrA;aKutits9;n,r;f,grDs;f,n;cK]tD;i9os,]m0;oKsif;f,l;>c3lJHpLrK;!&3psEJ;^,oC;c,gl&a,hc5lL$_,rKv;>,fs8t;$,pK;a,^5s1;aKoE;lsIrbBs3;aOeNiLuK;orfa,p;aK&,fJPl;b1Xc3;d9<;l5rg3;aXeUiP*s,oMrKuol;esKuc;bo,#F8n0;c6nLrpKs1;!a,#,m0;#,i,);hcHrNtMuKva4;!qK;ra,+;aABcaABluc,nD9[;&,p;lKn;!e,lK;!e7Nn0;cMl,rK;gJ6tK;!$,s1;!os,+,%;cVd?g,gSjej,*veJA_,nQq&a,s,tK;a93cNeMiLnKuO;eGop;>h,s;fe,prA;aDMefe,uK;lf;eta,iK;s9tn0;ax3iK;caEr45tKzaE;._,+ta;ave,eK;`,r;a2Oc2Le2Di1Ml1Fn0Mo0Gp0Er05sQuK;biCcOf5hc,lNm0pLrK;c5fs6R;mKs8;a,i,(;!c5;e24+;aVbo,eRiOnFoMuK;c,gKja4sAJ;!&,s8;cKg,pIF;!a,$;g5lIDps1~n0vK;a,#K;!t3;!finDl[,rLtK;!a,&,n0o2;!pEYraK;!rKF;b,fa,gLlEp,rKv1;ra,tn0;!lD;aReNoLuK;c3f,s;>,c0Afn0h%,pK%;!a,eETmFos,sGL/,%;bil,cEQlMpLsK;&,nF;a7s1;a,f;cs1pa;aKec1Lirc3o4N;c,`,r;bOcMdHSg6hlibsib,lLnHSrKv;b,f,rFO;ip,p%;apCXiK;ob,rt;!as,#;a0AeOip,oMuK;!gKj4Epa;e2rA;c7m8Ipa7rK;de_,fE9pa;b#HAc04gufa,i03*02mRrf3sPtNuLvK;#,lI)4;ga,qK;#f,+;!),sK;o,/;!a,#pKi,oE@;!a,#;aSeQiNoMrLuK;a,cod,gH;ef,ota;c,f;c,lLpa,rKv[;ep%,pmuc;a,pmuc;lpKrc9;mF/;dnuf,lK_;!g5;!c,s1;*s,.4;#Gs#G;cBT=a,j,lKp6rbe~,uga,vel;&a,p5Y;aOoNuK;cLm,pes,sK;#,nF;af,if8o;c6s,v;f,sK%;!a,#,s55;>h,c05d03eYgATliUmSpQrPsM~,vK;eK);!l;eLiK<Cop1+cen;~5v;cen,h;f,g,ri;aKice2;!c1;aCiKov;!lI1;bKcaf,m;aL&,isK;op,sop;#,h4;c4Pd,fNjMpsLrKv72;=3p6t6;#7/;a,#,/;a,$;!a7SeKua;!m,r36;!apacFD#,ilM),]Ls/K/5%;!s5;je,%;ef,os;ah;c3fa,jQlPpOrL~Kv;ap^,ite;cLpKraG;a,rH5;&,n0;+FX;&,(,pm0;bo,e,),o2/;aLeK=;fEDn82t1yo2;d5pmi,tn0;!bF5cPd,#,gOleCDmNp^,rLs1tK;n0sn0;abs1dih,tK;!#,lDn(5Z;!#H.f;$,s5;a,s5;a0De07i04l01nXoWpal0rTsMuK;!ac,>,c3Uh5oK;!p4;aOeLirKod3;]ta;cC6f07mETrKv03;et9g0TpK;a,%;!c?f,_,pK;!?tlu,#;eKucH5;ps8vK;lDn0;ca,p4rg3;aMeK;pKt;!#,m8Ms8;c7rt;ob^LupK;!mi,%;#,s1;ce2*Lp,rf,~sAvK;!a,#,orpmi,r3T;!<,rap;b,c0AfOl,pNrLvK;?ta;et9gKp%;#,),o2;!os;n0o2;!b4cM_,pLrK;ra,t30;!#B6@C;!aK;rf;a24b1Tc1Rd1Pe1Bfic65g18i12no11o0Lp0Kr0Dt01uLvK;al,il;atsYcXdWfVgTj4Ymrum,ot6pC9sStK;aQcOiCnNpJrMsLuK;rOs;im,(;ot;eva;af,urK;t+4;!f;#E$c,ualc;esKif4Oua9;!a,@;!rA;!am,nArA;!o2;#,);alodi,eUibHlifD9nSsK;aQeuOiMnL[FKuK;li,rf;[1;g5)mK;!`,/;ces,qK;es,.;c,dJ*,rH;eK($4;!c48;lImonorc,nA;aPeNip6oMuK;m6p^,sK;sB/;b,ha,j;!b,c8Ef,s,tK;a,$7;b6ga,_7n;m0os,ut6;!bYcX`,ep^,frAgWhViUjem,lSmOnNpL+@,tin[,vK;&,ra;aKr(9;ve;gi,imD8;!anMeKirE;d,mK;n0(;!e;av,l,pK;mi,%;p,]t1;c,lem,nA;a,iv4;!&,<;alC5orr0;h,s1;ap,ehc,g,mOpLtKv4;!a,#,+;!sK%;a,#,nK/;aCi,(;!`;aC1eLimK<s,ol;!e,i,);*,t)3M;bilEBc3dUgSlQmu3nOpLtKvesrA;i5*;^t,o2YsLuK;c5s;e7o2;eKic9luv,o%;g4v;eKot;ca7;!a%,iK;*,rf5;iKnop,[;l,snK;(38;aK$g3;l,~3;assDulK;!ov9;eSiQmLoK;!c4d32inDnD;eNoMuK;lsKtsoG;&,iv;n,s@;l4ms1s;lKv;!ac,i~e;lK~;ec;!cMlc9QpKs;!a,eKi~e,m0s8;d,r7Gs;$,@mK;!$7s1;aXeCiTlQmPrNs?,uK;coLhc,op,rK;ga;!e2s1;az,it%,uK;su;aGil;aEucK;!sK;&,=;cLsK~e;=,s8;et<,itK;<,rap;c6rKt;!ta;cTdRgDliel,r0sPtOvMçK;iK$>;d*_,ef]E;!eK;rbI;$,ob6O;!sK;a,#;!rK;ep,ota;e,);a1Ee17g14i0HoQrLsSuK;a,cav,t.pWy6H;ac3eMoK;bB`,tK;!#,nA1;bKt3Rvog;ih,og;>,d09f8MiMrKs,t1z?;nKo2Z;or;cSp6sLt+K%lf4;g,uBX;aco,eOiMlupL$m8olK.ts8+Ouf;ce;mi;rEvrK;epB;rpK;!mi;aUcQeOiNnL[o2pec1.po2uloK;s,veAK;as,eKuf;m,vbB;aC`,sop;lKps9;!es,(;a4eK;fLlKps9;es,(;n0rA;!lKr,t6;#K;!r0;!<>,rA;b05c03dr01eZfYgWlTmMpo,ru,sLtKurHv=a,zub;ap,s1;e@,$,@2N;!aPess8iNluc,oM]Kuli;g,tK;!&,%;d,n1;le,rcK;),s8;c4Otn0%4;cLpiK;cs8;&,);aKi.;mi,pm0;a,#,n0;p,rK;!t;aj,oK;bB(;av,oK@f;c,ic?,rtap;m0ob5;isLupK;mi,o2;a4&,n0;cOdMi*,ll4n44rKzamH;d,f,tK;$,+;acn9Kn0.K;!(;!aK$;!m*;>,fo2g40lLrg3sK;!bB;*,p;a01eZiTlSoRrN@MuK;f,h%,rHsK%;!n0;isut3lp,p;aMef3ifLofK;!e5NnFs7F;!a4n0;!*,s1;d,s,t4;ac8Qif,(;e~,m,<Or,tLxKz8;orE;igel,lu,),sK;al,eK;!bBs1;!#,s1;f@lb,g*,rK~;!c;!f8hc,lLm,rKs*b^;gorp4r1t;c65f9l;a10b0Wc0Ve0Lf0Kg7Zi0Bl06o01pZrYsiXuK;bVcSd[,gRmO<,pMtK;?gn0iKor,sop;pac4t;!iK;nDt6;e,iK.f4uG;sKt6;!=,s8;a0#,<5X;ep6iLlJ)v,rK;ic;rtDtH;at3_1;a,gel;ahc,ub;^A6oK;ca,s;b5cNf6iv,paMrLsKv;i,n0;!atnJ$7tn0;rt%;!&,s1;aMes,iKorr3C;muh,pKrb,~D;!ec;c,f,h,tK;!&,+;ab,cRfQgPmisOpNtM~LzK;uf;i<,*;$v,s1um;a,&,m0(5;a,@;iv;a,rAs1;av,so;),umJ;cnJd[4gRhQpPrNs,tLvKz;!#,in,s1;<Ko2rDut;ms1;agKt6;at;!a,orta;!<;!nK;(7;ic5+m,zem;aMmLoK;d4p;as3et;h,t3;bOc3UdAf,g5hnuEj,)Nrruc3@GtLugi,ñK;es;nuEsK;e,)7;!s@;a,^;aZePiN<rHoL.f,uK;b8p^,r]f3s;lKm,$,rH;a7fa;eKf,m,zog5;b,*;cob,d,lR<Qps1raPsOtMugaLvK;*,);g,rp;(,r0sK;?,ef;&,noG;!f,p^;lp,m,tsA;a,eKf5;p,v;bKc3g3iv,l5r($7ta;!aC#;a0Yb0Vc0Bd03f01g00hc,lVmUn[i12oTpSrOsNuMvKxif@,zav6;bo,#Ki*,$,s1un1T;>;g,q6;at<f,et+N<;aLc3UfK;$,+6A;gKr8Av;<;ic)2mil,(,+,%;b,pa;e2(3;aNiLpK;_;cnKxua;(4;!p,t5va;elivi2iv,ole;a7ehc,nK;e,(7;aQeOiNnMoLuK;p5t6;!tsuc;ec9;l,sbB;m4sK;!@;!rri;a02#p00iXnPoMrLuK;b*b,s3;em0ov8;gSr,sK;a,sK;a,=;a)f4eMunK;a,eKo2;!d,r;cil,divNgilgMiLlis,]K+2top,ulf9;f8g;cn0]p%;en;e,o2;dKfe$b,lop,)4po2raGuj3;),rK;eps1;a,sK;&,o$m;_,s,v;_cLosK;@;!r68;ms1s3;c0BlYnK;aUeSiOoMuK;^Kp^;t+t;grKs;ev3;f1lM_cLviKz0;`;!$;a,bB;dKpRs1;.;b,g,pLrK;ra,t6;a,moG;aTeSiOoNuK;c@v,g]m,rK;bKtap;^7;!m;mMp0ZrLtrapK;!m0;b,t;uh;oja,p6rg,snoG;>Cf,m,pLrab,tK;ab,&;?ta,+;aTeRnNorbMrLuK;c6d,l;am,um;as1;aLiK;!ug;g3lKm;!p;!f,psIrt6sKvorpa7;&,(;!ps1rK;!.b^;a0Ke0Ai03l01nXoSrOsMuKzuj;jK*,s,x3;!bBn0;aKeirH;g3r;aMeKoto,up;b*,tsKx3;op;c05l3H;fa,ha,j,*NrLvK;`,#;!d,&,rK;et9o2;=,tJ;az,ev,iMolLumK;(,s5;a,o2;_.hc,p,v,x;avJ(,uK;j,mo2v8;d$m,lPrNtK;im,sK;aKev9);c,m;bKri;!a,o;!bo,r4Cs1;c,hc,lSnQp7rKssIvan;!fUgOpNrKt3;acK(6;!#K$,s1;!bI;!^;a,n0;!eK;d,r;a,&,l,p;c,d9m6pMrKv;fBtK;!+;!a,o2;aMeLiKnuiC;ec,r.b;lb;>7rKt6;goKrag3;litad,tK;of,pirc,ua;b0Nc0Md0Iga0Ghlof,jnJl0Em0Cn08p04rZsWtPuKx0znorb;gNqK;aL<Kolb7@hc;lb,rb;f6s;av;aPlOnMoLrIsK;uc;>s,cihc,g;alp4eK;p,+2tap;ov;b,g4hc,p;aK&,*f,@p,unD;b,p,rfK;?ap;alc,cNf4oMrLtsK;?,e;aGeug;>s,l0;!#,o2;lM_LoK;rt6;rg;og;aMilLofK;elP;a,&;lp,s;es,on,sK;iNuh;cKep,p^;et;$moh,ssDt<K;hc;aLi,l[,nKor,rabmQ;ab3Kod5;cn1QprK;ap;apaC#,<lLub;mLrK;ab;ob;!a0Pe0Li0Cl09nYoWrNuK;aLd,ja,*s,m,nKs,t6ya;a5.t6s1;c5rf1s;aOeh,oK;bLcKg3;a,#,n0s8;!a,sK;<C;t4ugK;!aKs5;!v*s;!#;m(Kp,r;a,);aReNirb,oMuK;fK);!a,orE;d09ha,s;mLrKvs1;em,ra;e0S$,(K;#,$;!mLrK;>,ga;!&,(;aLoK;m,s;ps5s;culRep,lOmit9uMvK;?g3#,lo,nKud;e,(;c7qK;il;!avLoK;sn0;!);e,=;bLpsK]h,~;oh;ebK;^;cLf3l@Cn,rgK;a7&;#H;a21e1Xi0Jl0In0Co01rVsNuKzillA;dLhcD;am;ac,e;aQePiLuK;b,fo;bMd,fn0lLp,rK;!ra;eb;?;p,rf5;cs1m;aMecLoK;f3ha;!a;!bLmK;!#,$,s1;a,^7;bSfQhc,lPrOs,tNvK;eLiuKnFo2;qe;!r;!#,+;r1t;a,(,s1;$,oK/;f,s;#,mK;es1;aLiKor;rb;b,m,p6rLt6vaK;*;ra,t7;!s1;ac5ov,uc9;bu,d0Sf00lTnRp,r>f,tK;aPca2irc,$tOsK;am,eLonK;ga8o2;!mK;od;ua;lp,rp;rKum0;of;bPc,pK;a,#,iMmFuK%;d,s;i,(;rt,tlK;um;up;!aCiK;c06d02lZnXpit,rUsRtK;?,c5#,nMon,rLsK;et,uj;ec,of;aLeK;di;s,uK;c,q;aOlLnK]v8@O;et9;af;aLbul,cKev,olg,up;as;lc;aKgis,ot,u;d,lp;aLpmK;a,e%,is;c,~;e,ilIoK;cKm;!&;os;ap,ep6uK;rc;+;rt;?N>,eM)LujK;`,e2rA;!vi5;d,rp;];f1hc,p,sLtopK;ih;!s8;=;lErOs,tK;aKs1;!-K?L;?K;tn0;ta;pa;a00irr1lZmVoQrMuK;c9or,rr1;);ecaMuK;trA;ep;%;lg3rK;!pK;!a,m0;(;$;irJoLuK;hc,t;rHz;ra;is;b,cLg,*,rKs1;g,t;a,#,sonK;em;aMevL=ic1;&;[;dTiliSjeRpucoe2rit5sJtK;nLsoG;ca;avKes;el;ac;#;rp;*,~;fa;eMiK;ciBvlo;/;~",
+    "Infinitive": "true¦:!1:#$%&()*+-./<=>?@[]^_`~:er,ni,ne,ed,oc,xe,ro,la,ac,us,et,pa,re,na,os,uq,ba,om,id,me,uc,ar;0:MQ;1:MT;2:KN;3:L3;4:MR;5:M7;6:LM;7:MI;8:KV;9:M2;A:M3;B:ML;C:K1;D:L9;E:K8;F:H9;G:MM;H:IG;on],rItimov;a4De2BiKíI;#Io;!f,n?;!b22c1Wd1Hg16l10m0Vn0Sp0Qr0FtYuNvKñIügF;eIurg;r,t;ivJ=I;h,s;!#HOn0;birtJEgPh,lM$ms6rJtitsI;bCeI3nK.;!tsI;bo,&,nI;i,(2;cJfI^;!a,$;nD);esJ$tI;s6);!n0o3rB;aWeUimS%QrNsJ`I;=p5s6;evKiI;sI)AM;a,bCeHPnDrB;!#,$;apJevI`;da,#,^,nD;!#,mD;m8pEPsI;!e3n0;da,eK7^,o,rBsI;aA>A;pIrr1;#,m0;bIl;!&,m0;ap,bQdup,eNfCgen1i@MoKruItun;[,cI;#,n0o,sIM;lIm;f,(;da,$;fJgIh9T@5;^,$,.;#FE^,nDo3rKUsIG;a2`I;!%,sL;l`9murrI;/7i;ab,evJifI=BZu2;&2;!e3n0rKN;eg,iJ*d,.I;!a,#F5n0;d5rI);^,pI;eGSmDo,.,);aLepKlubmaz,oJpI;m`IR.;[,m1;#,);f,sI;!e4M;eRiPnMrIur;eI.2;mJvI;^,n0;e,.;iIu;f,rI;f7ts5;lfHUrI);e,^2;le,rAX;aTeRiOnLuI;al<,caJlI;a,e;!s;apG#,icsLuI;fIh;!^,nD;cJl0sIv6;#EC;&,$8X;m,pIrga;!mi,s1);.JvIña;e,$;^,rB;&Mrap9uI;dIl;a0YeJnDorI;p2t7;d,r,s;!~K7e3lE%b;eEIiIm`C.;cLhKrcsI;eI$,.;!d,#;o3);#,rB;a1Hb1Dc0Rd0De0Cg0Aj/,l08m07nZoYpmorA5rVsTtQvIza3ñat;!aO#NloKoI;hc,ll,mI;!#,n0o3;sJvI;!eFE%8;[,#,^;!p,ta;ce3#;emI=v;!oI;cHQrp11s;!oI;c,t;e@,rI;ab,(I;!#,?;d,r9O;/MopI;!#,mKoJrIQsI.,);^,op;!rp;i,(8;!bo,eJnIs?;am,(;d,r3I;al,/,(;av,ep5oI;!d,mISs;/o3(I=_;!a,#,se;l,rc,sop,vo3;ecTnJop,rI;a,ep,];eJoI;c9ps95;cMfLpKrpJtIv2;!a,e3%,);!a2mGD*s;&,sC;&,o;%,sI;aI&,>A;!rt;!ca,e3n0orIrI1.,);p,t5;a01eK%vDJoJrI;eje,ot;c,n7C;dWj9MlUmTnRp*t4rKtJ@I;alf4ir4;e<,noH*ma,sa[2;aMc,eLfo,oK*[,uI;csId4f4;bo,o;lf,vaf;m,p;c,lc9pI;!a9Wm0;amIeIJ;a,rB;eEH*da;aI[t4Gleb_;t*f,ve3;aIebo8>l0R;p,rga8;fsitas,h9OlpIn2y;!m0;aKeI*s[;bId;!_;c,s;c2rtI;!a,n0s6);bI1cFQdELeDOfDNgCQhcCJiBBjB1l9Nm93n7C(7p73r53s4Et1Uu1Kv17)16y14zNñI;aKeI?,uH;pmG8sI;^,%;b,d,g4pmoHrtI;%8);a0Ue0RiN+2nLoK*JuI;-4rc;f2m+;b9g,ll?,rts1;aIem0ogr4W;c+,ifa,l2va;!~4c*Gdnufo3lXmVnRrLtIvaC;aJeI>rag,onpih,*ma,uab;fo3rBWt$s;f4motua,pmis,rc]1vi3;aMeKitas,oIr/a,t-ic;g/-,+v8_m,<v,rr/a,tI;in],ua;tIvlup;c~-,u-;ilimaf,lug5;aKema,m&7oJ=I;d],t~fn0;l0mFrc$s,t$s;g2Hmuh,rg;an6iIon(e,*finu;$m,tpo,xE;aQiJoIs1`atsbo;bmis,pon];bKga,r/9tJ@DZvI;ic,];=f,u2;aIis%s;snoJtI;n0se8;ps5;cU#,gel,iSm*RnNrKtiJuIvir;div^7siv,tH;g6p-,v5;ap,eJtI;%c8uen;bil,%g;a8Bep,if,oI;icIsrB;aIutits7;n,r;f,n;cIr/E;i7?,=m0;oIsif;f,l;b-4pJrI;!&4;_,oA;c,gl&a,hc5lJ%ma,rI;[,fs6t;%,pI;a,_5s1;aIo<;ls?,rbCs4;d7>;aSeOiL+s,oKrI;esI`;bo,#9Zn0;n3Js1;hcFrJtI@9va2;ca7Ll`,nA4];&,p;lIn;e,lI;!eIn0;rb?;cIl,rgDY;!?,);cQdaPgiN+veE3nLtI;at,cJeprBiI%H;[h,s;aACefe,ulf;/a,iI;s7tn0;ca<,r2XtI;*ma,s/a;rg;ave,&a;a1Wc1Te1Mi14l0Xn09o06p04rZsMuI;biAceKf5hc,lc5pIrfs6;mIs6;a,i,(;je;aSbo,eOiLnDoKuI;gIja2sa;!&,s6;cDEpDE;lDDps1@n0vI;a,#I;!t4;!finEl],rJtI;!a,&,n0o3;!p,raI;!rF6;b,gIl<,p,rF5v1;!lE;aLeKoI;[,c0Kfn0hGpI;!a,eAKmD?,sBW);bil,cAH+,ps1s5K;cs1<;aIec12irc4o34;c,da,r;b2ciAd,lJnCXrIv;b,f,r1;ip,pG;a02eLip,oJuI;!ge3j2Y<;c8m69rI;dema,fA7<;c#HiX+WmMrf4sLtJvI;#,l?,$2;!$,sI;o,.;!a,e68o<;aPeNiLoKrJuI;a,cod,gF;ef,ota;c,f;c,lI=pG;a,pm`;lpIrc7;mD.;dnuf,lI;!g5;!c,s1;*2;c4PlJp9rbeIuga,vel;@;&a,p3Z;aMoLuI;cJm,pes,sI;#,nD;af,if6o;c9s;f,sI);!a,#;bYcVdTeSgRliPmNpMrLsK@,vI;eI$;!l;ecen,iv,>Aop1;f,g,ri;-1ice3;aAiIov;!lDB;bIcaf,m;ah2&,isop;a,^;fa;a5VeIua;!m,r24;!ap-B4#,ilJ$,=IsC.5);je,);ef,?;ah;c4jNlpm0pMrJ@Iv;ap_,ite;cJpI;a,rCM;&,n0;seBJ;bo,.;aJeI^;fA8n74t1yo3;d5j,pmi,tn0;!b5UcLd,#,g4le8PmKp_,rIs1tAP;abs1dih,tI;!#,lEn(47;!#F;a,s5;a01eWiUlRnNoM<l0rJuI;!-,[,c02h5;eI`28;ps6vI;lEn0;ca,p2rg4;aKeI;pIt;!#,m6Ls6;c8rt;ob_JupI;!mi,);#,s1;ce3+,p,rf,@sBvI;!a,#,orpmi,=pC;b,cZfLpKrIv~ta;/7gIpG;#,$,o3;!?;n0o3;!b2cLma,pKrI;ra,tI;a,#;!#7GsaA;!~f;a1Db13cul12d11e0Mfic8g0Ji0Dnoh,o05pm0r00tRuI;atsPcOdNgMj74mrum,p8JsLtI;cJiAnIp-,*t,.;eva;af,urtse2;#<,%c,ualc;esa,if6Zua7;!am,rB;!o3;#,$;alodi,ePibFlif9MnNsI;aLe`es,iJ]BLuI;li,rf;g5$mI;da,.;c,rF;eI(%2;!c6O;monorc,nB;aLeJoI.C;b,ha;!b,c28s,tI;a,%8;ga,ma8n;!bOc1da,ep_,frBga,ir/1jem,lMmKnJpIsesa,v1;ave,r(7;gi,im9N;!a4eI;d,mn0;av,l,pI;mi,);al8Worr0;g,mMpJtIv;!#,se;!sI);a,#,nI.;aAi,(;!da;a8TeJimI>s,ol;!e,$;+,t$2Q;bilARc4dTgRlPmu4nNpJtIvesrB;i5+,%;m/,oKsJuI;c5s;e8o3;!(;eIic7luv,oG;g2v;eIot;ca8;aGiI;+,rf5;iInop,];l,snI;(2B;al,%g4;!ov7;ePiNmJoI;!c2inE;eKon,uI;lsItsoH;&,iv;ms1s;lIv;!-,i@e;lI@;ec;!cKlc6OpI;!eIi@e,m0s6;d,r47s;%,sam%8;aOeAiMl`LmaHrKs~,uI;coIhc,rga;!e3s1;az,itG.u;!s6;citIs6@e;>,rap;c9rIt;!ta;a15e0Zg0Wi0AoRrLuI;a,cJt*pIy4P;mi;av;-4eKoI;da,tI;!#,n7C;bJtI;+,$;ih,og;[,dZiI*2Ms,t1z~;cMsJtseI)lf2;g,`;-o,#pJir<,%m6olI*ts6uf;ce;!mi;aQcMiLnJ]o3pec1*po3uloI;s,ve7U;as,eIuf;m,vbC;aAda,sop;a2eI;fJlIps7;es,(;n0rB;lIr,t9;#I;!r0;!>[,rB;b02c00d*ZeYfXgVlSmKpo,sesa,tJurFviI;da;ap,s1;!aNiLl`,oK=Iuli;g,tI;!&,);d,n1;le,rcI;$,s6;cItn0)2;!%;cJpiI;cs6;&,$;aIi*;mi,pm0;a,#,n0;p,r;bC(;oIsaf;c,ic~,rtap;m0ob5;isJupI;mi,o3;a2&,n0;cMdLi+,ll2nKrI;d,f,tI;%,se;ev4;-n6Tn0*;!am+;fo3g,lJrg4sI;!bC;+,p;aXeViQlPoOrKsaJuI;f,hGrFs34;isut4lp,p;aKef4ifJofI;!e3RnDs53;!a2n0;!+,s1;d,t2;-,if,(;m,>Lr,tIxor<;igel,lu,$,sI;al,eI;!bCs1;!#,s1;fs3QrI@;!c;!f6lKm,rIs+b_;goIr1t;rp2;c3Xf7l;a0Sb0Oc0Ne0If0Hg0Gi08l02oZpXrWsiUuI;bScPd],gOmL>,piKtI;~gn0iIor,sop;p-2t;nEt9;e,iI*f2uH;sIt9;!^;a0#,>3Q;ep9iJ+c,$v,rI;ic;rtEtF;at4ma1;a,gI;el;ahc,ub;_7CoI;ca,s;c,iv,<JrIsn0v;!%,tn0;rtG;aLes,iIorr1U;mJpIrb,@E;!ec;uh;c,f,h,tI;!&,se;ab,cOfNgMmisa,pLtJ@I;i>,+;nIs1um;ev;a,&,m0(5;iv;a,rBs1;av,so;#F;$,um-;cn-,d]2gn0NhLp4StJvI;!#,in,s1;>Iut;ms1;!>;ic5zem;aKmJoI;d2p;as4/;h,t4;b_,c24g5j,tJugi,ñI;es;nu<,s$8;aPeLif,oJ*f,uI;b6p_;lIm,%,rF;a8fa;d,lKnEps1rap_,snoHtI@;(,r0sI;ef;a,f5;bIc4iv,l5ta;!aA#;bm-0Oc07d01fZgYlTmSn]its/,pRrOsMuLvJxifI;sa;bo,#Ii+,%,s1;[;g,q9;/seI>;>;aJc,fI;%,s5;r5Vv;ic$3mil,(,se,);e3(4;aLiJpI;ma;cnIfa,xua;(2;!p;elivi3ole;as1nI;(8;~ri,em2iMnLoJuI;p5t9;!tsI;`;ec7;l,sbC;aX#pViSnMoKrJuI;b+b,s4;em0ov6;gIr,sa;en;a$f2eKunI;a,eIo3;!d,r;cil,diJiIlis,=f6se3top,ulf7;cn0;ve;dJfenI$2po3raHuj4;eb;$,=ps1;a,sI;&,o%m;s,v;!r46;aNeL>KorbJrEuI;c9d,l;as1;g4lp,m;!f,ps?,rt9sIvor<8;&,(;ps1r*b_;a0Ae04iZlXnWoSrLsJujIzuj;!n0;~,eirF;ra;aLeIoto,up;bJtsI;op;+;cIl2I;!#I%,s1;!b?;ha,+KrI;!d,&,rI;/7o3;^,t-;ev,olo3;(,uI;mo3v6;d%m,lLrKtI;im,sI;-,ev7$;[,ri;!bo,s1;c,lMnKp8rIvan;!f,gIp,t4;a,n0;!eI;d,r;a,&,l,p;c,d7pKrIv;fCtI;!se;!a,o3;at9nuiA;b0Dc0Ad07jn-,l03ms01nYpWrQsOtK@I;as,nIolb8sahc;alb;aKlJ>lp2oI*s;[s,ciYg;ov;b,g2hc,p;aI&,+f;p,rf~ap;alc,cMoLrJtsI;~;aHeug;ca;[s,l0;!#,o3;log,oI;rt9;aJilIofelO;a,&;lp,s;iIuh;hc;cJep,pI;_;/;-;aprJi,l],nIor,rabN;a[r30od5;ap;a<AnIub;alIorb;ab;mob;!a0Ke0Ii07l05nVoTrLuI;aJd,+s,m,nIs,ya;a5*t9s1;c5rf1;aMoI;bJcIg4;a,#,n0s6;!a,sI;>A;t2ugI;!aIs5;!v+s;m(Ip,r;a,$;aOeKirb,oJuI;f,$;ha,s;mJrIvs1;em,ra;#,%,(I;#,%;!mJrI;ga;!&,(;aI?;ps5s;cPlMmit7uKvI;lo,nI;e,(;c8qI;il;avJoI;sn0;!$;iCulI;e,^;.;psI=h,@;oh;f4lsaAn,rgI;a8&;a1Me1Ki08l07n02oUrPsLuIzillB;dJhcE;am;-,e;am,eKiJuI;b,fo;d,fn0;p,rf5;aJecIoha;!a;bJmI;!#,%,s1;a,_8;bmOfNhc,l0rMt2vI;eJiuInDo3;qe;!r;!#;r1t;%,?,.;es1;aJiIor;rb;b,m,rIt9;ra,t8;!s1;-5ov,`7;bu,d0OfXlQnOp,r[f,tI;alp,ca3irc,%tLsI;am,emJonI;ga6o3;od;ua;rp;rIum0;of;bNc,pI;a,#,iKmDuI);d,s;i,(;rt,tlI;um;up;aAiI;c03dZlXnVpit,rSsOtI;~,c5nKon,rJsI;/,uj;ec,of;aJeI;di;s,`;aNlKnJ=v6;^;/7;af;aJcIev,olg,up;as;lc;aIgis,ot,u;lp;-,pmI;a,eGis;e,ilKoI;cIm;!&;?;ap,ep9uI;rc;se;rt;~=,[,eL$JujI;da,rB;!vi5;#;d,rp;f1hc,p,s,topI;ih;lMrLs,tI;aIs1;!~I;tn0;ta;<;aUirr1lSmut,oNrJ`7;$;ecaGuI;trB;ep;);lg4rI;!pI;!a,m0;(;%;is;&;cJ+,rI;g,t;a,#,sonI;em;]",
     "Noun": "true¦:!1:#$%&()*+-./<=>?@[]^_`~:re,et,se,ne,am,ro,im,la,ir,na,er,ci,ra,rc,ni,id,ps,rp,en,op,es,ac;0:32;1:3O;a2Ge1Q+18n0VoWrOs2;aGel4o2élg1;<2tad;hc,p;a2beum;cBeAg,i#t(,jecnoc,mi.,n7#6s,t3ut2vi15ñ`;cel1A-;em,i2s-c;b),p2;~,soh;bil,n*;~,edr0i2u19;f2m#t;!*`;di,#c;@ar,ov;<5da2;céd,m= saz#uf,n3p%,r2;o2Pt&;ed)oc,)j;hc,lbúp/,n3rbáf,t2;cá],síd37í>;cét,ó>;at8e2*e,oñ`;bew,cnác,d6jum,l4sál,t3v2;-,ád0;cár0ipúj,%&m,t_ yr=h,á>;l2mmih;at,icn0;.tnNíl;+,%&ib;<VdOgMiJjabart,lHm-p,nFrBs8t6v4z#um+,ír,ñ2;a2eBin;!b,d,mat;alc%,it2;ejda,iso[@,luc,&c1om;ce[o],i2;bah,du#,m,sópo],xé;a05ep,o2;!p2;/,%;bme*,e3i[2;us;dan#v1fím(,j2l+b0?d;asap,uga;adaduic,i2#i0Z;cev,/,m0rge19v;e2lor=sU;meg,uv;<c#je,=2;d?cev,l2s#vi.,usu;as;a2euj,*a;m,p;a4n2;a2$?n,of,um;b,moc;c4elpme,g3i+,l,rg,sap$.,t2zeb~&;aZiv1lu%r,n$a,soc,up@;oCíh;ifingis,#m;dói0Uf4hc,p,r ot#up,t2;nálta4róp,sónga@,uéc(=f,á2ílo^;mu^,rdR;áTícap2; o.éco;aCe2or;d)9g6iug+,m2rt;axe,i4od3r0u2;lS%r;ba;gér,>;!(i,i3r2;(,iv;);!s2;ed;l2mtab,p,to;c,p;cIdu0iHmiGnCr8s,t5u4v2ñS;anr0i2;r,t%f;n(,t-;e3i[2&mucod,)p,s-c;oh;gev,m;bmu,d4^3g2otil,ulp;$1;*,uf;$0;~,e4*#t,os01u2;bi2;rt;dr0s=;.;cn$_,lif,)t@e;ov;lbOtn2;aAe2;i5n_o,r4t3u2yub-tnN;f,p;ap;eg;d,lc,pr4v2;iv/b8r2;is;`;<DdCf1iBjubAma,n8r6t2ug,vel;i3&%]6ov,s2;e,?;<l2siv;os;*Huats2;/;od,#2;bog;@;c#m5dut%,=v;n(4uya;+,rbaf;a3itsubm2or;oc;c,s;beu],<05dLgK-a?uq(,lIm)f,.DrAs9t8vit3í)2;$,y(;a3ce[2;#p;g3i<1n#t2;+;^;lSob;~,_%;beiuq,^3t%2uc;um;*;!b5l,m4&,pm0r3tn2znQñQ;ev;!bm5;`,#h;ah;cz2lI;em;/tDr0;a3#2;uc;cIgEhCjabB+sAn8pSr5t3zl0;~;nFr2;_;ap,*,o2t6;pm2;$;!r2;oj;&;me;!c2;af;ell,l4u2;j,rd2;(;up;éd;ncBt2;cát,sí6ám4é3í2;>;!ivos nóinu,t7;arg,$,)f1;?;d3ügn2;il;at2;%;ét;]",
-    "Adjective": "true¦!1:#$%&()*+-./<=>?@[]^_`~:er,en,es,ro,lo,ri,il,ti,an,or,ci,vo,al,te,st,re,ra,le,no,do,mo,ar;0:ME;1:ND;2:MZ;3:LH;4:N6;5:N8;6:MG;7:KR;8:K8;9:NA;A:LF;B:MU;C:MJ;D:M3;E:KQ;F:MY;G:KZ;H:FT;I:LD;aJMbIFcFLdE9eCIfBMgAZhAIi8Lj8Ckur1l7Om69n5Oo5Bp3Squ3Qr2Qs1Dt0Ju0EvVweb,xeUySzQáOíLóKúJ;l+mEnE2t*;pAEs7;be3gn7nJ;fi`,tJ;eg3i`;/1l2LrJs3Tto0ur7vi1;abe4i1;aJur1;`LBpoAU[goza0;#`,uJ;caASgosla<;nófobo,róD9;aTePiLáKíJ;tr7vi1;li1nda(;ejFIguDkinFlGKolHrLsJtAu1<4zcIM;iJuA;b],go1;tuAulH;c0Mllu1nezoGGrKsp#K4tJ;eKZus2;-4OdJsát*,t33;ad#5e4;cPgOlN^,q46)MsJ;=(,cJto;oJón;!nN3;ab],op91;liso]I2ón;abBJo;u0ío;bFRlt[KBmbrío,nLrK>LKzbeJ;co,ko;b7Oug48;iJíCP;f.me,v#sA;a0Ae02he,iZoVrOuLárta3éKíJ;mi1pD1;cni8rmL8;cuHWnHTrJ;bJco,í?CY;io,ulH;aKemBYiJoH5un8;(buLXs>;cMdicLXnKsJvieC;e3lúLH;qui(,sJ;grK0lúLFm08vLO;io,t9;]72n2rLscKtJ;=,ona8;a0o;_,e3;bK#0ll,n2&J;id7lD;eHBio;atrAba0mpPn77rJs=6utGó)8;cMmóBZrJ;eKiJáqu7;to8L;^,s8M;#Jio;!a;.ArK1;iwVng31rJuKNí0;as8dío,t7W;a0Le0Ci07oYuKíICóJúp#;li1rBD;ave4bUcSdReQfi/J1je2mPpKrc3ZsJt*;odicho,+tu2;#K@J;`,s9;!_KRfKiJAvJ;is9;iBElI;#6o;co,l2<;-D;%9iJulH;n2o;=JcampeGd%~&lKWmaK7u6O;pi0t9N;bO/=NlKmJn.5r1viéHS;brío,e3;aJemne,it0Oo;!rJ;!ieF;!%,i?a;#KrJ;ehuGIio;a0b6;amDgMlLmKnJr6;ce3ieJDóB6;i2HpBZ;vA2íc7;nificaHEuiDJ;cQdPguOmiMnLpt$trDXrKvJxuBñe3;e3*EA;b6e0io,[0;c*l5eg=Dsa2;cJd%nu1áKS;on0BáBZ;nda,&;iHuGH;o4@toDCunda)D1;b6crRgrCFjGlPmOnKrJ;_,[ce0;!gKju-i0o,tJ;afeJBiagJ9o;)HuJ;i^lHín7;a45oa0;iJtGE<;^,tGL;o,í]F;a0EeSiRoMuKápid5íJ;gi1;a0bJ_,ma0rBs5;io,&;b9LcMd6jLmKn8q1IsaJt91;_,)0;-Eo;a,ibl-8o4;ie3ke3ocó;c5oja0;a01cXdWfUgSlR`2nPpLsponsD7tK<lu/onJ;~6;iBRrógGP;]2rJ;%KoJ;duFQ;=DM.;aJomb[da;c$tHY^;aBOigiosE]0;ioJul39;!nB;iJO]J;ct9jo,xi<;on1uFH;e54honcho,iLo]KtJíp&8;-g2K*CU.;ct9to;$JNo;c6lJ;!eJ;nFs;dL(,ncKquíd7&,sJ;o,tFM;he3io;icA;eJie2ímEH;bequDchua,)1;a0Pe0Ji0Hl0Eo03rNuLáAJéKíJó?u`,úblEF;ca3o;ndu(,tr7;d8S#8lc3n+agu1rJto;iEHo,p9EulH;acFOeViSoLáctHWóJ;diFsJximBI;pe3;bC7cedBPduEVfNg$9Qlijo,mLn2pKsp#-1>EVvJ;$iBOin8Y;$CiEuls9;eJiscIot9;d6tIT;a0%IJuJ;nd5so;e2mJn1V;aEB#JigFU;!a4os;cKdecGKmatu3r6SsJvi5;$IUid$FLo,to,un2;o(mbi0urs9;bSdRlOpu08rMsJtoHH;iKtJ;#iGE@3;b9N+v5;/0tJ;u2Rát*;a8iK<)HíJ;c1SfaFga`,tDN;c1Rn4N;#os5)1;la1@;aKeJ;beyo,n5;^,ye3;cu1gm7nJ;na1o,t9;cu75dunA0lNnM.,queñErKsqJ;ue3;la1m-FLpJson=%,t$e/AUua0vHN;etI]jo;tá8Súl51;i43u1;cífi8ga0lRmpH1rKtJuH2;#0r6óGO;aM/AdLejo,iGT+J;cuJsa0;l~HS;o,us8;gJ](;uaJ;yo;aJ%EYme3;cJ+0;ieF;bRcPfiELmnC9pMrKsc5YtoD7vJ;i0oid7ípa3;=,deHNiJto_xo;e5XginBun1;a8#aE5oKrFFuJ;%2lH;r39s89;/Jhava1ul2;de5Sta0;eClL@3sJtuCv6;cJo]2;e0u3;icIonF;aYeTiSoMuJíECómada4;c]JevE(,m#os63;aJó7D;_,rH4;b8BcNmbDZrKtJva2;ab8Ao;cKmaJo%>,ueF;lH0n1;.G4;i<,tur0;pGt&geH2;cMfas2gKoJrv6Pto,ut3;gr-a4Sy.qFS;aDJrJ;a,o4uz8;%a)Eio;cGKpoliC9tMvKzJ;a@0i;aJie3;l,r3;=,o,urB;a0He0Bi06oVuOáxNédi8íMóLúJ;l+plJsi8;e4o;r8Cv*;nJse3;im5;_,#2la2nMsJtI;cKicJulmán;=GEóE5;ul~;dKiJ;/pB;a0iA;deSlRnMrJzo;aKe0iJmGo,u0;b57s8;_,l;ocMtKóJ;ga`,to0;aJevidF8és;^,ñD;&`;da<,%2;rnEs2;lLsKxtJ;e8*9Co;mEógi0;-DitJ;~%;dMjDRnLrJt&politE9xicE9zqEQ;id91oJ;!vAF;.FQtAu1;iJo;a,evAo;cXdWeE8gUlRnPrOsNtKuJyDL;)B4;eJuCW;mát3UrJ;iA^;cuEOiva;aga2i^4í2K;cheFdBMifiCZso,uJ;eELfacBS;aKig0(rquín,o,tJv2FéBC;r16és;!yo;nJ&;o,éC0;eBNu3;ab3edBG;a02eYiRlQoNuKáct7íJúEL;m4Wqui1;sK>DCxemburJ;guD;iALo;buEUcJmb~1nge<;=F1oJ;!mBK;a0e0.G;bNgMmLnKs2tJ;#a)5ua0;_,eAgEQ;p6ít&f%;e3ue3;-D#Jio,@4;=,+0;cLgKja0n2oEWtJ;[1ón;=EPo,í1S;he3t9;cLdrGnKrgEs/<,tJxo;#Bin5o;ceolad6Hu1;io,)móDD;aOeNoLuJóv$%;dJguetGnto4s2v$*;i4Lí72;rJv$;da0;m#,ró4S;cobKponJ;%a,és;eo,i0;be3d1EguBl17mp11nNrLsKt=iJzqui#d5;-6U;abeDEom.fo,[elí,óC9;aJ@dH;c36n6;a0Uc0Qd0Ge0Ef0Ag08h07i06ju?05m01na2oZquie2sVtLus15vJút*;as9#Já5K;so6Z;eKrJ;au>D4uCé3Rí3A;]c3XnPrJ;!ceN%E8iMmed6nKuJv$t9;rba0;aJo4;!cDPs;^,.;pt9;cDBs5;atKeJospe5F;ct8Ggu3nsa2r2;isfJuAM;echo;cI_3p.J;tu0;aLeKunJ;_,osuprBK;dia2nCrC;cuDBdu3;ifiCDo;/Ant#rum37;abiCVu93;$Il%J[2;a,%;aLeK[Jun52;r&jo;liz,)B9;me,nt*;quí3Ksp#0AxpJ;#2(A4;eQiLoJu?)Bíg$a4;e7J(3nJ;%6;f#$c71g0o,sJviduB;cKtJ;in2;rJuA6;e2iCX;bi1fJpe5Ss4Lt#CW;$Ci8Q;i4IoJruHul2ó`1;(3mpKnJrpAA;cluCexo,t&CN;]2r$2Q;cabUdJl>9Pni43p&p6Q;ecuTv22;~,eNoMrKuJío;ls9&;eJop6;s9v47;rtCWsib];)A;eNiKusJ;t@4;mJr6;itJ;ad5;gíJso;+`;eAón7;aWeSiQoLuKáb*,íbCLúJ;me1n8X;e8go^>,m6K[caCGér3C;/cu1mLnKrJ;izoASr21;_,%2;ogOóJ;fo0(Fni`;d2Crsu2sJ;p-o0Atór7G;br7chi97lLrb6St#oJ;_xo,gJ;én7;a1e0;bituBlóKmbrJr2;e,iH;fi(,ge0;a00eYiXlVoUrNuJé3C;aK#rJipuzcoa0;e3*l4J;po,rdián,>m=J;>8;aLecoKiJose3ueC;eg5s;!la90rW;nKsJto,ve4;iHo;!aJde4;di0;_,r1;aJobAút7;b3u8;g6Uta0;nJográfAEr73?9;#Bui0étAD;di6WlJrzo,scGucho;lLoJés;!rJ;&6Y;~1eF;a0Ae07i01lXoVrQuMác*,éKísJ;icAX;rJ+1;r7t*;#BFnKtJ;ur5;c4CdameJ%2;ntB;aKecu3VisGug5QíJ;a,o4<(;ncKtJudulH;#0;%9Zis8Do,és;lclór9UrJ;mAni1;aKexi<,oJ;jo,)1;co,mJ;$8íge3;b[_s,c+/Ndedig0eMjo,lLnJrme;aJo;l,n/#o4;ipi0ósofo;lAM&;as,os;cKd#AliJm$in5o;^,z;un1;lLmJríng7s/2Fv.3T;iJosE;li~;(,s5;br6conóm5Pd18f16g15jecu72l0Zm0Yn0Tp0Qqu0Nrrón7s01t00u&peEvid7YxJ;!acta,cX$2haWiVpTtJó95;ePin2rJ;aLem5ovKíJ;nse8;#7D;ct9nj#Kt#rJ;%t@;a4os;nKrJ;i81n2O;di1s5;#J@C;ime8Jto;gI?2T;us2;elJ@t9;$>,so;#0rus8ér7;bel2cZ$YlWpPqui<,tJ;aNel~,on6r1NuKánd~,úJ;pi1;dKpJ;$1;ioC;b],_unid$se4n8tB;aNeLi)KlénJur6;di1;tuA;cJso;iBíf09;/Br50ñolJ;!a4%;a<,ovJ;a8e0;/A;aM]KoJue2;cDl~;róJ;fi(;ndina<,s1U;iKíJ;<8;lib62^,v=6R;icKóJ;ni`;úr7;a0cMdLemiFf#`,oK@ve6PtJ;e3usia?a;ja1rme4;oc82ó7S;-t9Cima;ba[88is9;eJéctr5W;ctJva1;.LróJ;fi(,nJ;ic1D;!=;eo,ipc6oí?a;ec0Ricaz,íJ;me3;it9;a0Te00iMoLruCuJéb*;lJr5;ce,zG;b],(8Rmin3Wrmi1;e73fUgTminu2oce5Kp(S@ct1DsNur0vKáJ;fa0;#Ji0;sJ+1;as,o4;cMj83pJ+ntE;#ConibKu%tJ;!o;]4;apa/7O@2;ma1;itA^;#10uJíc22;n2so11; `da,b*,c08f05l03n01pZrYsJ<2;aVcRdiQemplPhon5MiOnu1o13pKtru43vaJ;li1;iLrJ;e3RovJ;is2;aN#2;#2;ea1;cha1;=LonKuiJ;da1;o76tH;zo;fo77p#/J;bi1;ech5;.+vJ@d81;as,o;so,+J;cu7C;gJicJ;ad77;$s9iniJ;+J;va;a0idI;*;da;nDñi0;a1Qe1Hh19i15l13oXrQuLáKé]b@,óJ;`1nca<,rn7;li1ntab3;aMba0#1ltLrJ?od6ánt65;si,vJ;*0Ko;o,urB;d3rta;-67eOiKoata,uJí3S;_,$2;ol(,?J;a65iJ;-J^;a,o4;/4Hs6B;l0Lm0FnWoVque2rLsJ;a8tJ;#a;a5YdRea0int6nu1pP@Kso,tJuñD;a4e3To4;ctLspoJ;ndiJ;$6Y;a,oJ;!r;.AulHór7;$2;a1*]4Q;rde6N;c00du2HeZfXj67`v6Jo5VsOtLvJ;eJulC;rCxo;$2iJ;gInJ;e4Vu5;aP#v6PiMpLtJult9;-6KitucJ)2A;ionA;icI;d#J?3S;abJ;];bi1nguJ;ín7;.JuC;me;xo;i$zu1@2;~3E#2ZpKunJún;%,i?a;lKos>J;la0;eJi4P;j5t5;e1SoJ;mbiJniA)1;a0^;aJo2Lás2P;nd%2Zr5;clóp7eLlKm~rGrcunv17vJ;*5M;ia1;go,ntíf2KrtE;aOecMiKoJur3;(,&;f59lJ^;$5lG;he0oJ;!s(va8;rJto;&,t#;lPnLrJ;cJebrA[1;-E;s9trJ;=57oeKíJ;fuFpe2;u&p7;%>,tíbe3ulJ;~;duc03l02mZnWpSrNsLtJu2;=Jól3Z;án;e3tJ;ell3Eo;act#ís1Nc3PnMoK&ñe3tJ;ag0Rujo;!lJ;ing6;í<3;aKit=J)0uchi0;!i0;cJz;%;-7c#í3Hi0o,sa1tJ;->,oJ;nDr;boKpeJ;&,si0ón;ya0;cár7i23`,<;ifol6o;a0He09i02l-ZoVrOuLáKíJúl11;fi1pe1;rba3sQva3;$Kfo,rJ;_,guDlG;!a4o4;a<,eOiKuJ;jo,s0Dto;llLtJ;a0ánJ;icE;->;tGve;goLhem6mKol38rJsn6to,vi0;goñG[cho;bo;ta0;cK_,quJ;e/0;a4o4uz8;eMlbLnaKrJz~3;ma0;)a;aí0;(rruCnJ;veJ;ni1;a2l(,nMoc6rJ;b#10ebKlJ;inD;#;eKig0éJ;<(;dic0UfaJ;ct9;b*P*NjEldMrK?Jyo;~1o;a2bu1cel0W&Jí26;co4;ío;~J;ín;on6;b3Fc34d2Ve2Tf2Pg2Lje2Jl1Zm1Mn0Xp0Rqu7r07s02tWuPvLzuKé@5ñeJ;jo;caLl37;aL$J;tuJ;@3;n2E&;dO?&húnNtJ;oKóJ;c1Rg[fo,^m5;g%t2HmJp&pul0M;ot9;ga3;az;eMlánLrJ;acJevi1oz;+<;+8;n2o,rJ;/ope2Ir34;%MiKtu2íJ;nc&0;dIlv%tJr6;[1;i0.;aZbYca0dI$WgSio,mRqueológicQrNtJábiF;eLifiKí?J;ic5;/B;sa0;ep$Ki%2WoJ;ce3;+1;os;$6;eKiJ;<;li0nJ;+0;is8;co;ór7;gKm7uJ;ca0;onD;aKuJóc)fo4;%2;iLrJ;$J;>;sa1;a03cho,d00eZfiXgWhid3iUtMuBáLóJ;maJni`;(;(F;eNiJ;aér7c1JguEsubJ;ma0R;a4o4;eo;cK)J;.1K;%9;ma1sóJ;t&po;evi0(sajGos2;b6t)G;ón;jo,xo;=uz,i0.J;[0;ho;e0Tlfabe2rJ;-ja1quJ;isJ;ta;aSbiM#iK.Jpli5;fo;cJnd6;-5;dieMeKgI;uo;ntA;=;?3;&;_,rJ;go,*lJ;a,$2o;a01bZcaYdXeSfonRgOoNpi0tMucKócJ;to0;inóJ;ge0;a4#0o4;ca1;eb[KonqJ;ui0;ica;si0;gMj-dLmJnt0W;-Ján;a4%;)0;@;ea0;li0;-Di0;és;_,^;d@J^;za1;iLrJu_4;adeJio,ícola4ó^`;/1;ta1;ga0icKoJ;rtu06;io05;^;&b6;io;ecQiNjMmini?[+vLul2vJ;#C;so;a4o;un2;cKn>J;la1;ionB;ua1;ampaSep2iaFoOtLuKér)J;`;miQ;iv5uB;=J;!%;gJ[zoM;ed9;go;to;na1;neTo)gSrumQsOuJ;ndKrJ;)1;-J;>4;!s;olut5ur1;a,o;ad9;.;$;ga1;_",
-    "City": "true¦!1:#$%&()*+-./<=>?@[]^_`~:an,en,ng,ra,la,on,er,ch,ha,in,al,ar,ta,es,ur,re,lo,ba,il,is,de,or;0:3B;a2Zb29c1Zd1Ue1Tf1Rg1Lh1Di1Bjak<=,k12l0Vm0Hn0Do0Bp00quiZrWsMtDuCv9w4y2z1;ag@b,?i+;#g),e1oko-ma;kat*.1K@v0;<s4e3i1rocl4;ck[w,n1;nipeg,t*th?;lli%t),xf~d;aw;a2i1;$na,lnius;l$cia,ncouv*,rna;l# ]t~,t@+t;a7b^_i,e6he5i4o3r)dheim,u1;nWr1;.,ku;kyo,r)Ju[uD;#j.,l16m_o2Mr#a; -Kss/)iki;gucig/pa,hr0l aviv;i1ll.n,mp*e,%i*,rtu;+u%,n0pU;a4e3h2kopje,t1ydney;ockholm,uttg<t;#g-i,$zh$;oul,v01;.t pet*s0Xl4n1pp~o; 1ti1E;jo1s/v3;se;v1z0T;adW;eykjavik,i2o1;me,s<io,t28;ga,o ` j#eiro;to;a9e7h6i5o3r1ueb(,yo%y#g;a1et~ia;gue;rt1zn0; elizabe4o;ls$,&eus;i(`lphia,nom p$h,o$ix;r1=h tikva;th;l*Lr1t&s;_;d>sa,s1t=wa;aka,[;a3ew 1_;`lW=ip1y~k city;ei;goya,nt>,pl>,v0;a7e6i5o2u1;m]i,ni+;nt2sco1;u,w;evi`o,@/;l0nsk,skolc;`llín,lbo?ne;drid,l6n4r1;ib2se1;^le;~;+>t1d/Yi(;*;mo;a6i3o1vCy);nd1s #gel>;),r>;ege,ma1nz,sb),v*po2;!ss1;ol; p(=,us#ne;a6-rk5i4(ipeda,o2&k1ua( lump3;ow;be,pavog1sice;?;ev,%9;iv;b4mpa(,ndy,ohsiu%,&1unas;c1j;hi;n+eNst#b1̇zmir;ul;a6e4o1; +i mi2ms,u1;stJ;nh;ls.1&kliH;ki;ifa,m1noi,v#a;b?g,^tE;/w5d#4$3h$t,iza,oth$2&z,ua1;da(j0H%zhou;b?g;eVoa,ève;sk;ay;>,r#kfu1;rt;dm)t5.dhovV;a2-ka,o-,u1;blSrb0sh#be;e1k<,mascus,ugavpiK;gu,je1;);a8ebu,h3o1&ioK?iti];[1nst#Kp$-gOrk;gGmbo;$n4i2r_t+?1;+;#g m2c1t=goM;ago;ai;i1lg<y,pe town,&c5;ro;aIeCirmi%hXogoBr6u1;+<4dap4$os air3r1s0;g1sa;as;>;>t;a3_]2usse1;ls;ne;s^Rt_(1;va;=;i4lg&`,r1;g2l1n;.;$;ji1rut;%;ku,n4r1sel;ce[2r#qu^1;(;na;g2ja lu1;ka;/o1kok;@;aDbBhmeda]d,l8m5n3qa2sh1th$s,uckl#d;dod,ga]t;];k1tw*p;a&;m0s1;t*d1;am;ex#dr2ma1;ty;ia;idj0u d-bi;#;lbo2rh1;us;rg",
+    "Adjective": "true¦!1:#$%&()*+-./<=>?@[]^_`~:er,en,es,ro,il,lo,ri,ti,an,al,le,or,st,ci,vo,te,re,ra,do,mo,no,ar;0:MU;1:NT;2:NF;3:LW;4:NM;5:NO;6:MW;7:L6;8:KN;9:NQ;A:LU;B:MZ;C:NA;D:MJ;E:LE;F:NE;G:L5;H:G8;I:NB;aK1bITcFZdEMeCVfBZgBBhAQi8Rj8Ikur1l7Um6En5To5Gp3Uqu3Sr2Ss1Et0Ku0FvVweb,xeUySzQáOíLóKúJ;l+mGnEFt(;pAMs7;be3gn7nJ;fi_,tJ;eg3i_;>1g(,l2NrJs3Vto0ur7vi1;abe4i1;aJur1;_LQpoB6]goza0;#_,uJ;caB4gosla?;nófobo,róDM;aUePiLáKíJ;tr7vi1;li1nda);ejFXguDkinFlGYolHrLsJtAu1?4zcJ0;iJuA;b/,go1;tuAulH;cto9XlMnezoGUrKsp#KJtJ;eLEus2;-4TdJsát(,t35;ad#5e4;lu1oz;cPgOlN`,q48*MsJ;.),cJto;oJón;!nNI;ab/,op98;liso/IFón;abBVo;u0ío;bG5lt]KPmbrío,nLrK@LZzbeJ;co,ko;b7Tug4C;iJíD1;f<me,v#sA;a0Ae02he,iZoVrOuLárta3éKíJ;mi1pDD;cni8rmLN;cuI9nI6rJ;bJco,í=DA;io,ulH;aKemCAiJoHIun8;)buMC=e;bajMXcMdicMCnKsJvieB;e3lúLW;qu(o,sJ;grKElúLUm08vM3;io,t9;/77n2rLscKtJ;.,ona8;a0o;^,e3;bK#0ll,n2&J;id7lD;eHOio;atrAba0mpPn7DrJs.6utEó*8;cMmóCBrJ;eKiJáqu7;b/,to8S;`,s8T;#Jio;!a;<ArKF;iwVng33rJuL2í0;as8dío,t83;a0Me0Di07oYuKíIQóJúp#;li1rBP;ave4bUcSdReQfi>JFje2mPpKrc43sJt(;odicho,+tu2;#K[J;_,s9;!^L6fKiJOvJ;is9;iBQluo;#6o;co,l2?;-D;%9iJulH;n2o;.JcampeEd%~&lLBmaKMu6U;pi0t9Z;bO>.NlKmJn<5r1viéI6;brío,e3;aJemne,it0Po;!rJ;!ieF;!%,i=a;#KrJ;ehuGVio;a0b6;amDgNlMmKnJr6;ce3ieJRóBI;i2LpJ;/4áHU;vADíc7;nificaHRuiDW;cQdPguOmiMnLpt$trEArKvJxuCñe3;e3(EM;b6e0io,]0;c(l5eg.Dsa2;cJd%nu1áL6;on0BáCB;nda,&;iHuGT;o4[toDPunda*DE;b6crRgrCRjElPmOnKrJ;^,]ce0;!gKju-i0o,tJ;afeJPiagJNo;*HuJ;i`lHín7;a48oa0;iJtGR?;`,tGY;o,í/F;a0EeSiRoMuKápid5íJ;gi1;a0bJ^,ma0rCs5;io,&;b9WcMd6jLmKn8q1JsaJt9C;^,*0;-Go;a,ibl-8o4;ie3ke3ocó;c5oja0;a01cXdWfUgSlR_2nPpLsponsDKtK?lu>onJ;~6;iC3rógH2;/2rJ;%KoJ;duG2;.DY<;aJomb]da;c$tIB`;aC0igiosG/0;ioJul3C;!nC;iK2/J;ct9jo,xi?;on1uFT;e59honcho,iLo/KtJíp&8;-g2N(D6<;ct9to;$K1o;c6lJ;!eJi=a;nFs;dL),ncKquíd7&,sJ;o,tFZ;he3io;icA;eJie2ímET;bequDchua,*1;a0Se0Ji0Hl0Eo03rNuLáAVéKíJó=u_,úblER;ca3o;ndu),tr7;d93#8lc3n+agu1rJto;iETo,p9PulH;acG1eViSoLáctIAóJ;diFsJximBV;pe3;bCKcedC2duF7fNg$A1lijo,mLn2pKsp#-1@F7vJ;$iC1in99;$BiGuls9;eJiscuo,ot9;d6tJ7;a0%IXuJ;nd5so;e2mJn1Y;aEN#JigG7;!a4os;cKdecGXmatu3r73sJvi5;$J8id$FYo,to,un2;o)mbi0urs9;bSdRlOpu0BrMsJtoHV;iKtJ;#iGR[3;b9Z+v5;>0tJ;u2Vát(;a8iK?*HíJ;c1VfaFga_,tDZ;c1Un4T;#os5*1;la1[;aKeJ;beyo,n5;`,ye3;cu1gm7nJ;na1o,t9;cu7GdunAClPnO<,queñNrLsJ;imGPqJ;ue3;la1m-FXpJson.%,t$e>B6ua0vI0;etuo,/jo;a4o4ín;tá91úl55;iJu1;g&Br46;cífi8ga0lRmpHCrKtJuHD;#0r6óGZ;aM>AdLejo,iH4+J;cuJsa0;l~I;o,us8;gJ/);uaJ;yo;aJ%F8me3;cJ+0;ieF;bRcPfiEVmnCIpMrKsc66toDGvJ;i0oid7ípa3;.,deHYiJto^xo;e65ginCun1;a8#aEFoKrFP+mG1uJ;%2lH;r3Cs8H;>Jhava1ul2;de60ta0;eBlL[3sJtuBv6;cJo/2;e0u3;icuo,onF;aYeTiSoMuJíEMómada4;c/JevG),m#os6B;aJó7L;^,rI;b8KcNmbE9rKtJva2;ab8Jo;cKmaJo%@,ueF;lIn1;<GF;i?,tur0;pEt&geHD;cMfas2gKoJrv6Xto,ut3;gr-a4Zy<qG3;aDTrJ;a,o4uz8;%a*Gio;cGVpoliCItMvKzJ;a[0i;aJie3;l,r3;.,o,urC;a0He0Bi06oVuOáxNédi8íMóLúJ;l+plJsi8;e4o;r8Lv(;nJse3;im5;^,#2la2nMsJtuo;cKicJulmán;.IóEF;ul~;dKiJ;>pC;a0iA;deSlRnMrJzo;aKe0iJmEo,u0;b5Fs8;^,l;ocMtKóJ;ga_,to0;aJevidFJés;`,ñD;&_;da?,%2;rnGs2;lLsKxtJ;e8(9Lo;mGógi0;-DitJ;~%;dMjE1nLrJt&politEJxicEJzqF1;id9BoJ;!vAO;<ItAu1;iJo;a,evAo;cYdXeEIgVlSnQrOsNtKuJyDV;*BD;eJuD6;mát42rJ;iA`;cuEZiva;aga2i`4rJí2N;oquí,ón;cheFdBVifiD8so,uJ;eEVfacC1;aKig0)rquín,o,tJv2HéBK;r18és;!yo;nJ&;o,éC9;eBWu3;ab3edBP;a02eYiRlQoNuKáct7íJúEV;m53qui1;sK@DLxemburJ;guD;iATo;buF4cJmb~1nge?;.IoJ;!mBT;a0e0<E;bNgMmLnKs2tJ;#a*5ua0;^,eAgF0;p6ít&f%;e3ue3;-D#Jio,[4;.,+0;cLgKja0n2oF6tJ;]1ón;.Io,í1U;he3t9;cLdrEnKrgGs>?,tJxo;#Cin5o;ceolad6Pu1;io,*móDN;aOeNoLuJóv$%;dJguetEnto4s2v$(;i4Sí7B;rJv$;da0;m#,ró4Z;cobKponJ;%a,és;eo,i0;be3d1GguCl19mp13nOrLsKt.iJzqui#d5;-73;abeDOom<fo,]elí,óCI;aJla1N[dH;c3DnJ;io,í;a0Vc0Rd0He0Ff0Bg09h08i07ju=06m02na2o00quie2sWtLus16vJút(;as9#Já5R;so77;eKrJ;au@DDuBé3Xí3G;lQnPrJ;!ceN%EHiMmed6nKuJv$t9;rba0;aJo4;!cDYs;`,<;pt9;cDKs5;ec3VigBL;atKeJospe5L;ct8Mgu3nsa2r2;isfJuAT;echo;cuo,^3p<J;tu0;aLeKunJ;^,osuprBR;dia2nBrB;cuDJdu3;ifiCLo;>Ant#rum3C;abiD3u99;$uo,l%J]2;a,%;aLeK]rJun58;&jo;liz,*BG;me,nt(;quí3Psp#0AxpJ;#2)AB;eQiLoJu=*Cíg$a4;e7P)3nJ;%6;f#$c77g0o,sJviduC;cKtJ;in2;rJuAD;e2iD5;bi1fJpe5Zs4Rt#D4;$Bi8W;i4OoJruHul2ó_1;)3mpKnJrpAH;cluBexo,t&CV;/2r$2V;cabUdJl@9Wni49p&p6W;ecuTv27;~,eNoMrKuJío;ls9&;eJop6;s9v4D;rtD4sib/;*A;eNiKusJ;t[4;mJr6;itJ;ad5;gíJso;+_;eAón7;aZeUiSoLuKáb(,íbCTúJ;me1n94;e8go`@,m6Q]caCOér3I;>cu1lNmLnKrJ;izoAZr26;^,%2;ogQóJ;fo0)Fni_;aJgazán;ndD;d2Fndú,rsu2sJ;p-o0Dtór7K;br7chi9ClMrLt#oJ;^xo,gJ;én7;b6T_B;a1e0;bLlóKmbrJr2;e,iH;f(o,ge0;ituClCF;a01eYiXlVoUrNuJé3E;aK#rJipuzcoa0;e3(l4M;po,rdián,@m.J;@8;aLecoKiJose3ueB;eg5s;!la93rX;nKsJto,ve4;iHo;!aJde4;di0;^,r1;aJobAút7;b3u8;g6Wta0;nJográfAIr75=9;#Jui0étAH;.IoB;di6XlJrzo,scEucho;lLoJés;!rJ;&6Z;~1eF;a0Ae07i01lXoVrQuMác(,éKísJ;icB0;rJ+1;r7t(;#BInKtJ;ur5;c4EdameJ%2;ntC;aKecu3XisEug5RíJ;a,o4?);ncKtJudulH;#0;%A2is8Fo,és;lclór9XrJ;mAni1;aKexi?,oJ;jo,*1;co,mJ;$8íge3;b]^s,c+>Ndedig0eMjo,lLnJrme;aJo;l,n>#o4;ipi0ósofo;lI&;as,os;cKd#AliJm$in5o,&z;`,z;un1;lLmJríng7s>2Gv<3V;iJosG;li~;),s5;br6conóm5Qd18f16g15jecu74l0Zm0Yn0Tp0Qqu0Nrrón7s01t00u&peGvid80xJ;!acta,cX$2haWiVpTtJó98;ePin2rJ;aLem5ovKíJ;nse8;#7F;ct9nj#Kt#rJ;%t[;a4os;nKrJ;i83n2Q;di1s5;#J[B;ime8Lto;guo,=2V;us2;elJ[t9;$@,so;#0rus8ér7;bel2cZ$YlWpPqui?,tJ;aNel~,on6r1OuKánd~,úJ;pi1;dKpJ;$1;ioB;b/,^unid$se4n8tC;aNeLi*KlénJur6;di1;tuA;cJso;iCíf09;>Cr51ñolJ;!a4%;a?,ovJ;a8e0;>A;aM/KoJue2;cDl~;róJ;f(o;ndina?,s1W;iKíJ;?8;lib64`,v.6T;icKóJ;ni_;úr7;a0cMdLemiFf#_,oK[ve6RtJ;e3usia=a;ja1rme4;oc85ó7V;-t9Fima;ba]8Bis9;eJéctr5Y;ctJg49va1;<LróJ;f(o,nJ;ic1F;!.;eo,ipc6oí=a;ec0Sicaz,íJ;me3;it9;a0Ue01iNoLruBuJéb(;lJr5;ce,zE;b/,)8Umin3XrmiJ;^,lE;e74fUgTminu2oce5Lp)S[ct1EsNur0vKáJ;fa0;#Ji0;sJ+1;as,o4;cMj85pJ+ntG;#BonibKu%tJ;!o;/4;apa>7Q[2;ma1;itA`;#11uJíc22;n2so12; _da,b(,c08f05l03n01pZrYsJ?2;aVcRdiQemplPhon5NiOnu1o14pKtru43vaJ;li1;iLrJ;e3RovJ;is2;aN#2;#2;ea1;cha1;.LonKuiJ;da1;o78tH;zo;fo79p#>J;bi1;ech5;<+vJ[d83;as,o;so,+J;cu7E;gJicJ;ad79;$s9iniJ;+J;va;a0iduo;(;da;nDñi0;a1Qe1Hh19i15l13oYrQuLáKé/b[,óJ;_1nca?,rn7;li1ntab3;aMba0#1ltLrJ=od6ánt67;si,vJ;(0Ko;o,urC;d3rta;-69ePiLoata,uJí3T;^,eJ;l,n2;ol),=J;a66iJ;-J`;a,o4;>4Hs6C;l0Km0EnWoVque2rLsJ;a8tJ;#a;a5ZdRea0int6nu1pP[Kso,tJuñD;a4e3To4és;ctLspoJ;ndiJ;$6Z;a,oJ;!r;<AulHór7;$2;a1(/4Q;rde6O;cZdu2GeYfWj68_v6Ko5WsOtLvJ;eJulB;rBxo;$2iJ;guo,nJ;e4Vu5;aO#v6QiMpLtJult9;-6LitucJ*29;ionA;icuo;d#J=3S;ab/;bi1nguJ;ín7;<JuB;me;xo;i$zu1[2;~3F#30pKunJún;%,i=a;lKo=eJ;la0;eJi4R;j5t5;e1SoJ;mbiJniA*1;a0`;aJo2Más2Q;nd%30r5;clóp7eLlKm~rErcunv17vJ;(I;ia1;go,ntíf2LrtG;aOecMiKoJur3;),&;f5BlJ`;$5lE;he0oJ;!s)va8;rJto;&,t#;lPnLrJ;cJebrA]1;-G;s9trJ;.IoeKíJ;fuFpe2;u&p7;%@,tíbe3ulJ;~;bezEduc03l02mZnWpSrNsLtJu2;.Jól41;án;e3tJ;ell3Fo;act#ís1Oc3RnMoK&ñe3tJ;ag0Rujo;!lJ;ing6;í?3;aKit.J*0uchi0;!i0;cJz;%;-7c#í3Ji0o,sa1tJ;-@,oJ;nDr;boKpeJ;&,si0ón;ya0;cár7i24_,?;ifol6o;a0Ie09i02l-ZoVrOuLáKíJúl12;fi1pe1;rba3sQva3;$Kfo,rJ;^,guDlE;!a4o4;a?,eOiKuJ;jo,s0Eto;llLtJ;a0ánJ;icG;-@;tEve;goLhem6mKni2ol3ArJsn6to,vi0;goñE]cho;bo;ta0;cK^,quJ;e>0;a4o4uz8;eMlbLnaKrJz~3;ma0;*a;aí0;)rruBnJ;veJ;ni1;a2lQnMoc6rJ;b#11ebKlJ;inD;#;eKig0éJ;?);dic0VfaJ;ct9;ga,);b(P(NjGldMrK=Jyo;~1o;a2bu1cel0W&Jí27;co4;ío;~J;ín;on6;b3Gc35d2We2Uf2Qg2Mje2Kl20m1Mn0Xp0Rqu7r07s02tWuPvLzuKé[5ñeJ;jo;caLlI;aL$J;tuJ;[3;n2F&;dO=&húnNtJ;oKóJ;c1Sg]fo,`m5;g%t2ImJp&pul0M;ot9;ga3;az;eMlánLrJ;acJevi1oz;+?;+8;n2o,rJ;>ope2Jr35;%MiKtu2íJ;nc&0;duo,lv%tJr6;]1;i0<;aZbYca0duo,$WgSio,mRqueológicQrNtJábiF;eLifiKí=J;ic5;>C;sa0;ep$Ki%2XoJ;ce3;+1;os;$6;eKiJ;?;li0nJ;+0;is8;co;ór7;gKm7uJ;ca0;onD;aKuJóc*fo4;%2;iLrJ;$J;@;sa1;a03cho,d00eZfiXgWhid3iUtMuCáLóJ;maJni_;);)F;eNiJ;aér7c1KguGsubJ;ma0S;a4o4;eo;cK*J;<I;%9;ma1sóJ;t&po;evi0)sajEos2;b6t*E;ón;jo,xo;.uz,i0<J;]0;ho;e0Ulfabe2rJ;-ja1quJ;isJ;ta;aSbiM#iK<Jpli5;fo;cJnd6;-5;dieMeKgJ;uo;ntA;.;=3;&;bL^,rJ;go,(lJ;a,$2o;/;a01bZcaYdXeSfonRgOoNpi0tMucKócJ;to0;inóJ;ge0;a4#0o4;ca1;eb]KonqJ;ui0;ica;si0;gMj-dLmJnt0W;-Ján;a4%;*0;[;ea0;li0;-Di0;és;^,`;d[J`;za1;iLrJu^4;adeJio,ícola4ó`_;>1;ta1;ga0icKoJ;rtu06;io05;`;&b6;io;ecQiNjMmini=]+vLul2vJ;#B;so;a4o;un2;cKn@J;la1;ionC;ua1;ampaSep2iaFoOtLuKér*J;_;miQ;iv5uC;.I;!%;gJ]zoM;ed9;go;to;na1;neTo*gSrumQsOuJ;ndKrJ;*1;-J;@4;!s;olut5ur1;a,o;ad9;<;$;ga1;^",
+    "City": "true¦alexandria,constanta,genève,h6i̇zmir,kobe,londres,m5n4p2qui3rosario,s0;a0ydney;lvador,ntiago;erth,or0uebla;to;ew york city,is;edellín,oscou;amil0ous0;ton",
     "Country": "true¦:!1:#$%&()*+./<=>?@[]^_`~:am,na,ni,ar, a,la,ab,ro, y ,ir,al,et,ne,re,da,ap,ci,ur, s,in,at;a0Le0Fi0Bk&i,l04m02nToMrHs6tiawuk,u4y2zenút,á1í0ú?p;l#,tiah;@$c,ma$p;aug0tic $]t2;&[,^u;)vut,ruan,taun0ásib-04;av;a7e4o0éd<gnU;<2ce^r#,d0j*_esí[;*rS`u_0;eb&á_ot&ime,o@tse;![;l1ta0ve`.)bóts/cD;rime b&a24ts24;aw,lehcyes;mahM%1r0vidl#;omoc,udnoh;@$rg_<.=>]v8pilif;a3egín,o@2ssu,u0;pag%s,s led 0;aXn1V;uce,v)s le;csagad#,tac;c5d`u o%er,g3n1rgen=nom,saf(%krub,t0;osel,pige;*íl,/#0; $s;*ot.@di%rt,noc led(]0ot,rubmexul;l1Utárcom0K;anóm,ixém;emey,i6á1ínQó0ú?mU;bag,mo)sApaj;dus,mo,ri,t0yi*?za;si0ub;jazak,k1n0ugG;agfa,emkrO;[,ebzu,iy~;=sn=hceil,ér0;*;an0odg%k1E;/us,teiv;a3e&2i1)hsr#0;_<1;fr# ed 1Bsa5;si;g1i+tauce 0pen,t>i+ +mit;ae%N;e>s,ut+p;dn^Vt1u<#,yif,énu0;rb;*i0ubiy;rik;]l4d?v ob8l3picnírp.émot oAr2t+n led(1u0;b*miz,qibmazom;e+c;iovi'd =oc,p0;ihc;eb;buc,c0Qd0Me0Jg0IiCk$l /s,lAn5om4r+d$,su,t3ug&acKyobm2zius,í0ñ[T;cul(tn3poite,rgnuh,uqr0;ut;ac;iduas(ibaZlT;as;a2i1oel &?0utuf d$_il)w;is;hc,t>gVvogez?h-a`s6;]0hg,ust5y2;%mod0Prfaort>c0P;#=a0euze>v,og$;ug;bZcXdnTlOn9r5s2uqavFv0;adlOil0;ob;<Heno1^0;!+leI;d%,r]m;agl2e0is,tM;bCg0;`;ub;a7e4o0;dec# 2l1t0;el,se;op;ed08;k,mBv0;ol0;se;b5d+j,m3rcu,t/u2ut1zn0;~;il;#;e1r0^;ib;);a2eg1ogn0;om;ra;mos,rt0ti;sua;<0i;i1n0si;if;~,zaK;aorc,e0$rf;rg,us;i3m1r0;es;a0olI;g,z;l,m0;an;eu+n,not;%ug0rt/e;!(veun(úp0;[;a$rg,$1ubr* y(ugit0;$;gu,l0^;ez(veun,ri;ehc8i0r#a%d;#6gléb,%mod,r0; 3ema fo_=~s2f0;ád0;us; d=`u;~s0;oc;aj;(]l0;búp0;er",
-    "Place": "true¦aLbJcHdGeEfDgAh9i8jfk,kul,l7m5new eng4ord,p2s1the 0upIyyz;bronx,hamptons;fo,oho,under2yd;acifLek,h0;l,x;land;a0co,idCuc;libu,nhattJ;ax,gw,hr;ax,cn,ndianGst;arlem,kg,nd;ay village,re0;at 0enwich;britain,lak2;co,ra;urope,verglad0;es;en,fw,own1xb;dg,gk,hina0lt;town;cn,e0kk,rooklyn;l air,verly hills;frica,m5ntar1r1sia,tl0;!ant1;ct0;ic0; oce0;an;ericas,s",
-    "Region": "true¦:!1:#$%&()*+-./<=>?@[]^_:na,ra,at,ro,ac,ni,oc,re,sa,tn,an,en,il,uh,im,hs,ah,ci,rb,ss;0:1V;a0Uc0Qd#l0Me05gn02h00iXkUnOoJrHsBt6u5xe_4y1zurca8;d#m&n,e2kcu.ek,li]s,n1r.ev*;(sut,oxas;rrTs+j04;e,us;ohziZs#g;a$jYe3i$y/,nom2u1;]tc<n*,v/J;+v;hlys,sr1;emos,od;a3d2e.e=(-uga,i1ole&m,ttes>ca_0;a+g -)m,o)lli;eY#ld?;cet(az,p2s#k1xet;!$;a0F=uam%;?h-k,oda^al d# d#ld08up1;gnHin0;[#r0c3da&l*,g2hadi,i1or a#t)uq,$te+uq,taujaK;ho,$.o;ladih,#rud;ixemLs1ubm/+p;ab%,=aj;a3eme^,isn*siw,o1;el ove1ge&,k3t03;un;cao2gi2ht-j8ijuf,n>,t(1>]s,wehctak-s;uy;hc?;]wsnu^Dlof1rC;f1&n;us;[g)q,ep,ha@j2iaw[,ppi_i1ruo1sotop siul #s,xg#ij;_?;ar;a1sedarp $t1;tu;?oyw,odg1;#1;ug;e_<nGhcepF)0r3t%s kr1uq-b;oy1; w<;awalBi@1;(#l,d&f9egdi^Bk6m[g)5n4pm[3+tsec1ybrA;i1uolg;el;! w<;l*)l,otpma4;kcub,tton;]wrE&y1;! 1;htrZ;f%s,t+h,xo;ed;m(;et;d3s1yr0;i 1nee4;d$wde ec)rp,edohr;nuofw<;d not2ebe1;uq;g)@1;aw;botin0cZdX@ido,iLkIlHmFn6ol/Or5t2>a>1woi,yhd0;ihc;o1+bE;kad6s<n1;?;aec,th-$h0;a6i1l>k,ozi$;lo$c2$t( %n1;as; ht1;rCu1;os;i2$p,.1;om;d),siuol;aba1=Lohalko;la;(xalt,i>aJ;%/r2-1;la,^F;ak;bmul* @itiBg&eg,hAn4r2t*s av1;on;av8bmuc,eb1;is;a3igriv2&f=(1;! aj5;! tsew;ms2vlysnn1;ep;%;ab;^;av1i&lf;<;axao,isr1;*;am",
-    "FemaleName": "true¦!1:#$%&()*+-./<=>?@[]^_`~:an,el,na,le,ie,en,is,et,ri,in,ra,da,on,er,ia,ey,la,yn,ma,ce,ta,il;0:FV;1:FZ;2:FO;3:FA;4:F9;5:FP;6:EO;7:GC;8:EW;9:EM;A:G8;B:E2;C:G5;D:FL;E:FI;F:ED;aDZbD1cB8dAIe9Gf91g8Hh83i7Sj6Uk60l4Om38n2To2Qp2Fqu2Er1Os0Qt04ursu6vUwOyLzG;aJeHoG;e,[,/;lG%;<,^;<,/;as7EeHol1TvG;+9=B8;&0s)3;#8)dBMhiB3iG;lInG;if3AniGo0;e,f39;a,h$mi0lG^;a,ow;aMeJiG;cHviG;#9X)FY;kCWtor3;<,l^,nus,rG;a,nG=ica;a,i_;&GnesE9;nDIrG;i1y;aSePhNiMoJrGu6y4;acG0iGudy;c3%,sG;h9M`;nHrG;a,i;i9Jya;a5Iff#y,%,s5;al3eGo^si0;a,l^,o6Xres1;g#,o6WrHssG;!a,(;eFi,-7;bNliMmKnIrHs5tGwa0;?0um;a,];iGya;a,ka,s5;a4e4iGmC7/;!ka;a,t5;at5it5;a05car&t2Ye04hUiSkye,oQtMuHyG;b~,lvi1;e,sHzG;#2T+9(,y;#Gi7;!a,e,nG;aEe;aIeG;fGl3DphG;#2;cF5r6;f3nGphi1;d4?,ja,ya;>4lv3m=1nGobh#;dy;aKeGirlBIo0y6;ba,e0i6lIrG;iGrBMyl;!d#;?,lBS;ki4nIrHu0w0yG;[,%;i,&A=,r=;a,<,?,nG=;a,=;l5Yre0;bMdLi8lKmIndHrGs5v#%E;aEi0;/,y;aGi4;nt5/;lBKome;e,(;.1-0;a02eXhViToHuG;by,thBH;bQcPlOnNsHwe0xG;#93(,y;aHeG(,lC;#n7ll1^rBCtB;!lGnn1;iG];e,nG;a,d7W;<,i,%;#8;h$53io;b.,>B];a,cGkki,%,`;h$&,ki;ea,i#n=,oG;<,n12;#0bIgi0i0nG`,y0;aGee;!e,`;a,eG;cca,kaE;chGe,i0mo0ndi,qu$,vDy0;a$,$Gi8;!e,&;e)2?0;aMeLhJoIrG;iGud)_;sc~1Uyamva8;lly,rt3;~ome0oebe,ylG;*,l*;arl,ggy,n$ope,r6t4;ige,m0Fn4Oo6rvati,tHulG;a,+9.1;-cGsy,tA5;a,e,?;c`v3deHfATlGphAT;a,ga,iv3;l3t9;aQePiJoGy6;eHrG;aEeD^;ll1mi;aKcIkG[,%,s5`;iGki;!`;ho&,k8AolG;a,eBE;!mh;l7S%,r*F;dIi^,nHomi,`G;li1s5;cy,+9;eAiCL;a01ck)z2eViLoI-g%y#i,u-$,yG;a,rG;a,%,t&;i4ll9UnG;a,iG;ca,ka,que;a,chOkaNlJmi,nIrGtzi;aG?m;!n8;a,dy,>va,h,n2;a,dIica,lG;iGy;c)t,e;red;!e6;ae6$3G;ag#,gKi,lHrG;edith,*Fyl;#2iGliF;nGsAJ;a,<;!#,h#;b08c9Bd06e,g04i03l01nZrKtJuHv*,x85yGz2;a,b$l,/;de,rG;a,eD;h74~8t2;a,cSgOiJjor2l6In2s5tIyG;!aGb+h,jaAlou;m,n9P;a,ha,i0;!aIb$,eHja,lC%,sGtza;!a,ol,sa;!l06;!h,m,nG;!a,e,n1;arIeH(,oGr3Kue-9;!t;!ry;+3IiB;$Gi61y;a,l1;dG=,ue6;akr#By;iGlory;a,ka,n8;a,re,s2;<Gg2;!l2W;alCd2$Gge,*=,=0;eiA.1];$,&;a0Ie08iWoQuKyG;d3[,nG;!a,dHe9PnGs@;!a,e9O;a,s@;#n,cJ$IiFlH%,pGz;e,iB;a,u;a,[;iGy;a2Ae,l25n8;*,l1GrHtt2uG;$6*1;aIeHi7%,rG;a6Xi7;&i,n1tB;!.1;aQbPd3lLnIsHv3zG;!a,b+h,+9z2;a,+9;a,dG;a,sGy;ay,@,i,y;a,?IlG;iGy;a8De;!n4F;b7Q>ty;!n5Q;aN<,e0iL[,nKoIslAOtGx2;iGt2;c3t3;[,nG/;a,(,o4;a,or1;a,gh,[G;!ni;!h,nG;a,d4e,n4N;cNd=7Pi6kes5rMtKurIvHxGy6;mi;>n1.3;a,eG(,];l,n;as5*5oG;nya,ya;a,*F;@,(,y;aZeUhadija,iMoLrIyG;lG/;a,ee,(;*tGy5A;a,),iGy;!e,n48;-,urtn@;aM>L&y,mIrGzzy;a,stG;),.;!b>lG;eGi,y;e,y;a,stD;!%,/;$6MiJlInHrG;a,i,-;d4%;@,i,l9Ns2y;/,s5;c@,i5UlO^6nyaku^-,rMss5JtJviByG;!e,lG;a,eG;e,igh;a5CeHhGi3PlC-0y;ar5A>5A(,&Dr9Cy;!l]70;a,),iGl4T];!^,n31sF;eigh,i,l2;a04eV~ToMuG;#KdJliGst54;aHeGsF;!nAt0W;!n8U;ith,y;a,iB;!#Lc$Cd5S$&,h#6FlJni,sHva0yG;a,_;eG(;fi0lCph4V;eG(;),n1;!a,e,n36;!i#,lG;!i#;#L&0nIrHsG;ica,sica;i,-;!a,$&,if>,nG;a,+9iGy;!e,f>;a,e6ZiHnG;a,e6YiG;e,n1;cLd1mi,nHqu$iAsm.2Uv(4yAzG;m.7;a7eHiG;_,e,n1s;!lGsFt06;e,&;.Hk2lCqu$G;.1];<,`;<,lPmNnMo0rLsHvaG;!%;aHiGob$;do4;!b$Gdo4;!a,e,l2G;)1i0^;a,di4es,g-d;$8ogG;)1;a,eA?0o0se;aNeK~HoGyac.th;ll2rt)se;aHdG[H;a,egard;ry;ath>,iHlGnr(tBrmiAst>;)24ga;di;i&y,lKnJrGtt2y&y,z$;iGm=y,-4D;+G;!te;aE%E;@,l2;aYeTiOlMold12rIwG;)G]+h;!dolC;acH+G*$8;a,chD;e,(G;![;adys,)Gor3]*;a,<,%;aJgi,lH%,ov6Ys$G;a,e,&;<,liG;#;!n0;mYnIorgHrG;ald33i,m2Rtrude;+9i0;a,eG%;s*,v(ve;b-$3C~,&,rn+,y&;aReOio0loMrG;#He8iG;<,e8;!cG;esHiGo*e;n1sca;!ca;!rG;a,)_;lHrnG;!#8;ec3ic3;rHtiGy7;^;ah,/h;d0Fi&DkBl00mUnid,rRsMtLuKvG;aI$HiG;e,`;.0A];!ng$2F;g)i1[,ni_;h$,`;me/l8p>#JtG;eHhGr$6;>;l2Mr;za;iG^,nest27];cGka,n;a,ka;eJ~ImG;aG(,y;!liA;ee,i1y;lG/ld;<,y;aTeRiMlL^,no4oJsIvG;a,iG;%,/;a,(;iGuiG;se;),(,y;a0c3<,nJsGzaH;aGe;!beG;th;!a,or;#or,nG;!a;.1%;),iG%,wi0;e,th;aWeKiJoG;lores,m.ique,n2XrGtt2;a,eD*,[,othGthy;ea,y;#08%E=Ax2;#PbOde,eNiLja,lIm+r3nGsiree;a,iG;_,se;a,iH[,orGphiA;es,*;a,[h;dGrdG;re;!dee,%;!b29o/E/;a,d4nG;!a,e;hl3i0mMnKphn1rHvi1TyG;&,%;a,by,cH?,lG;a,)1;@,(;a,+9iG;!ca,$17ka;arG?;*;a0Oe0Lh03i01lToIrH]G;di,th3;*2Ay03;lOnLrHurG;tn1B;aId26iGn26-A;!nG;a,e,n1;!l1Q;n2sG;t#Gu$o;_,za;eG&D;),t9;aIeoHotG;~de;!pat4;ir7rIudG;+9iG;a,ne;e,iG;_,sX;a4>4ndG;i,y;aPeMloe,rG;*HyG;s`l;sy,tG;aH),iGy;!#1e,n1;!l;lseHrG;!i7yl;a,y;nLrG;*JlHmG;aiA;a,eGot9;n1t9;!sa;d4$&,tG;al,$&;cGli3E;$3~G;e,?,y;iXlWm~VndUrNsLtGy6;aJeIhG-0;>G&DrCy;.1;-0;li0-0;a2FsG;a2E(;a,iLlJm$IolHrG;(,ol;!e,.1];!a,[;a,eG(,y;ne,y;%,sF;a_,i_;a,e,l1;*Bl2;tlG;.,];arb0CeYi#XlVoTrG;#dRePiIoHyG;#0nn;nwCok7;#2NdgKgid,tG;n@,tG;!aHnG;@,i,y;ny;+G;!t7;#0e,nG;<,%;i7y;bbi7nG;iBn2;#cGossom,ytG;he;ca;aRcky,l.8niBrNssMtIu[EvG;!>lG;@,y;hHsy,tG;e,i0Zy7;!#G;(,y;!(;nGt5yl;adHiG;_;+9iA;!t-G;_,z;a4(,/;aliyah,b24d1Lg1Hi19l0Sm0Nn01rWsNthe0uJvIyG;#Ges5;a,%;a,-l;drIgusHrG;$3;ti0;a,@,i,y;hHtrG;id;aKlGt=;eHi7yG;!n;e,iGy;gh;!nG;ti;iI&HpiB;`;),n1t9;#19$G;&;aYdWeUgQiOja,nHtoGya;.+9n3;!aJeHiGmI;e,ka;!mGt9;ar2;!b$HliFmT;sa;!&;ka,sG`;a,sa;$G(;a,iG;a,ca,n1qG;ue;!t9;te;je6rea;[;bHmGs`s3;ar3;$;aIb>H$3iGy;e,%;!ly;l3n8;<;aTba,eNiKlI^,yG;a,c3sG;a,=,sa;iGys=;e,s=;a,cH%,sGza;a,ha,=,sa;e,?;c3*5jaI%,ssaIxG;aG?;!nd4;nd4;/;?;i0nHyG;ah,%;a,*,%E;c5<,&DmLnslKsG;haElG;.GyW;g,n;!h;@;ee;);at5g2nG;es;(;ha;aVdiS$LrG;eIiG;#L)G;a,e,ne;#0;%;aKeJiHyG;nn;a,n1;a,e;!ne;!iG;de;e,lCsG;=;];!lG;iA];ne;agaJbHiG;!gaI;@,i7y;!e;~;ah",
-    "MaleName": "true¦!1:#$%&()*+-./<=>?@[]^_`~:an,on,ar,er,is,nd,as,en,st,ie,ri,in,ol,ha,al,us,th,or,il,nt,le,ia;0:C9;1:BG;2:BX;3:BO;4:B0;5:BU;6:AO;7:9Q;8:B8;9:AS;A:AJ;B:9D;aB0bA4c93d84e7Ef6Xg6Fh5Vi5Hj4Kk4Al3Rm2Pn2Eo28p22qu20r1As0Rt07u06v01wOxavi3yHzC;aC]0;cChid,ne;hDkC;!%y;%50&y;*s2i,oDuC;sEuma;nFsE@C;oCsD;uf;ef;at0g;aKeIiDoCyatt;lfg#g,odrow;lCn1O;bEey,frBFlC;%d,iC;am,e,s;&t,ur;i,)e7sC;!l6t1;de,lDrr5yC;l1ne;lCt3;aBy;aF&n1iC;cD>0nceCrg^,va0;!_;+te,t];l+t<48nBughn;lysses,sm0;aUePhLiJoFrDyC;!l3ro8s1;av(,eC(t0oy,um0;_9Ev],y;bEd7TmCny;!*,mCoh%u;*o,.,y;i*,y;mCt9;!my,o[y;adEeoD~go,omC;!*;!d]e;!de9;dFrC;+BrC;#BeCy;ll,nB;!dy;dgh,ichi,nn3req,ts44;aRcotPeOhKiIoGp+c3tCuraj,ylve8Dzym1;#EeCu%t;f0phABvCw%t;e56.;!(law,l6;lom1nny,uC;`yma8ta;dCl*,m1;!n6;aEeC;lCrm0;d1t1;hid,ne,qu0Uun,wn,y8;am9b*ti0kou,lim,rgio,[,ymour;!tC;!.,y;lDmC_<o,qib,ul;!mAu4;ik,vat]e;aXeThett,iPoGuDyC;#,ou;b6IdDf9p&t,ssC;!elAF;=ph,y;#,bJcIdHel,geGh0l#d,mFnEry,sDyC;!ce;coe,s;?d,nA;#,eo;lio,r;e4Qg3n6=fo,/go;co,ky;bAe9R;cCl6;%do,c5LhDkC;!ey,.,y;%d,.;gDid,ub5x,yCza;#sh,nT;g.,iC;n?d,s;chid,fa4lEmD)Cp>4s>d,ul,ym$d;?9V=ph,y;iro,$;f,ph;+t2<C;cy,t1;aGeEh^Di&re,=,reC;-1;!ip,lip;dro,rcy,tC;%,e2V;blo,draig,t44ul;ctavio,liv3m93rGsDtCum%,w5;(,to;aDc%,vC;?do;ma;i,vK;a[KeIiEoC;aCel,l0ma0r2X;h,m;cDg4^o,kC;h^,=a;h=*,kC=*;!=*;?,d,^,ls1vC;^`;#Cy;!a4i4;aXeUiLoGuDyC;`s,r1;>mDrad,-aC;fa,p>;ed,mG;dibo,e,>mE(es,_DsC@sa;es,he;e,y;ad,ed,mC;ad,ed;cHgu4kFlEnDtchC;!e7;ato,ik;ho@e,o04t1;e,=C;aj;ah,hCk6;a4eC;?,l;hDlv2rC;`,/7v2;di,met;ck,hOlMmPnu4rIs1tEu/cDxC;!im^i#89we7;e,io;eo,hDi*,tC;!eo,hew,~;eC(;@,w;cEio,k83lDqu(,s>7tCv2;i2Hy;<,$;!el,oL@;achCc=m,ik;ai,y;amCdi,moud;adC;ou;aReOiNloyd,oJuDyC;`,)1;cFiEkC[3;aCe;!s;gi,s;*,~C;no;g0nn.,r+EuCwe7;!iC;e,s;!zo;am,$4;a78evi,l#d,nD$C-3vi;!a5Yel;!ny;mDnCrry,ur4Rwr4R;ce,d1;%,$t;aJeE>`d,iCr(t4Tu46y`;&0p,rC;by,k,=los;+0iFnCrmit,v2;!dDnCt5A;e[,y;a7/ck;r,[;nata,rC[em;im,l;aZeRiPoEuC;#,liC-2;#,@;aqu2eKhnJnHrFsC;eDhC~h,ue;!ua;!ph;dCge;#,i,$;!aCny;h,s,[4V;!a[4U.,nA;!l,sCy;ph;#,e,mC;!mA;d,ffHrEsC;sC@;!e;?d,emDmai8oCry;me,nimo;~h,y;!&y,rC;ey,y;cId5kHmGrEsDvi3yC;!d5s1;$,p3;ed,od,rCv(;ett,od;?,es,(1;e,ob,ub;k,ob,quC;es;aObrahNchika,gLkeKlija,nuJrHsEtCv0;ai,sC;uki;aC>0~h,ma4sac;ac,~C;h,s;a,v<Cw2;!g;k,nnguaq;!r;nacC];io;im;<,n;aKeG<ata,oEuCyd%;b&t,gCmb&to,sE;h,o;m3raBsCw%d;se2;aEctDitDnry,rC;b&t,m0;];[;bLlKmza,nJo,rEsDyC;ato,d5;#,s0;lF=d,rEuCv6;hito,ki,tC;a,o;(1y;#,ey;k,s;!im;ib;aReNiMl+LoJrFuC;^l&DsC;!tavo;mo;aEegCov3;!g,]C;io,y;dy,>m,_;nzaCrd1;lo;!n;lbe4Ono,ov#ni;ne,oErC;aCry;ld,rd4S;ffr6rge;b/4l5rCv2;l#d,r3C[,y;aReOiMlK]r0HrC;#EedCitz;!dAeC/ck;/ck;cEkC;!.,lC;<,yn;esJ(C;!co,zek;etch3oC;yd;d4lC$n;ip;d&iDliCng,rn#do;pe,x;co;bi0di;%ZdUfrTit0lNmHnGo2rD-eb0[0uge8vCym5zra;#,&ett;gi,iDnCr=,v2w2;e-44.;c06k;och,/que,zo;aG&FiDmC;aFett;lCrh0;!io;s1y;nu4;b&t,d1iFliEmDt1viCwood;n,s;&,o;ot1Ts;!*,jah,sC;>;a2+;!dAg%,mFuDwC;a25<;%C;do;$d,u);l,nC;e-;aYeOiLoFrEuDwCyl0;ay8ight;a8dl6nc0-2;ag0ew;m<icGnE/0ugDyC;`;!l*;!?d,nCov0;e7.,y;!k;%muDeCll1$,rk;go;id;#Jj0lbeImet/9nG$,rFsEvDwCxt3;ay8ey;+,<;>wn,m$d;ek,/ck;(,nCv3;(,y;rt;!dC;re;lLmJnIrEvC;e,iC;!d;+,iEne7rCyl;eC<,yl;l2Wn;n,o,@;e,i4ny;iC$;#,+,$;e,lC;*;a07e05hXi%0lMoHrFuDyrC;^,@;rtC;!(;aC(tob?;ig;dy,lFnDrC;ey,neli9y;],rC;ad;by,e,<,l2t1;aHeEiCyJ;fC_;f]d,t1;meDt9velaC;);_;rEuDyC;!t1;de;+B;ce;aGeFr(DuC;ck;!tC;i0oph3;-3;d,rlCs;eC.;s,y;cCd/c;^;lFm&1rC;ey,lDro7y;ll;!os,t1;eb,v2;%03eV^UlaToQrDuCyr1;ddy,rtJ;aKeFiEuDyC;#,ce,$;ce,no;#,ce;nDtC;!t;dDtC;!$;#,$;dD)C;+,$;!foCl6y;rd;bDrCyd;(;!by;i8ke;?,lA;nGrCshoi;at,nDtC;!ram;aC.;rd0T;!edict,iDjam2nA;.,y;to;n6rCt;eCy;tt;ey;%0Yb0Od0Kgu-2hm0Hid5j#i,l00mYnQputsiPrGsaFuDveCya0ziz;ry;gu-9-2;@;hi;aJchIi4jun,maGnE$,tCy0;hCuro;ur;av,oC;ld;#,);el;.;ta;aq;dHgel06tC;hoFoC;i8nC;!i03y;ne;ny;reCy;!*,s,w;ir,mCos;%;#,bePd5eJfGi,lF$Eph$It1vC;aN<;$;so,zo;#,+;$DrC;edQ;so;c,jaFks#dEssaFxC;!#d3;&;%,&;)C;ro;rtI;ni;+;ad,eC;d,t;<;aD=fC/0vik;!o;mCn;!a;dGeFraDuC;!bakr,lfazl;hCm;am;!l;?lFel,oulaye,ulC;!lDrahm0;#;ah,o;ah;av,$",
-    "FirstName": "true¦:aFeBholiHlem,n5ol7rialb,si4y0;aGbleGdissac,e0llen,rrF;rbua,s0;a0lD;c,k;rk,xela;a2niuq,o0wahsal;i0v2;ram;g1v0;ed;er,rom;duj,i1n0;er,neyehc;m0ssej;aj,maj;e1rdna,ttayn0;ek;hs",
-    "LastName": "true¦!1:#$%&()*+-./<=>?@[]:an,in,er,ns,li,ng,to,va,il,es,ar,en,hi,ch,ss,is,rn,as;0:2Z;1:36;2:34;3:2A;4:2T;5:2V;a36b2Wc2Jd2Ae27f22g1Wh1Mi1Hj1Bk14l0Wm0Mn0Io0Fp04rXsMtHvFwCxBy8zh6;a6ou,u;),o;a6eun2Pos=da,un;ma6);da,guc=,mo*,sh1YzaQ;iao,u;a7-6o4right,u;(36s2;gn0lk0),t#abe;a6i+ldi;?-jev,zqu1;a9h8i#,o7r6sui,u[0;#,yn@I;ls*y,rr.,th;at>0omps2;kah0Snaka,ylor;aD>Cemjon3=mizu,iBmiAo9t7u6zabo;/1l(v#,zuD;a6e$0;l$,rm0;sa,u4;[3th;l+,mmo&,)h;midt,neid0ulz;i*,n7sa6*;ki;>1dL*s,z;amBeag#,i9o7u6;iz,sD;b6dri1JgIj],m%o,osevelt,?i,ux;%ts,$s2;c6v%a;ci,h/ds2;ir1os;aEeAh8ic6ow1W;]6hl0;so;a6-(ps;m,n1P;d%s5et8r7t6;e0Lr3;ez,ry;%s;h1Xrk0t6vl3;el,te0H;baBg09(veiZr6;t6w1K;ega,iz;a6e-s2guy5ix2owak,ym#;gy,ka6;ji6muU;ma;aDeBiAo8u6;ll0n6rray,?ol$i,ñ6;oz;l$a,oIr6z/t;al.,eau,r@;hha-3ll0;rci0?i6y0;!%;eVmmad3r6tsu06;$,t$1;aCe8i6op1uo;!n6u;coln,dholm;fe7n$,r6w@;oy;bv6v6;re;mmy,rs5u;aB<nedy,imuAle$,o8u7wo6;k,n;m/,znets3;bay6+cs;]Y;ra;hn,rl9*,ur,zl3;aA<9ha4im<1o6u4;h6nYu4;#6&2;?2;k$s,s5;cks2&se&;gl.i9ke8noue,s=k7*,v#o6;u,v;awa;da;];aBe8it>cock,o7u6;!a4b0ghNynh;a4ffm#n,r+t;m$gw7nde6rM;rs2;ay;&5rrPs7y6;]D.;#3=6;moI;a9-,o8r7u6;o,ti%r1;ay(4ub0;m1nzal1;nd6o,rcia;=;%9lor8o7uj6;ita;st0u[i0;.;n#d1;d7$steGsposi6+K;*;@2w/ds;aBevi,i9om$8u6;bo6r#d;@;gu1;az,mitr3;ov;nkula,rw7vi6;.,s;$;aFhBl/kAo6;h5l6op0rbyn,x;em7(6;&;#;!e;#8e7iu,o6r@te&5u4we;i,),u4w,y;!n,on6u4;!g;mpb7rt0st6;ro;ell;aBe8ha4oyko,r6y[e;ooks,y#t;);ck7ethov5nnett;<;%,ham;>,h8-ey,[6;.,i0;%;k,);dDl9nd6;%s6rA;<,on,s2;on;eks7iy8+r1;ez;ej6;ev;ams",
-    "Person": "true¦!1:#$%&()*:in,er,an, ro, w,es,ar;ashton kutchRbQcLdJeHgastMhF#ez,jDkClebron jam),mBnettIoAp8r4s3t2v0;a0irg# maF;lent#o&ssi,n go3;h$)a may,ig$(oods,yra b%ks;addam hussa#,c*lett joh%ssIlobod% milosevic,uA;ay&m%o,e)e(ith$spoHo1ush limbau0;gh;d stew*t,nald0;#ho,o;a0ipI;lmHris hiltC;prah(#frEra;)siaen,itt&mnDub*ek;%ye()t,ief$ suth$l%d,obe bry%t;aime,eff$s8k&wli0;ng;alle b$0itlBulk hog%;ry;ff0m$il lagasse,zekiel;ie;a0enzel(ash#gt2ick(olf;lt1nte;*1l#t0ruz;on;d#al(ols1son0;! palm2;ey;*ack obama,rock;$"
+    "Place": "true¦ams,bcn,den,fco,i0jfk,lax,ord,phl,syd;cn,st",
+    "Region": "true¦:a0dnalsi drawde ecnirp,erihskroy htron,rimhsak;dirolf,inigriv,natnom,yhdam",
+    "FemaleName": "true¦:aFeBi9koorb,l5m4n3ol2sunev,telracs,y0;bur,dna0stQtrebY;rb,s;eusn5f;evar,ref;ossolb,utat;a1ezah,i0raep;ag,rva;r0tsyG;oc;nayangirm,r0tsirL;amukaynak,dua;c2d1i0leirbag,nims1us;brab,loj,xid;aj;arg,nerolf;dIeHiGjed,lEmDn5r2si1t0y9;ive,narkadn8sirt;!la;a1im,rei0;c,s;c,mas;a7e6i1od0;!al;!er,l2m,r1tsi0;rc;am;atac,u0;ap;gomi,leh,res;la;iw,ra0ue;hc;d2rotciv;l,rdna;avmayirp,i,leme,n0;il",
+    "MaleName": "true¦!1:#$:an,ar;a05b03cYdVeRfr#k,gQhMiKjHkDl#ce,m9n8pol,r5s3tom2vaughn,wa1y0;i,ousouf,uuma;de,rrQ;as,oh$u;al6o0;nny,uJ;#Ne1o0;#,cky;x,za;athy,iRomaS;a1in0onte;ik;ck,lachai,r0sDx;co,k;a2en1ir0;by,ollos;dall,t;na7them;a1ess0ie,ordJ;!e;ck,y;chika,nu0;k,nnguK;$0ina1yd$;ris1u0;ta;on;ene,r#t;$2d1lmo,rgi,ym0;en;dy;l,nest;a1e0iego,rew;#,j4nver;llas,ne;h0level#d,ole;$l2risti1u0;ck;#;es,ie;e0ob;nedict,shoi;b1j#i,lfredo,putsi0ustin;aq;dullo,ulfazl",
+    "FirstName": "true¦nelly",
+    "LastName": "true¦:gnaw,nNortsac,rMsajLv9yrrep,z0;e0oñum;dnanre6hcnas,lazn5m5n4pol,r2u0;g0qzF;irdHnimod;a0ep,imar,reitug;us,vE;emij,itr8;og;f,h;e6o0;damm4l3n1rt0stenzuk;ep,imid;a0ojmes,rims;sah,vi;iahhim,vap,zB;am;j0yi3;e1liss0;av;r5ske0;la;or;etsof,olyat;e3iwrad,oss0;lr1nahoj,re0;dna;ak;s0yugn;n2r0;al,ed0;ep,na;ah,e0;j,tsirhc",
+    "Person": "true¦c0jaime,ora,rush limbaugh,sung,tiger woods,virgin mary;arson palmer,ruz"
   };
 
   /* eslint-disable no-empty */
@@ -9254,82 +9923,80 @@ designate
   // generated in ./lib/models
   var model$1 = {
     "nouns": {
-      "plurals": "1ones:uija,visa,mará|0s:o{rerer,riac,áce{st,et,ubi}}|1as:o{ecer,utic,otec,ijad,jul,pectiv,áce,tí}|0nes:stio|0es:n,fin,rin,r,ráter,l,d,s,ori,j,h|1es:lord|2ises:ís|2ases:ás|2oses:ós|2as:tum~0s:a,o,e,é,i,c,t,r{e{ell,rill,ail,iv,ov,t{as,ás,t,o,in},emi,ff,más,ó,g,ak,ok,z,p},ou,eu,sca,onso,nio},u,g,p,n{fa,r,so,fo,to,i},ú{r,mb,mp,n,l,m},b,d{n,le,r,ra,ai},k,w,m,oy,ay,sey,í{squ,nd,f,rr,br},l{mai,tai,l,oo,ppe},ah,sch,ech,á,ó,f|1as:o{i{oiran,r{igato,a{vern,rt,unit,nsignat}},soc,ones,lib},ñorit,ncit,chat,m{rdo,pti,nési,ji},c{i{itón,élt,vét,ént,h,na},ola,men,man,tos,vas,lu},gueñ,diñ,er{n{ca,ia,sardi,gi,nto},billet,cost,part,elad,rand,cal,stal,otel,vi,itr,er,oníf,im,erm,nsaj,tranj,ch{ran,fle,ru},risqu,cas,fres,bañ,eañ,cob},d{iun,i{rd,fr,saparec,ev,romet},a{esur,poder,udic,umin,i{ileg,soc,denunc,n},scuid},iu},ntáne,óne,maj,coj,mplosiv,uap,illiz,ueriz,n{xter,a{i{a,enc,uc,us,sor,ston},evill,git,ropolit,ub,glic,osc,of,ns},i{vant,gent,negr,ter}},edófil,upl,tu,s{rreligio,acio,camo,ivi,rru},cieg,eig}|1etas:triplo,erpa|1itas:a{tav,canill,canan,nn,rud},gordo|3itas:iíta|4íacas:iaco|0as:or{d{a{usc,t{limen,sen,cor,os,l},nz,traliz,r{gu,ar,ust,prepa,fo},ep,hup,aquil,cav,us,res,vas,nu,deñ,ade,rre,nch,sion},mpeti,ati,pende},ecolect,seduct,oemis},gial|2onas:risón,llorón|1onas:apera,uaja|5inolonas:ínola|2quillas:ranca|1illas:jara,iralda|2esas:és{am,irland,n{elo,eo,va,e}}|0itos:nopal,lob|1itos:ruque,o{brac,uine,ochin,zcoch,ntoj}|0citos:rqueo|2itos:ejío|0zos:cerola,cadera|1azos:aquillo,mporro,ampano|1icos:lao|1uelos:ontero|1illos:jopo,neco|0cillos:picor|2ones:ón|0nes:o{erni,blaz,bastr,jug,imat,bis}|1ones:a{hasc,fac,rasp,aleg,uat,pent,pris},luge|4ánones:anon|2enes:én|4ígenes:igen|4ágenes:agen|5írgenes:irgen|5árgenes:argen|5órdenes:orden|4ímenes:imen|6egímenes:égimen|4úmenes:umen|4ámenes:amen|5érmenes:ermen|5ólmenes:olmen|4ómenes:omen|4óvenes:oven|5íquenes:iquen|2anes:án|2ines:ín|4ítines:itin|2unes:ún|1ces:z|1ares:eá|5acteres:ácter|0es:bort,agot,imut,aís,lub,ey,voy,m{bu,ma,te,he},x,ú,í|0otes:camal|2onotes:ocón|1es:bcomité|4ijoles:íjol|2eses:és|2uses:ús|1ies:y|1is:rry|6amsters:ámster|4aters:áter|4asars:ásar|7slogans:eslogan|4orums:órum|0er:ied|2a:lum|5anta:ántum|5sdalgo:odalgo|6s-museo:-museo|1i:eu~2um:uantas|2o:as{céutic,apotec,vecer,hijad,áce{l,ut,rt,bi,n,lic,m},espectiv}|1:s{a{ochic,peluc,er{onton,scal,istal,uim},érdid,e{antán,lác{su,a}},scoj,gencian,tatu},panecillo,e{n{pe,ne,oci,ei,zi},c{l,go,la,gua,n,au,i{ár,sp,d,rt,pl,él,íl,f,b},r},r{wa,íte,éne,pe,ai,ñi,pu},l{le,rtza,ai,sfi,hi,érbo,pro,do},aud,sed,pos,i{p,er,ur,c,g,ol},matí}}|3:aestiones|2:es{n{ilio,ie,tre,ye,a{pl,óg,k,j},cri},r{o,a,e,i,u,ú},l{e,a,i,o,u,ú,í},d{da,ta,ba,li,di,u,e,ú},s{ie,gu,ga,ma,i,o,val,as},rcaj,loj,aori,h{oac,wic,tc,s}}|4a:ivisones|3z:dices{en,r}|4ás:mpases|4ís:ises{n,mb}|4ós:oses{idi,ad}~0es:d,vid,s{me,re,bu,a},n{a{cl,fl,p,c},fi,o{d,i,n,cl,r},ge},rail,a,b,ch,inch,c|0s:e{cin,marin,en,c{ro,ápi,du,a},l{o,tro,a,va,e,de},er},bañera,laico,star|1as:o{tí,chin,african,abuel,mul,esdrújul,discret,mocit,content,ad{mand,am,libr},reumátic,ordinari,loter}|0as:ador{comput,cel}|1icos:grafo|1illas:mota,sentada|1es:lord|1ejas:calla|5anulocitos:ánulo|1etes:té|1itos:mero,libre,taque,talle|1etas:caparra|1ones:ce,erre,cha,guija,mará|0azas:n|3tzios:hercio|1otas:hila|1uchas:pana|0ucas:m,l,r|1ejos:no|1tos:torio|1icas:clina|1itas:taca|2oncillos:botón"
+      "plurals": "0es:n,fin,rin,r,ráter,l,d,s,ori,j,h|1es:lord|2ises:ís|2ases:ás|2oses:ós|2as:tum~0s:a,o,e,é,i,c,t,r{e{ell,rill,ail,iv,ov,t{as,ás,t,o,in},emi,ff,más,ó,g,ak,ok,z,p},ou,eu,sca,onso,nio},u,g,p,n{fa,r,so,fo,to,i},ú{r,mb,mp,n,l,m},b,d{n,le,r,ra,ai},k,w,m,oy,ay,sey,í{squ,nd,f,rr,br},l{mai,tai,l,oo,ppe},ah,sch,ech,á,ó,f|3itas:iíta|2ones:ón|4ánones:anon|2enes:én|4ígenes:igen|4ágenes:agen|5írgenes:irgen|5árgenes:argen|5órdenes:orden|4ímenes:imen|6egímenes:égimen|4úmenes:umen|4ámenes:amen|5érmenes:ermen|5ólmenes:olmen|4ómenes:omen|4óvenes:oven|5íquenes:iquen|2anes:án|2ines:ín|4ítines:itin|2unes:ún|1ces:z|1ares:eá|5acteres:ácter|0es:bort,agot,imut,aís,lub,ey,voy,m{bu,ma,te,he},x,ú,í|1es:bcomité|4ijoles:íjol|2eses:és|2uses:ús|1ies:y|1is:rry|6amsters:ámster|4aters:áter|4asars:ásar|7slogans:eslogan|4orums:órum|0er:ied|2a:lum|5anta:ántum|5sdalgo:odalgo|6s-museo:-museo|1i:eu~2um:uantas|2:es{n{ilio,ie,tre,ye,a{pl,óg,k,j},cri},r{o,a,e,i,u,ú},l{e,a,i,o,u,ú,í},d{da,ta,ba,li,di,u,e,ú},s{ie,gu,ga,ma,i,o,val,as},rcaj,loj,aori,h{oac,wic,tc,s}}|1:es{n{pe,ne,oci,ei,zi},c{l,go,la,gua,n,au,i{ár,sp,d,rt,pl,él,íl,f,b},r},r{wa,íte,éne,pe,ai,ñi,pu},l{le,rtza,ai,sfi,hi,érbo,pro,do},aud,sed,pos,i{p,er,ur,c,g,ol},matí}|3z:dices{en,r}|4ás:mpases|4ís:ises{n,mb}|4ós:oses{idi,ad}~0es:d,vid,s{me,re,bu,a},n{a{cl,fl,p,c},fi,o{d,i,n,cl,r},ge},rail,a,b,ch,inch,c|0s:e{cin,marin,en,c{ro,ápi,du,a},l{o,tro,a,va,e,de},er},star|1es:lord"
     },
     "adjectives": {
-      "f": "0a:r,l,n,z|5a:ísimo{pt,ct,n}|5ia:rísimo|1a:úbito,e|5ológica:cólogo|2ana:án|2ina:ín~1a:o|1ísima:iejo|2ona:ón|1illa:paso|1ica:britano,mago|5ofílica:drófilo|6artarica:ártaro|5osofica:ósofo|4íaca:giaco|1ita:oreno|7ófita:ofítico|2esa:és|7ultiplaza:últiplo|3a:bito~1:a{r{ime,rce,o{d,t,s,ñ}},uen,ñol,ial,uz}|1o:a{odor,n{ari{m,s},to,cro,fo},es{il,ru,r,p,i,b},fob,omb}|1ísimo:mena,octa,brupta|3án:ana{em,lm,rdi,tal}|3ín:ina{ar,lorqu}|3ón:tona{e,u}|2ísimo:umaria|7ólogo:usicológica|1e:onota~1illa:pino",
-      "mp": "0os:r,n|5os:ísimo{pt,ct,n}|5ios:rísimo|0s:úbito|5ológicos:cólogo~0s:o,e|4havos:tavo|5ofílicos:trófilo|1icos:ofo|4íacos:giaco|1uitos:amigo|1tos:lacio|3os:bito|0es:l,or|2eses:és|2anes:án|2ones:ón|2ines:ín|1ces:z|0tes:horo~2:os{imer,rcer,uen}|2ísimo:os{men,oct,brupt}|3ísimo:umarios|8ólogo:usicológicos|1:bos{fo,om}~1azos:lato|0nes:cano",
-      "fp": "0as:r,l,n,z|5as:ísimo{pt,ct,n}|5ias:rísimo|1as:úbito,e|5ológicas:cólogo|2anas:án|2inas:ín~1as:o|1ísimas:rboso|2onas:ón|4havas:tavo|1ecillas:uerdo|5onímicas:inónimo|5ofílicas:drófilo|1icas:mago|4íacas:giaco|1ucas:lmo|1itas:gordo,vano,holo|7ófitas:ofítico|2esas:és|1ejas:tordo|7ultiplazas:últiplo|3as:bito~2:as{r{ime,rce,o{d,t,s,ñ}},uen,ñol,ial,uz}|2o:as{odor,n{ari{m,s},to,cro,fo},es{il,ru,r,p,i,b},fob,omb}|2ísimo:as{men,oct,brupt}|4án:anas{em,lm,rdi,tal}|4ín:inas{ar,lorqu}|4ón:tonas{e,u}|3ísimo:umarias|8ólogo:usicológicas|2e:onotas~"
+      "f": "0a:r,l,n,z|5a:ísimo{pt,ct,n}|5ia:rísimo|1a:úbito,e|5ológica:cólogo|2ana:án|2ina:ín~1a:o|1ísima:iejo|2ona:ón|1illa:paso|1ica:britano,mago|5ofílica:drófilo|6artarica:ártaro|5osofica:ósofo|4íaca:giaco|1ita:oreno|7ófita:ofítico|2esa:és|7ultiplaza:últiplo|3a:bito~1:a{r{ime,rce,o{d,t,s,ñ}},uen,ñol,ial,uz}|1o:a{odor,n{ari{m,s},to,cro,fo},es{il,ru,r,p,i,b},fob,omb}|1ísimo:mena,octa,brupta|3án:ana{em,lm,rdi,tal}|3ín:ina{ar,lorqu}|3ón:tona{e,u}|2ísimo:umaria|7ólogo:usicológica|1e:onota~1illa:pino"
     },
     "presentTense": {
-      "first": "1nho:r|2o:r{a{ncost,reneg,vend,scord},e{,end{nsc,ac,st,et},rret,at,rt,pel,oz},i,leti,ivi}|6uestro:ostrar|2io:ear{t{ha,co,s,en},elin,and,cad}|3ço:cer{,e{fal,ol,el,nd,rn}}|3zco:urecer{nd,osc}|2go:ner,aler,alir|3jo:ger,gir|3go:zer|3o:uer,guir|4ito:etir|5isto:estir|4imo:emir|4igo:ecir|4ijo:egir|4ido:edir|5igo:eguir|4iro:erir|4ibo:ebir|4ulo:olir|3uyo:üir|2igo:ír|2onho:ôr~2o:r{a{,emend,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{met,olv{bs,ss,senv}},ui{bstit,imin,ol,s,etrib,fr}}|3zco:r{ci,ce{a,e{r,nt,l,d,n,iqu,laqu,j,p},o}}|6urco:orquir|5uelco:olcar|8me quejo:quejarse|8me alejo:alejarse|1jo:ver{te,ro}|5irjo:vergir|5irjo/emerjo:emergir|5irjo/submerjo:bmergir|5quepo:caber|11me preocupo:preocuparse|5ispo:espir|5iento:r{enti,enta{as,l,ec,ev}}|8me siento:sentarse|5into:entir{sm,ss}|10me levanto:levantarse|5uesto:ostar{c,ap}|9me acuesto:acostarse|5iesto:festar|5ierto:r{erti,erta{sp,c}}|5uelto:soltar|4ieto:apretar|5icto:ectir|4uebo:probar|4íbo:ibir{oh,o}|9me afilio:afiliarse|3ío/palio:paliar|1o:orrir,air,prever|2io:ear|1io:crer,ler|5ierro:errar{c,nt,s}|5iebro:uebrar|6iembro:sembrar|5ubro:obrir|4iero:erir{u,h,pref,ug}|4üero:agorar|4uero:orir|9me retiro:retirarse|3iro:erer|2igo:aer|2go:enir|4iego:egar{n,pl}|3go:acer{f,h}|5uelgo:olgar|5ienzo:enzar|3zo:vencer,jercer,rcir|5üenzo:onzar|5uerzo:orzar|4iezo:pezar|4uezo:cocer|4ízo:aizar|3úo:uar{d,t{si,c,en,pe},n,l}|5iendo:r{enda,ende{c,t,ef}}|5indo:endir|9me olvido:olvidarse|9me decido:decidirse|10me suicido:suicidarse|5uerdo:order,cordar|5ierdo:erder|4uedo:oder,rodar|8me quedo:quedarse|5ueldo:soldar|4údo:saudar|5uermo:ormir|4ieso:esar{nf,v}|5ienso:epensar|7me caso:casarse|4úso:husar|5usso:ossir|4ueso/engroso:rosar|3ío:r{eí,ia{u,saf,var,nfr,nv,sv,vac,roc,pl,sp}}|2yo:uir|4uelo:oler,volar|6iemblo:emblar|5ueblo:poblar|5íslo:aislar|4iño:eñir|4ueño:oñar|5ierno:ernir,obernar|4ueno:sonar|4ino:evenir|4úno:aunar,eunir|1nho:ter|2enho:vir|5uelvo:olver|5iervo:hervir|5irvo:servir|4uevo:over,enovar|6e muevo:overse|3úo/adecuo:decuar|3ço:r{e{rec{r,lvo,u,d,g,fe},faz},simpedi}|3ço/oiço:uvir|4é:aber|4e:haber|4ei:aver~2ger:jo{rote,emer,co,an}|3egir:ijo{r,el}|2gir:jo{i{ir,er,x,l,d},oa,era,ea,r,fu,n}|1ar:o{orj,rranj,t{rien,vis{tre,a},apar,mi{i,vo,a},dic,reba,escu,ecu},rrib,mai,nsai,heir,mendig,d{sven,brin,uci,que,salu},aviv,eç{r,om,p}}|1er:o{omp,vert,erret,bat,eb,orb,amb,r{of,var,cor,mor},coz,d{en,pon,con,ce,fe},m{te,pre,tre,co},epel,e,tañ,ench,colh,v{fer,or,nvi,re,de},mex,rro,mo}|1ir:o{ump,scup,usp,t{aran,sis,xis,par,mi,dimi,fle,mba,cu},ib,sub,cumb,r{uf,ut,bur,cur,neg,scub,ab,ui,ump,sup,ud},duz,d{n{pa,ci,nfu,ifu,hu},i{iv,c,col,s},ña,va,ua,cu,lu,lau,lo},m{ri,exi,di,su},ull,umpl,upl,ruñ,pun,defin,viv}|4estir:visto|3etir:ito{err,mp,ep}|3ebir:ncibo|6ostrar:muestro|3erir:iro{d,f,g,s}|3ír:oigo|3ecir:digo|2zer:ondigo|3eguir:sigo|2er:ngo{po,te}|1uir:tingo|2ir:salgo|3edir:ido{p,r}|3emir:gimo|3üir:guyo|3olir:engulo|3r:ponho|2cer:ço{e,en,tor,er,s}~2voy:ir|2oy:ser,dar,estar|3ío:iar{conf,cr}|5ienso:pensar|5uerzo:torcer|2o:r{e{barr,le,cre,ard,cos,gem,lam,reviv,tej},i{un,cubr,bat,lat,curt,esculp},a{rim,sum,salient,su}}|4iero:querer|5yerro:errar|4ido:medir|3ego:jugar|5iento:entar{s,t}|6uentro:encontrar|4huelo:oler|2go:valer|4uego:rogar|4ielo:helar|4iego:regar{,f}|5uento:contar|1o:ver,rir|3zco:abastecer|4ulo:olir{ab,p}|3jo:r{agi,rugi,ege{el,r}}|3o:erguer|2onho:pôr|4imo:premir|1jo:rever|2o/roigo:roer|5ierto:verter",
-      "second": "1s:r{a{ncost,err{at,b,f},reneg,emend,vend,scord,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{end{nsc,ac,st,et},at,rt,olv{bs,ss,senv}},i{u{fr,bstit,imin,etrib,s},orr,a}}|6uestras:ostrar|2ias:ear{t{ha,co,s,en},elin,and,cad}|3s:haber|2es:ir{,t{ssen,smen,le,nves},ssegu}|5istes:estir|4iges:egir|4ides:edir|4ienes:enir|4ibes:ebir|3uyes:üir|2ões:ôr~1s:r{,ete{m,rr}}|5uelcas:olcar|8te quejas:quejarse|8te alejas:alejarse|11te preocupas:preocuparse|5uestas:ostar{c,ap}|9te acuestas:acostarse|5iestas:festar|5ientas:entar{as,l,ec,ev}|8te sientas:sentarse|10te levantas:levantarse|5iertas:ertar{sp,c}|5ueltas:soltar|4ietas:apretar|9te afilias:afiliarse|3ías/palias:paliar|2ias:ear|5ierras:errar|5iebras:uebrar|6iembras:sembrar|4üeras:agorar|9te retiras:retirarse|4iegas:egar{n,pl}|5uelgas:olgar|5ienzas:enzar|5üenzas:onzar|4iezas:pezar|5uerzas:orzar|4ízas:aizar|3úas:uar{d,t{si,c,en,pe},n,l}|4uevas:enovar|5iendas:endar|9te olvidas:olvidarse|10te suicidas:suicidarse|5uerdas:cordar|8te quedas:quedarse|4uedas:rodar|5ueldas:soldar|4údas:saudar|4iesas:esar{nf,v}|5iensas:epensar|7te casas:casarse|4úsas:husar|4uesas/engrosas:rosar|3ías:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uelas:volar|6iemblas:emblar|5ueblas:poblar|5íslas:aislar|4ueñas:oñar|5iernas:obernar|4uenas:sonar|4únas:aunar|4uebas:probar|3úas/adecuas:decuar|4íbes:ibir{oh,o}|5ientes:entir|5iertes:ertir|4ites:etir|4ueces:cocer|4ices:ecir|4ienes:ener|4ines:evenir|5iernes:ernir|4únes:eunir|4ieres:erir{u,h,pref,ug}|4ueres:orir|4imes:gemir|5uermes:ormir|4oges:fugir|9te decides:decidirse|5iendes:ender{c,t,ef}|5indes:endir|4uedes:oder|2es:ir{simped,gu,olu}|5ierdes:erder|5uerdes:order|2yes:ír,uir|5ospes:uspir|3íes:eír|5igues:eguir|2es/exturques:quir|5uelves:olver|5irves:servir|5ierves:hervir|4ueves:over|7te mueves:moverse|4iñes:eñir|4ueles:oler|4ules:polir|2ões:or|2és:prever|4ás:aver|2ês:er{tev,rov,cr,rel}|3óis:oer|2éns:ter,rvir,ovir~7ostrar:muestras|2ir:es{ib,ub,umb,t,mit,uc,arc,n,r,im,um,g,d,cind,p,breviv,uv,uñ,l,uz,ss}|4ebir:ncibes|1r:es{ert,abat,ebat,on,r{que,of,ar,or},g{e,emer,o,an},d{en,on,e,r},omp,rgu,el,val}|5estir:vistes|5enir:vienes|4egir:iges{rr,el}|4edir:ides{p,m,r}|4üir:guyes~2vas:ir|3eres:ser|4iges:regir|3ías:iar{conf,cr}|5iensas:pensar|5uerces:torcer|4ieres:querer|5yerras:errar|2es:vivir,premir|3egas:jugar|5ientas:entar{s,t}|6uentras:encontrar|4hueles:oler|4uegas:rogar|4ielas:helar|4iegas:regar{,f}|5uentas:contar|2ás:estar|3s:haber|2ês:ler,rever|2ões:pôr|1s:rir,roer,salientar|1ns:ter|5iertes:verter|2ens:vir",
-      "third": "1:r{,a{ncost,err{at,b,f},reneg,emend,vend,scord,e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp}},e{end{nsc,ac,st,et},at,rt,olv{bs,ss,senv}}}|6uestra:ostrar|2ia:ear{t{ha,co,s,en},elin,and,cad}|3:haber|2e:ir{t{ssen,smen,le,nves},gu,ssegu,olu}|5iste:estir|4ige:egir|4ide:edir|4iene:enir|4ibe:ebir|3uye:üir|2:zir|2õe:ôr~5uelca:olcar|8se queja:quejarse|8se aleja:alejarse|11se preocupa:preocuparse|5uesta:ostar{c,ap}|9se acuesta:acostarse|5iesta:festar|5ienta:entar{as,l,ec,ev}|6 sienta:ntarse|10se levanta:levantarse|5ierta:ertar{sp,c}|5uelta:soltar|4ieta:apretar|9se afilia:afiliarse|3ía/palia:paliar|2ia:ear|5ierra:errar|5iebra:uebrar|6iembra:sembrar|4üera:agorar|9se retira:retirarse|4iega:egar{n,pl}|5uelga:olgar|5ienza:enzar|5üenza:onzar|4ieza:pezar|5uerza:orzar|4íza:aizar|3úa:uar{d,t{si,c,en,pe},n,l}|4ueva:enovar|5ienda:endar|9se olvida:olvidarse|9e suicida:uicidarse|5uerda:cordar|8se queda:quedarse|4ueda:rodar|5uelda:soldar|4úda:saudar|4iesa:esar{nf,v}|5iensa:epensar|7se casa:casarse|4úsa:husar|4uesa/engrosa:rosar|3ía:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uela:volar|6iembla:emblar|5uebla:poblar|5ísla:aislar|4ueña:oñar|5ierna:obernar|4uena:sonar|4úna:aunar|4ueba:probar|3úa/adecua:decuar|2e:ir,simpedir|4íbe:ibir{oh,o}|5iente:entir|5ierte:ertir|4ite:etir|1:r{mete,rrete,oze,i{a,u{imin,s,etrib,bstit,fr},orr}}|4uece:cocer|4ice:ecir|4iene:ener|4ine:evenir|5ierne:ernir|4úne:eunir|4ime:gemir|5uerme:ormir|4oge:fugir|9se decide:decidirse|5iende:ender{c,t,ef}|5inde:endir|4uede:oder|5ierde:erder|5uerde:order|2ye:ír,uir|4iere:erir{u,h,pref,ug}|4uere:orir|5ospe:uspir|3íe:eír|5igue:eguir|2e/exturque:quir|5uelve:olver|5irve:servir|5ierve:hervir|4ueve:over|7se mueve:moverse|4iñe:eñir|4uele:oler|4ule:polir|2õe:or|2é:prever|4á:aver|2:zer,erer|2ê:er{tev,rov,cr,rel}|3ói:oer|2ém:ter,rvir,ovir~0r:a,e{b{e,a,r,am},ert,abat,ebat,c,on,em,om,am,g{e,emer,o,an},d{en,on,e,r},ofr,arr,orr,omp,rgu,v,añ,a,el,val,e,h,os,x,j}|6ostrar:muestra|3ebir:ncibe|1ir:e{mit,uc,arc,cind,breviv,uv}|4estir:viste|4enir:viene|3egir:ige{rr,el}|3edir:ide{p,m,r}|3üir:guye|0ir:uz~2va:ir|3es:ser|4ige:regir|3ía:iar{conf,cr}|5iensa:pensar|5uerce:torcer|4iere:querer|5yerra:errar|2e:vivir,premir|3ega:jugar|5ienta:entar{s,t}|6uentra:encontrar|4huele:oler|4uega:rogar|4iela:helar|4iega:regar{,f}|5uenta:contar|2á:estar|3:haber|2ê:ler,rever|2õe:pôr|1:rir,roer,salientar|1m:ter|5ierte:verter|2em:vir",
-      "firstPlural": "4emos:haber|2omos:ôr~1mos:r|8nos quejamos:quejarse|8nos alejamos:alejarse|11nos preocupamos:preocuparse|9nos acostamos:acostarse|8nos sentamos:sentarse|10nos levantamos:levantarse|9nos afiliamos:afiliarse|9nos retiramos:retirarse|9nos olvidamos:olvidarse|10nos suicidamos:suicidarse|8nos quedamos:quedarse|7nos casamos:casarse|7nos movemos:moverse|1mos/hemos:aver|9nos decidimos:decidirse|1mos/podrimos:drir|2ímos:ir{a,u{imin,s,etrib,bstit,fr}}~~2vamos:ir|2omos:ser,pôr|4emos:haber",
-      "secondPlural": "2áis:ar{implific,fisc,rranc,j{e{d,ns,man,qu,l,par,ot,p},fi},t{trevis,uis,n{ime{l,er},afro},afei,edi,e{r,resp,pl,bj,uj,aqu},u{isfr,imp,sp,jec,cl,f}},i{c{,en{ci,fer,t,s}},d,u,saf,v,var,nfr,p,pal,pl,mb,g,om,n},r{nmasca,rast,gar,usur,asegu},jug,olong,eng,tiz{u,fa,te,n},vid{on,l},l{vo,io,tro,a{ñ,nt,g,sc,u,j},nte},ese,pase,oordin,nf,taf,nov,m{la,ra,r,l,ue,to,s,ti,xi,fu},tumb,nco}|1is:ar{elej,rret,i{c{en,efinan,sso,ma,ndi,li,bu},d{pu,a,se,si},ev,uv,xp,ip,ig},bjug,inov,m{fla,tra,defor,lar,acal,nti}}|2éis:er{ec{ndur,oscur,nt,iqu,laqu},rr{ba,reco,soco},met}|1s:ir{t{ssen,smen,an,ur,le,ssis,nves,demi,ncu,c},m{opri,di,ssu,re},g{i{nfl,ol,rr,d},er,tin,un,a,fu},d{simpe,re,li,ilu,ssua,o},ssegu,olu,r{e,eab,ob,i,p,g,t},pun,even,uv,b{xi,ni,oi,m},ol,sp,lp,z,s}|2ís:ir{umerg,er{h,u,pref,ug}}|2ondes:ôr~1s:r|2áis:ar|8os quejáis:quejarse|8os alejáis:alejarse|11os preocupáis:preocuparse|9os acostáis:acostarse|8os sentáis:sentarse|10os levantáis:levantarse|9os afiliáis:afiliarse|9os retiráis:retirarse|8s olvidáis:lvidarse|10os suicidáis:suicidarse|8os quedáis:quedarse|7os casáis:casarse|2éis:er|7os movéis:moverse|1is:r{a{v{o,rqui,ati,ur,tra,sca,ne,u},d{n{bra,oma,fu,do,so,ve,eme},u{j,sn,t,sa},ca,r{sco,sbo,e,eta},vi,eluci,ei,be,pe,ncomo,po,mol},f,x,l{a,i{ssim,ep,sf,st,ut,z,ac},e{op,scong,r,t,s,z},uf,o,u{pit,at,ot,ag,ssim,em,ab,ec,d},sc},n{a{b,ng,pl,f},e{nc,i,z,oord,dr,n},o{i{c{a,di,si,e,p,revolu,ven},s{i,n,s,l},p,quest},r,f},i{ss,ns,z,nf,ef,pl,em,germ,ncrim,d,ioc,ac,ob,tre,r},r{nto,bo,ve,ibe,nte},tu,s},c{i{bd,ejud,f{i{pl,ual,ss,dan,on,ecod,ed,id,t{or,quan,san,e},br,ac},a},nt,rat,cl,ompl,ripl,rn},n,o{al,sl,t,fof,uf,eb,s,tr},smar,emar,for,is,as,fus,adu,hu,e,-ata},o,ç,i,g{i{r,sl,rl,mast},o{v,f,dr,j},n,u,a{c,m,str,op,v},e{r{r,ng,p,sf},c,h,ren,s},al,jul,gas,xer},m,t{e,i{e,ap,d,ig,c{x,xer,ncapa,ssus},fr,rr,hes,ss,uis,lev,bil{ssi,ea},om},n{e{sc,g,u,m{ma,i,r,uple},s{o,apre,s,i},b,ost,li},ia,pa,ja,ro,po,sco,rgu},o{ad,arr,h,c,g,ab},s{a{f,rr,v,p},i,ssu,cu,ate,mpre,nco,go,b},u,r{e{ap,ons,es,fl,b},o{omp,dep,up,f,x},u},a{b,m,nt,d,p,g,dr,ltr,e},l{ssa,xa,co,vo,pu},ip,rap},s{s,li,ri,ui,rra,atra,scur,le,ou,ecu,ran},h{c{o,fe,in,ur},n,l},u{q,m,zig,ag,t{a,fe,u,bi,on},j,rec,s},r{t{as,ns,ques,me,le,a,nfil,eencon},r{a,ate,be,fe,u,i,jo},o{nc,im,omem,rv,h,i,ap,mpl,t,ig},a{ap,dep,sc,s},u{ap,eg,t{a,n,s,u},o,f,m,nd},b{m{so,eslu,me,le},do,no},i{at,e,nsp{o,a},a,ev},ecif,e{sacel,sconsid,sesp,mp,c,on,in,ven,rig},sinteg,imig,son,uad,up,op,v,ac},j{i,e,n,ra,ga,ru,su},z{i{n{e,ter,harmo,ro,ma},t,l{a{atu,ntr,foc,ici,gin,sin,nacion,v},rti,obi,sabi,po},r{o{g,sval,it,p},ute,ve,t,ia,cula},rav,c,otim,rm},pre,le,va},p{eci,ssi,al,escul,hu,socu,ou,im,s,ur},b{m,ba,sa,ga,u,lo},e{b,s,ranqu,faqu,gu,z,g,t{ha,co,s,en},r{a,est,f,er},and,cad,x,elin,h,mp,om,em,ec,ac}},e{v{ol{bs,ss,senv},r,i,cre,de},z,t{a,r,rre,eme,bme},c{e{r{r,lvo,u,d,g,fe},o,m,ol,el,fal,t,u,f,h,rn,nd},or,xer,s,ten},ng,leg,reg,d{e{ac,rc,ec,f},en{ac,nsc,e,esp,st,eapr,ev}},h,ceb,mbeb,mb,r,o,u,rem,gem,erromp,x}}|1is/heis:aver|3is:quir|2ís:ir|9os decidís:decidirse|2ís/podrís:drir|1des:r{e{tev,rov,cr,rel},orri}|1ndes:r{o,te,tervi,ovi}~1r:eís,oís~2vais:ir|2ois:ser|2áis:ar{confi,cri,concili,sec,toc,m{a,ani,re,su},mat,instal,col,fund,relacion}|2éis:er{torc,abastec,quer,corr,ro,vert}|1is:r{a{d,lid,n{ace,flexio,mi,tor},ch{a,ra,lan},r{a,o{c,min,m,nam},ge,luc,mig,minist,pi},c{ar,cer,esti,fi},clam,gel,pul,larg,lev,uiv,post,test,rap,vis},ve,rende}|1des:ler,rever,rir|2ondes:pôr|1s:sumir|1ndes:vir",
-      "thirdPlural": "1n:r{a{c{i{,if{,od,impl,cal,cuant}},edu,o{ol,v,h,rr,mb,nf,sof},r{ace,nma,ba,ho},bus,es,fis,a,rran,l},j{e{d,ns,man,qu,l,par,ot,p},fi},t{trevis,uis,n{e{es,m,lim,erim,v,t,r,ri},mo,afro},aler,inser,afei,gri,edi,e{r,resp,pl,bj,uj,aqu},a{r,c,st,l,s},u{isfr,imp,sp,jec,cl,f}},i{c{,en{ci,fer,t,s}},d,iv,bv,mp,op,mb,g,om,n},r{nmasca,eco,t{us,is,ras,en,i,ne},or,gar,usur,inspi,mp,gene,lne,asegu,oluc},g{e{l,tr,agr,v,p},nju,olon,en},iz{r{i,cte,r,ro,uto,mo,gula},final,t{u,fa,te,n}},igu,acu,d{hon,onvi,lvi,acomo},etras,l{titu,stu,nti,io,tro,a{ñ,nt,g,sc,u,j},nte},e{t,nc,uc,es,pas,l,r{c,ar,o,ast},sm,n,qu{lan,o,sa},d,j,lp},n{r{lte,do,eto,a},aicio,afi,esi,oordi},nf,taf,nnov,squiv,m{la,ra,r,l,ue,to,s,ti,xi,fu},tumb,nco},e{ec{ndur,oscur,nt,iqu,laqu},etend}}|1m:r{a{c{i{f{,i{ss,d,ecod,dan,on,br,ac,l,ort,ant,et}},bd,ejud,ompl,ripl,cl,rat,nt,rn},-ata},elej,t{en{apres,m{ma,i,r,uple},ost},rre,ltra,dra},i{c{en,efinan,sso,ma,ndi,li,bu},d{pu,a,se,si},ig},rr{ate,be,fe,jo},reneg,zigu,ch{in,fe,o,ur},m{fla,tra,defor,lar,acal,nti}},e{mb,r,olv{bs,ss,senv}}}|2iam:ear{t{ha,co,s,en},elin,and,cad}|2em:ir{ent{ss,sm},rem,z}|5isten:estir|4imen:emir|4iden:edir|2en:ir{gu,r{f,r,ub,a,d},iv}|4ienen:enir|4iben:ebir|3uyen:üir|2õem:ôr~1n:r{,cuestra,cha,e{omet,jerc,tem,teg,rr{ba,reco,soco},trev}}|5uelcan:olcar|8se quejan:quejarse|8se alejan:alejarse|11se preocupan:preocuparse|5uestan:ostar|9se acuestan:acostarse|5iestan:festar|5ientan:entar{as,l,ec,ev}|6 sientan:ntarse|10se levantan:levantarse|5iertan:ertar{sp,c}|5ueltan:soltar|4ietan:apretar|9se afilian:afiliarse|3ían/palian:paliar|6uestran:ostrar|5ierran:errar|5iebran:uebrar|6iembran:sembrar|4üeran:gorar|9se retiran:retirarse|4iegan:egar{n,pl}|5uelgan:olgar|5ienzan:enzar|5üenzan:onzar|4iezan:pezar|5uerzan:orzar|4ízan:aizar|3úan:uar{d,t{si,c,en,pe},n,l}|4uevan:enovar|5iendan:endar|9se olvidan:olvidarse|9e suicidan:uicidarse|5uerdan:cordar|8se quedan:quedarse|4uedan:rodar|5ueldan:soldar|4iesan:esar{nf,v}|5iensan:epensar|7se casan:casarse|4úsan:husar|4uesan/engrosan:rosar|3ían:iar{u,saf,nv,sv,var,nfr,vac,roc,pl,sp}|4uelan:volar|6iemblan:emblar|5ueblan:poblar|5íslan:aislar|4ueñan:oñar|5iernan:obernar|4uenan:sonar|4únan:aunar|3n:haber|4ueban:probar|3úan/adecuan:decuar|2en:ir{,aflig,umerg}|4íben:ohibir|5ienten:entir|5ierten:ertir|4iten:etir|4uecen:cocer|4icen:ecir|4ienen:ener|5iernen:ernir|4únen:eunir|5uermen:ormir|4igen:egir|9se deciden:decidirse|5ienden:ender{c,t,ef}|5inden:endir|4ueden:oder|5ierden:erder|5uerden:order|2yen:ír,uir|4ieren:erir{u,h,pref,ug}|4ueren:orir|3íen:eír|5iguen:eguir|5uelven:olver|5irven:servir|5ierven:hervir|4ueven:over|7se mueven:moverse|4iñen:eñir|4uelen:oler|2én:prever|1m:r{e{z,t{a,r,rre,me},c{e{r{r,lvo,u,d,g,fe},o,m,ol,el,fal,t,u,f,h,rn,nd},r,s,ten},ng,eg,v,d{e{ac,rc,ec,f},en{ac,nsc,e,esp,st,eapr,ev}},h,em,ceb,mbeb,o,erromp,u,x},a{f,x,l{a,i{ssim,ep,sf,t,z,ac},e{op,g,r,t,s,z},uf,o,u{t,ag,ssim,em,ab,ec,d},sc},n{a{b,ng,pl,f},e{nc,i,z,oord,dr,n},o{i{c{a,i,e,p,revolu,ven},s{i,n,s,l},p,quest},r,f},i{s,z,f,pl,em,germ,ncrim,d,ioc,ac,ob,tre,r},r,tu,s},c,o,ç,d{n{bra,oma,fu,o,ve,eme},ju,snu,tu,ca,r{sco,sbo,e,eta},vi,eluci,ei,be,pe,o,ol},i,g{i{r,sl,rl,mast},o{v,f,dr,j},n,u,a{c,m,str,op,v},e,al,jul,gas,xer},m,t{e,i{e,ap,d,ig,c{x,xer,ncapa,ssus},r,hes,ss,uis,lev,bil{ssi,ea},om},n{e,ia,pa,ja,o,rgu},o{ad,arr,h,c,g,ab},s{a{f,rr,v,p},i,ssu,cu,ate,mpre,nco,go,b},u,r{e,o{omp,dep,up,f,x},u},a,l{ssa,xa,o,pu},ip,rap},s{s,li,ri,ui,ra,scur,le,ou,ecu,ran},h,u,r{t,r,o{c,im,omem,rv,h,i,ap,mpl,t,ig},a{ap,dep,sc,s},u{ap,eg,t{a,n,s,u},o,f,m,nd},b{som,eslum,em,do,no},i{at,e,nsp,a,ev},ecif,e{sacel,sconsid,sesp,mp,c,n,rig},sinteg,imig,son,uad,p,v,c},j{i,e,n,ra,ga,ru,su},z{i{n{e,ter,harmo,ro,ma},t,l{a{atu,ntr,foc,ici,in,nacion,v},rti,obi,sabi,po},r,rav,c,otim,rm},pre,le,va},p{eci,ssi,al,escul,hu,socu,ou,im,s,ur},v{o,ui,ati,ur,tra,sca,ne,u},b{m,ba,sa,ga,u,lo}}}|2em:ir{t{ssis,nves,ur,demi,le,n,ncu,c},ol,g{tin,un,a,li,rri,di,er},uv,d{simpe,li,ilu,ssua,o},r,ssum,oprim,dim,a,xib,nib,mb,sp,lp,u{imin,sseg,ol,s,etrib,bstit,fr},pun,s}|4ulem:polir|4ogem:fugir|4idem:redir|2êem:er{tev,rov,cr}|2õem:or|4íbem:oibir|5ospem:uspir|2em/exturquem:quir|1em:reler,orrir|4inem:evenir|4údam:saudar|2iam:ear|2êm:ter,vir|4ão:aver~1r:en{eb,ab,rb,c,on,om,am,erg,og,d{en,on,e,r},omp,añ,a,el,val,e,s,j},em{uer,rr,fr,amb}|4ebir:nciben|2ir:en{mit,uc,rc,ig{ir,er,x},cind},uzem|5estir:visten|5enir:vienen|4emir:gimen|4edir:iden{p,m}|4üir:guyen~2van:ir|2on:ser|3ían:iar{conf,cr}|5iensan:pensar|5uercen:torcer|4ieren:querer|1n:r{a{sec,toc,marc,m{a,ani,re,su},at,mat,instal,col,congel,concili,filtr,fund,relacion,valoriz},e{met,corr,v,abastec,ro}}|5yerran:errar|3egan:jugar|5ientan:entar{s,t}|6uentran:encontrar|4huelen:oler|4uegan:rogar|4ielan:helar|4iegan:regar{,f}|2en:abrir|5uentan:contar|2án:estar|1m:r{a{acen,flexion,min,ch{a,ra,lan},r{a,ge,mig,minist,mino,mo,namo,pi},clam,estic,larg,lev,lid,post,test,pul,rap,vis},rende}|1em:ler,rir|2õem:pôr|2em:mir{pre,su}|2êem:rever|5ierten:verter"
+      "first": "2o:r{berra,gua,cua,e,etende,i}|5uerzo:orcer|2go:ner,alir|3jo:ger,gir|4iero:erer|5ierto:erter|4ito:etir|4imo:emir|3zco:cir|4igo:ecir|3zo:rcir|4ido:edir|3o:guir|5igo:eguir|3ero:irir|4ibo:ebir|3uyo:üir|2igo:ír|3ío:eír~2o:r{a,venda,redi,treve}|3zco:cer|5uelco:olcar|4ijo:egir|5quepo:caber|5iento:r{enti,enta{as,l,c,ev}}|5uento:contar|5uesto:ostar|5iesto:festar|5isto:estir|5ierto:r{erti,erta{p,c}}|5uelto:soltar|4ieto:apretar|4uebo:probar|4íbo:ohibir|6uestro:ostrar|6uentro:ontrar|5ierro:errar|5iebro:uebrar|6iembro:embrar|4iero:erir|4üero:gorar|4uero:orir|2igo:aer|2go:enir,aler|4iego:egar{n,fr,pl,c}|3go:acer{f,h}|5uelgo:olgar|3zo:cer{n,r}|5ienzo:enzar|5üenzo:onzar|5uerzo:orzar|4iezo:pezar|4uezo:cocer|4ízo:aizar|3úo:uar|5iendo:r{enda,ende{c,t,ef}}|5indo:endir|5uerdo:order,cordar|5ierdo:erder|4uedo:oder,rodar|5ueldo:oldar|5uermo:ormir|4ieso:esar{nf,v}|5ienso:epensar|4úso:husar|3ío:iar{u,f,r,nv,sv,vac,roc,pl,sp,xp,s}|2yo:uir|4uelo:r{ole,ola{v,s}}|6iemblo:emblar|5ueblo:poblar|5íslo:aislar|1o:ver|4iño:eñir|4ueño:oñar|5ierno:ernir,obernar|4ueno:sonar|4úno:aunar,eunir|5uelvo:olver|5iervo:hervir|5irvo:ervir|4uevo:over,enovar|4ievo:nevar|4é:aber|4e:haber~3cir:uzco|2ger:jo{rote,emer,co}|2gir:jo{i{ir,er,x,fl},r,ru,n}|1ar:o{fij,orj,t{rien,trevis,uis,apar,i{im,vom,am,ip},ecu},rrib,cuestr,surr,mendig,anz,d{n{a,bri,ho,nu},que,ere,salu},aviv}|1er:o{omp,met,eb,orb,barr,corr,nd,ed,tem,com,epel,ose,ove,tañ,ro}|1ir:o{ump,scup,t{sis,xis,par,mi,dimi,ba,cu},ib,ub,r{uf,ur,ub,ab,ud},d{pan,cin,un,i{iv,ec,nc,s},ña,va,ua,cu,lu,lau},rim,exim,sum,ull,umpl,upl,ruñ,efin,viv}|3etir:ito{rr,p}|3ebir:ncibo|3rir:uiero|4erir:equiero|3ír:oigo|3ecir:digo|3eguir:sigo|2er:ngo{po,te}|1uir:ingo|2ir:salgo|5orcer:tuerzo|2cir:arzo|3edir:pido|3emir:gimo|2eír:nrío|3üir:guyo~2voy:ir|2oy:ser,dar,estar|5ienso:pensar|2o:r{uni,lati,e{le,cre,vend,ard,cos,lam,tej},funda,suma,posta}|4iero:querer|5yerro:errar|4ido:medir|3ego:jugar|5iento:entar{s,t}|4huelo:oler|4uego:rogar|4ielo:helar|3ío:r{reí{,f},alia}|4iego:regar|4uelo:soler|5ierto:verter",
+      "second": "1s:r{a{berr,gu,cu,vend},etende}|4ieres:erer|5iertes:erter|2es:ir|5istes:estir|4iges:egir|4ides:edir|3eres:irir|4ienes:enir|4ibes:ebir|3uyes:üir~1s:r|5uelcas:olcar|5uestas:ostar|5iestas:festar|5ientas:entar{as,l,c,ev}|5uentas:contar|5iertas:ertar{p,c}|5ueltas:soltar|4ietas:apretar|6uestras:ostrar|6uentras:ontrar|5ierras:errar|5iebras:uebrar|6iembras:embrar|4üeras:gorar|4iegas:egar{n,fr,pl,c}|5uelgas:olgar|5ienzas:enzar|5üenzas:onzar|4iezas:pezar|5uerzas:orzar|4ízas:aizar|3úas:uar|4uevas:enovar|4ievas:nevar|5iendas:endar|5uerdas:cordar|4uedas:rodar|5ueldas:oldar|4iesas:esar{nf,v}|5iensas:epensar|4úsas:husar|3ías:iar{u,f,nv,sv,r,vac,roc,pl,sp,xp,s}|4uelas:olar{v,s}|6iemblas:emblar|5ueblas:poblar|5íslas:aislar|4ueñas:oñar|5iernas:obernar|4uenas:sonar|4únas:aunar|3s:haber|4uebas:probar|4íbes:ohibir|5ientes:entir|5iertes:ertir|4ites:etir|4ueces:cocer|5uerces:orcer|4ices:ecir|4ienes:ener|5iernes:ernir|4únes:eunir|4ieres:erir|4ueres:orir|4imes:emir|5uermes:ormir|5iendes:ender{c,t,ef}|5indes:endir|4uedes:oder|2es:redir,guir|5ierdes:erder|5uerdes:order|2yes:ír,uir|3íes:eír|5igues:eguir|5uelves:olver|5irves:ervir|5ierves:hervir|4ueves:over|4iñes:eñir|4ueles:oler|2és:prever~1r:s{cuestra,cha,e{et,on,arr,orr,eg,emerg,og,d{en,on,e,r},omp,el,val}}|2ir:es{ib,ub,t,mit,uc,arc,n,r,rim,xim,um,g,d,cind,p,iv,uñ,l}|4ebir:ncibes|5estir:vistes|5enir:vienes|4rir:uieres|5erir:equieres|4egir:iges{rr,el}|4edir:ides{p,m}|4üir:guyes~2vas:ir|3eres:ser|4iges:regir|5iensas:pensar|4ieres:querer|5yerras:errar|3egas:jugar|5ientas:entar{s,t}|4hueles:oler|4uegas:rogar|4ielas:helar|4iegas:regar|2ás:estar|5iertes:verter|1s:postar|3ías:aliar",
+      "third": "1:r{,a{berr,gu,cu,vend},etende}|4iere:erer|5ierte:erter|5iste:estir|4ime:emir|4ige:egir|4ide:edir|2e:guir|3ere:irir|4iene:enir|4ibe:ebir|3uye:üir~5uelca:olcar|5uesta:ostar|5iesta:festar|5ienta:entar{as,l,c,ev}|5uenta:contar|5ierta:ertar{p,c}|5uelta:soltar|4ieta:apretar|6uestra:ostrar|6uentra:ontrar|5ierra:errar|5iebra:uebrar|6iembra:embrar|4üera:gorar|4iega:egar{n,fr,pl,c}|5uelga:olgar|5ienza:enzar|5üenza:onzar|4ieza:pezar|5uerza:orzar|4íza:aizar|3úa:uar|4ueva:enovar|4ieva:nevar|5ienda:endar|5uerda:cordar|4ueda:rodar|5uelda:oldar|4iesa:esar{nf,v}|5iensa:epensar|4úsa:husar|3ía:iar{u,f,nv,sv,r,vac,roc,pl,sp,xp,s}|4uela:olar{v,s}|6iembla:emblar|5uebla:poblar|5ísla:aislar|4ueña:oñar|5ierna:obernar|4uena:sonar|4úna:aunar|3:haber|4ueba:probar|2e:ir,redir|4íbe:ohibir|5iente:entir|5ierte:ertir|4ite:etir|4uece:cocer|5uerce:orcer|4ice:ecir|4iene:ener|5ierne:ernir|4úne:eunir|5uerme:ormir|5iende:ender{c,t,ef}|5inde:endir|4uede:oder|5ierde:erder|5uerde:order|2ye:ír,uir|4iere:erir|4uere:orir|3íe:eír|5igue:eguir|5uelve:olver|5irve:ervir|5ierve:hervir|4ueve:over|4iñe:eñir|4uele:oler|2é:prever~0r:a,cuestra,cha,e{eb,ab,rb,et,c,on,em,om,am,eg,emerg,og,d{en,on,e,r},arr,orr,omp,ev,añ,a,el,val,e,s,o,j}|3ebir:ncibe|1ir:e{mit,uc,arc,cind}|4estir:viste|4enir:viene|3emir:gime|3egir:ige{rr,el}|3edir:ide{p,m}|3üir:guye|3rir:uiere|4erir:equiere~2va:ir|3es:ser|4ige:regir|5iensa:pensar|4iere:querer|5yerra:errar|3ega:jugar|5ienta:entar{s,t}|4huele:oler|4uega:rogar|4iela:helar|4iega:regar|2á:estar|1:ver,postar|5ierte:verter|3ía:aliar",
+      "firstPlural": "~1mos:r|4emos:haber~~2vamos:ir|2omos:ser",
+      "secondPlural": "1s:r~2áis:ar|2éis:er|2ís:ir~1r:eís,oís~2vais:ir|2ois:ser|1is:dar,ver",
+      "thirdPlural": "1n:r{a{berr,gu,cu,vend},etende}|4ieren:erer|5ierten:erter|2en:ir|5isten:estir|4igen:egir|4iden:edir|3eren:irir|4ienen:enir|4iben:ebir|3uyen:üir~1n:r|5uelcan:olcar|5uestan:ostar|5iestan:festar|5ientan:entar{as,l,c,ev}|5uentan:contar|5iertan:ertar{p,c}|5ueltan:soltar|4ietan:apretar|6uestran:ostrar|6uentran:ontrar|5ierran:errar|5iebran:uebrar|6iembran:embrar|4üeran:gorar|4iegan:egar{n,fr,pl,c}|5uelgan:olgar|5ienzan:enzar|5üenzan:onzar|4iezan:pezar|5uerzan:orzar|4ízan:aizar|3úan:uar|4uevan:enovar|4ievan:nevar|5iendan:endar|5uerdan:cordar|4uedan:rodar|5ueldan:oldar|4iesan:esar{nf,v}|5iensan:epensar|4úsan:husar|3ían:iar{u,f,nv,sv,r,vac,roc,pl,sp,xp,s}|4uelan:olar{v,s}|6iemblan:emblar|5ueblan:poblar|5íslan:aislar|4ueñan:oñar|5iernan:obernar|4uenan:sonar|4únan:aunar|3n:haber|4ueban:probar|4íben:ohibir|5ienten:entir|5ierten:ertir|4iten:etir|4uecen:cocer|5uercen:orcer|4icen:ecir|4ienen:ener|5iernen:ernir|4únen:eunir|4imen:emir|5uermen:ormir|5ienden:ender{c,t,ef}|5inden:endir|4ueden:oder|2en:redir,guir|5ierden:erder|5uerden:order|2yen:ír,uir|4ieren:erir|4ueren:orir|3íen:eír|5iguen:eguir|5uelven:olver|5irven:ervir|5ierven:hervir|4ueven:over|4iñen:eñir|4uelen:oler|2én:prever~1r:n{cuestra,cha,e{et,on,eg,emerg,og,d{en,on,e,r},arr,orr,omp,el,val}}|2ir:en{ib,ub,t,mit,uc,arc,n,rim,xim,um,g,d,cind,r,p,iv,uñ,l}|4ebir:nciben|5estir:visten|5enir:vienen|4egir:igen{rr,el}|4edir:iden{p,m}|4üir:guyen|4rir:uieren|5erir:equieren~2van:ir|2on:ser|4igen:regir|5iensan:pensar|4ieren:querer|5yerran:errar|3egan:jugar|5ientan:entar{s,t}|4huelen:oler|4uegan:rogar|4ielan:helar|4iegan:regar|2án:estar|5ierten:verter|1n:postar|3ían:aliar"
     },
     "pastTense": {
-      "first": "1:r|2í:er|3fui:ser|4í:rse{e,i{t,m,d,r,l}}|6use:onerse|6uve:enerse|4é:arse|4ué:garse|5qué:carse|4fui:irse~2é:ar|3qué:car|2ué:gar|3cé:zar|3üé:guar|2í:ir,oser|4use:oner|4ise:erer|4uve:ener|3je:cir|2je:raer|4ije:ecir|4ice:acer{f,h}|4ine:enir|4ude:oder|4upe:aber|2e:guiar|4ube:haber~3carse:equé|1arse:é{uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1er:í{eb,met,c,lv,prev,em,om,teg,og,ced,nd,rd,rr,p,cre,le,añ,ol,val,a}|1irse:pentí,llí|1erse:oví,eví|1ir:urrí|0r:eí,oí~2fui:ir|2uve:andar,estar|4í:sentirse|2i:dar,ver",
-      "second": "2iste:er|3fuiste:ser|4udiste:oder|3ste:rse{,i{t,m,d,r,l}}|4iste:erse|6usiste:onerse|6uviste:enerse|4fuiste:irse~1ste:r|4ubiste:haber|4iciste:acer{f,h}|4usiste:oner|4isiste:erer|2iste:oser|4uviste:ener|3jiste:cir|2jiste:aer|4ijiste:ecir|4upiste:aber|4iniste:enir|2íste:eer,caer~3rse:ste{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:ste{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:viste{o,tre}|3r:ste{rvi,ivi,urri,reí}|6oder:pudiste~2fuiste:ir|2uviste:andar,estar|3ste:sentirse|2iste:dar",
-      "third": "1ó:r|3fue:ser|2ió:oser|2ó:ñer,ñir|2yó:ír|3ió:eír|4ió:erse|6uso:onerse|6uvo:enerse|4ó:rse{a,li}|4o:riarse|4fue:irse|7irtió:ertirse|7intió:entirse|7istió:estirse|7urmió:ormirse|3ó:irse{d,r}~2ó:ar|2ió:er|5intió:entir|5irtió:ertir|4itió:etir|5istió:estir|5irvió:ervir|4idió:edir|5urmió:ormir|4igió:egir|1ó:guir|5iguió:eguir|4irió:erir|4urió:orir|2yó:uir,eer,caer|4iñó:eñir|4uso:oner|4iso:erer|4uvo:ener|3jo:cir|2jo:aer|4ijo:ecir|4izo:acer{f,h}|2o:iar{cr,gu}|4ino:enir|4udo:oder|4upo:aber|4ubo:haber~1arse:ó{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|1r:ió{ib,ub,t{r,mi,sis,a},iv,cid,ud,ad,im,um,g{iri,xi,fli,r,n},ufr,urr,br,n,sal,pl}|1ar:ió{c{un,va,pre,vor,o,i,u},nv,liv,od,tud,u,f,ar,p}|2er:ió{noc,rr,omp}|5entirse:pintió|2erse:vió{o,tre}|2eír:rió|1irse:ulló|1er:tañó|1ir:uñó~2fue:ir|2uvo:andar,estar|2yó:oír|7intió:sentirse|2io:dar,ver|3io:reír",
-      "firstPlural": "2imos:er|3fuimos:ser|4udimos:oder|3mos:rse{,i{t,m,d,r,l}}|4imos:erse|6usimos:onerse|6uvimos:enerse|4fuimos:irse~1mos:r|4ubimos:haber|4icimos:acer{f,h}|4usimos:oner|4isimos:erer|2imos:oser|4uvimos:ener|3jimos:cir|2jimos:aer|4ijimos:ecir|4upimos:aber|4inimos:enir|2ímos:eer,caer~3rse:mos{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|4er:mos{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|4erse:vimos{o,tre}|3r:mos{rvi,ivi,urri,reí}|6oder:pudimos~2fuimos:ir|2uvimos:andar,estar|3mos:sentirse|2imos:dar",
-      "secondPlural": "2isteis:er|3fuisteis:ser|4udisteis:oder|3steis:rse{,i{t,m,d,r,l}}|4isteis:erse|6usisteis:onerse|6uvisteis:enerse|4fuisteis:irse~1steis:r|4ubisteis:haber|4icisteis:acer{f,h}|4usisteis:oner|4isisteis:erer|2isteis:oser|4uvisteis:ener|3jisteis:cir|2jisteis:aer|4ijisteis:ecir|4upisteis:aber|4inisteis:enir|2ísteis:eer,caer~5rse:steis{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|6er:steis{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|6erse:visteis{o,tre}|5r:steis{rvi,ivi,urri,reí}|8oder:pudisteis~2fuisteis:ir|2uvisteis:andar,estar|3steis:sentirse|2isteis:dar",
-      "thirdPlural": "3fueron:ser|2ieron:oser|0on:ñer|1eron:ir|3ieron:eír|2on:se|4ieron:erse|6usieron:onerse|6uvieron:enerse|4fueron:irse|7irtieron:ertirse|7intieron:entirse|7istieron:estirse|7urmieron:ormirse|3eron:irse{d,r}~0on:r|2ieron:er|4ubieron:haber|5intieron:entir|5irtieron:ertir|4itieron:etir|5istieron:estir|4icieron:acer{f,h}|4usieron:oner|4isieron:erer|4uvieron:ener|5irvieron:ervir|5urmieron:ormir|4igieron:egir|4idieron:edir|4udieron:oder|4irieron:erir|4urieron:orir|4upieron:aber|4inieron:enir|1eron:guir|5iguieron:eguir|3jeron:cir|2jeron:aer|4ijeron:ecir|2yeron:r{í,ui,ee,cae}|2eron:ñir|4iñeron:eñir|4eron:lirse~2se:aron{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieron{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieron|5erse:vieron{o,tre}|5eír:rieron|5er:rrieron|2:añeron~2fueron:ir|2uvieron:andar,estar|7intieron:sentirse|2ieron:dar"
+      "first": "1:r|2í:er|3fui:ser~2é:ar|3qué:car|2ué:gar|3cé:zar|3üé:guar|2í:ir,oser|4use:oner|4ise:erer|4uve:ener|3je:cir|2je:raer|4ije:ecir|4ice:acer{f,h}|4ine:enir|4ude:oder|4upe:aber|2e:guiar|4ube:haber~1er:í{eb,met,c,em,om,teg,og,ced,nd,rd,rr,p,cre,le,v,añ,ol,val,a}|1ir:urrí,rví,iví|0r:eí,oí~2fui:ir|2uve:andar,estar|2i:dar,ver",
+      "second": "2iste:er|3fuiste:ser|4udiste:oder~1ste:r|4ubiste:haber|4iciste:acer{f,h}|4usiste:oner|4isiste:erer|2iste:oser|4uviste:ener|3jiste:cir|2jiste:aer|4ijiste:ecir|4upiste:aber|4iniste:enir|2íste:eer,caer~4er:ste{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|3r:ste{rvi,ivi,urri,reí}|6oder:pudiste~2fuiste:ir|2uviste:andar,estar|2iste:dar",
+      "third": "1ó:r|3fue:ser|2ió:oser|2ó:ñer,ñir,llir|2yó:ír|3ió:eír~2ó:ar|2ió:er|5intió:entir|5irtió:ertir|4itió:etir|5istió:estir|4idió:edir|5urmió:ormir|4igió:egir|1ó:guir|5iguió:eguir|4irió:erir|4urió:orir|5irvió:ervir|2yó:uir,eer,caer|4iñó:eñir|4uso:oner|4iso:erer|4uvo:ener|3jo:cir|2jo:aer|4ijo:ecir|4izo:acer{f,h}|2o:iar{cr,gu}|4ino:enir|4udo:oder|4upo:aber|4ubo:haber~1r:ió{ib,ub,t{r,mi,sis,a},cid,ud,ad,im,um,g{iri,xi,fli,r,n},ufr,urr,br,iv,n,sal,pl}|1ar:ió{c{un,va,pre,vor,o,i,u},od,tud,u,f,ar,p,nv,liv}|2er:ió{noc,rr,omp}|2eír:rió|1ir:ulló,uñó|1er:tañó~2fue:ir|2uvo:andar,estar|2yó:oír|2io:dar,ver|3io:reír",
+      "firstPlural": "2imos:er|3fuimos:ser|4udimos:oder~1mos:r|4ubimos:haber|4icimos:acer{f,h}|4usimos:oner|4isimos:erer|2imos:oser|4uvimos:ener|3jimos:cir|2jimos:aer|4ijimos:ecir|4upimos:aber|4inimos:enir|2ímos:eer,caer~4er:mos{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|3r:mos{rvi,ivi,urri,reí}|6oder:pudimos~2fuimos:ir|2uvimos:andar,estar|2imos:dar",
+      "secondPlural": "2isteis:er|3fuisteis:ser|4udisteis:oder~1steis:r|4ubisteis:haber|4icisteis:acer{f,h}|4usisteis:oner|4isisteis:erer|2isteis:oser|4uvisteis:ener|3jisteis:cir|2jisteis:aer|4ijisteis:ecir|4upisteis:aber|4inisteis:enir|2ísteis:eer,caer~6er:steis{i{eb,met,c,v,em,om,teg,og,ced,nd,rd,rr,p,añ,ol,val},creí}|5r:steis{rvi,ivi,urri,reí}|8oder:pudisteis~2fuisteis:ir|2uvisteis:andar,estar|2isteis:dar",
+      "thirdPlural": "3fueron:ser|2ieron:oser|0on:ñer|1eron:ir|3ieron:eír~0on:r|2ieron:er|4ubieron:haber|5intieron:entir|5irtieron:ertir|4itieron:etir|5istieron:estir|4icieron:acer{f,h}|4usieron:oner|4isieron:erer|4uvieron:ener|5irvieron:ervir|5urmieron:ormir|4igieron:egir|4idieron:edir|4udieron:oder|4irieron:erir|4urieron:orir|4upieron:aber|4inieron:enir|1eron:guir|5iguieron:eguir|3jeron:cir|2jeron:aer|4ijeron:ecir|2yeron:r{í,ui,ee,cae}|2eron:ñir,llir|4iñeron:eñir~4r:ieron{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|5eír:rieron|5er:rrieron|2:añeron~2fueron:ir|2uvieron:andar,estar|2ieron:dar"
     },
     "imperfectTense": {
-      "first": "2ía:ir|1a:ír|3ba:rse|4ía:rse{i,e}~1ba:r|2ía:er~2rse:aba{fili,icid}|2ir:ía{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|2er:ía{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|1r:reía~1ba:ir|3era:ser|2ía:r{quere,te,vi,vivi,premi}|1a:oír|1ía:ver",
-      "second": "2ías:ir|1as:ír|3bas:rse|4ías:rse{i,e}~1bas:r|2ías:er~3rse:abas{fili,icid}|3ir:ías{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|3er:ías{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|2r:reías~1bas:ir|3eras:ser|2ías:r{quere,te,vi,vivi,premi}|1as:oír|1ías:ver",
-      "third": "2ía:ir|1a:ír|3ba:rse|4ía:rse{i,e}~1ba:r|2ía:er~2rse:aba{fili,icid}|2ir:ía{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|2er:ía{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|1r:reía~1ba:ir|3era:ser|2ía:r{quere,te,vi,vivi,premi}|1a:oír|1ía:ver",
-      "firstPlural": "1amos:r|2íamos:ir|4ábamos:arse|4íamos:rse{i,e}~2ábamos:ar|2íamos:er~6arse:ábamos{fili,icid}|5ir:íamos{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|5er:íamos{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|4r:reíamos~2íbamos:ir|3éramos:ser|2íamos:r{quere,te,vi,vivi,premi}|1amos:oír|1íamos:ver",
-      "secondPlural": "2íais:ir|1ais:ír|3bais:rse|4íais:rse{i,e}~1bais:r|2íais:er~4rse:abais{fili,icid}|4ir:íais{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|4er:íais{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|3r:reíais~1bais:ir|3erais:ser|2íais:r{quere,te,vi,vivi,premi}|1ais:oír|1íais:ver",
-      "thirdPlural": "2ían:ir|1an:ír|3ban:rse|4ían:rse{i,e}~1ban:r|2ían:er~3rse:aban{fili,icid}|3ir:ían{ib,ub,umb,t{,ver{i,d,n},rre,pe,le},c{de,trade,u,ar},n,im,rm,um,g,d,u,r,sorr,urr,p,erv,breviv,uv,ñ,scontra,btra,sa,l{bo,go,po,sa,l,p},uz,ü,ss}|3er:ían{t{on,man,er,e,us,aba,eba,b},dec{a,an,be},on,ten,g{te,emer,o,an},d{ce,fe,en,on,po,r},rgu,ofr,rr,cr,omp,cre,ferv,añ}|2r:reían~1ban:ir|3eran:ser|2ían:r{quere,te,vi,vivi,premi}|1an:oír|1ían:ver"
+      "first": "2ía:er|1a:ír~1ba:r|2ía:ir~2er:ía{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|2ir:ía{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|1r:reía~1ba:ir|3era:ser|2ía:querer,verter,rendir|1a:oír|1ía:ver",
+      "second": "2ías:er|1as:ír~1bas:r|2ías:ir~3er:ías{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|3ir:ías{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|2r:reías~1bas:ir|3eras:ser|2ías:querer,verter,rendir|1as:oír|1ías:ver",
+      "third": "2ía:er|1a:ír~1ba:r|2ía:ir~2er:ía{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|2ir:ía{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|1r:reía~1ba:ir|3era:ser|2ía:querer,verter,rendir|1a:oír|1ía:ver",
+      "firstPlural": "1amos:r|2íamos:er~2ábamos:ar|2íamos:ir~5er:íamos{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|5ir:íamos{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|4r:reíamos~2íbamos:ir|3éramos:ser|2íamos:querer,verter,rendir|1amos:oír|1íamos:ver",
+      "secondPlural": "2íais:er|1ais:ír~1bais:r|2íais:ir~4er:íais{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|4ir:íais{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|3r:reíais~1bais:ir|3erais:ser|2íais:querer,verter,rendir|1ais:oír|1íais:ver",
+      "thirdPlural": "2ían:er|1an:ír~1ban:r|2ían:ir~3er:ían{b,met,c,adec,bedec,on,ten,tem,om,am,teg,emerg,og,d{ce,en,on,o,r},rr,omp,e,cre,v,añ,o,a,ol,val,el,s,j}|3ir:ían{ceb,ib,ub,c{de,trade,u,ar},urr,rv,iv}|2r:reían~1ban:ir|3eran:ser|2ían:querer,verter,rendir|1an:oír|1ían:ver"
     },
     "futureTense": {
-      "first": "2dré:enir,alir|2iré:ír|2é:se|4dré:nerse~0é:r|3ré:acer{f,h}|2dré:ner,aler|2ré:er{od,er,ab}~1se:ré{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|1:aré{nf,ch}|3ír:iré{e,o}|3ir:dré{ven,sal}~2é:sentirse|4iré:decir",
-      "second": "2drás:enir,alir|2irás:ír|2ás:se|4drás:nerse~0ás:r|3rás:acer{f,h}|2drás:ner,aler|2rás:er{od,er,ab}~2se:rás{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|2:arás{nf,ch}|4ír:irás{e,o}|4ir:drás{ven,sal}~2ás:sentirse|4irás:decir",
-      "third": "2drá:enir,alir|2irá:ír|2á:se|4drá:nerse~0á:r|3rá:acer{f,h}|2drá:ner,aler|2rá:er{od,er,ab}~1se:rá{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|1:ará{nf,ch}|3ír:irá{e,o}|3ir:drá{ven,sal}~2á:sentirse|4irá:decir",
-      "firstPlural": "2dremos:enir,alir|2iremos:ír|2emos:se|4dremos:nerse~0emos:r|3remos:acer{f,h}|2dremos:ner,aler|2remos:er{od,er,ab}~4se:remos{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|4:aremos{nf,ch}|6ír:iremos{e,o}|6ir:dremos{ven,sal}~2emos:sentirse|4iremos:decir",
-      "secondPlural": "2dréis:enir,alir|2iréis:ír|2éis:se|4dréis:nerse~0éis:r|3réis:acer{f,h}|2dréis:ner,aler|2réis:er{od,er,ab}~3se:réis{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|3:aréis{nf,ch}|5ír:iréis{e,o}|5ir:dréis{ven,sal}~2éis:sentirse|4iréis:decir",
-      "thirdPlural": "2drán:enir,alir|2irán:ír|2án:se|4drán:nerse~0án:r|3rán:acer{f,h}|2drán:ner,aler|2rán:er{od,er,ab}~2se:rán{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|2:arán{nf,ch}|4ír:irán{e,o}|4ir:drán{ven,sal}~2án:sentirse|4irán:decir"
+      "first": "2dré:enir,alir|2iré:ír~0é:r|3ré:acer{f,h}|2dré:ner,aler|2ré:er{od,er,ab}~1:aré{nf,ch}|3ír:iré{e,o}|3ir:dré{ven,sal}~4iré:decir",
+      "second": "2drás:enir,alir|2irás:ír~0ás:r|3rás:acer{f,h}|2drás:ner,aler|2rás:er{od,er,ab}~2:arás{nf,ch}|4ír:irás{e,o}|4ir:drás{ven,sal}~4irás:decir",
+      "third": "2drá:enir,alir|2irá:ír~0á:r|3rá:acer{f,h}|2drá:ner,aler|2rá:er{od,er,ab}~1:ará{nf,ch}|3ír:irá{e,o}|3ir:drá{ven,sal}~4irá:decir",
+      "firstPlural": "2dremos:enir,alir|2iremos:ír~0emos:r|3remos:acer{f,h}|2dremos:ner,aler|2remos:er{od,er,ab}~4:aremos{nf,ch}|6ír:iremos{e,o}|6ir:dremos{ven,sal}~4iremos:decir",
+      "secondPlural": "2dréis:enir,alir|2iréis:ír~0éis:r|3réis:acer{f,h}|2dréis:ner,aler|2réis:er{od,er,ab}~3:aréis{nf,ch}|5ír:iréis{e,o}|5ir:dréis{ven,sal}~4iréis:decir",
+      "thirdPlural": "2drán:enir,alir|2irán:ír~0án:r|3rán:acer{f,h}|2drán:ner,aler|2rán:er{od,er,ab}~2:arán{nf,ch}|4ír:irán{e,o}|4ir:drán{ven,sal}~4irán:decir"
     },
     "conditional": {
-      "first": "2dría:enir,alir|2iría:ír|2ía:se|4dría:nerse~0ía:r|3ría:acer{f,h}|2dría:ner,aler|2ría:er{od,er,ab}~2se:ría{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|2:aría{nf,ch}|4ír:iría{e,o}|4ir:dría{ven,sal}~2ía:sentirse|4iría:decir",
-      "second": "2drías:enir,alir|2irías:ír|2ías:se|4drías:nerse~0ías:r|3rías:acer{f,h}|2drías:ner,aler|2rías:er{od,er,ab}~3se:rías{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|3:arías{nf,ch}|5ír:irías{e,o}|5ir:drías{ven,sal}~2ías:sentirse|4irías:decir",
-      "third": "2dría:enir,alir|2iría:ír|2ía:se|4dría:nerse~0ía:r|3ría:acer{f,h}|2dría:ner,aler|2ría:er{od,er,ab}~2se:ría{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|2:aría{nf,ch}|4ír:iría{e,o}|4ir:dría{ven,sal}~2ía:sentirse|4iría:decir",
-      "firstPlural": "2dríamos:enir,alir|2iríamos:ír|2íamos:se|4dríamos:nerse~0íamos:r|3ríamos:acer{f,h}|2dríamos:ner,aler|2ríamos:er{od,er,ab}~5se:ríamos{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|5:aríamos{nf,ch}|7ír:iríamos{e,o}|7ir:dríamos{ven,sal}~2íamos:sentirse|4iríamos:decir",
-      "secondPlural": "2dríais:enir,alir|2iríais:ír|2íais:se|4dríais:nerse~0íais:r|3ríais:acer{f,h}|2dríais:ner,aler|2ríais:er{od,er,ab}~4se:ríais{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|4:aríais{nf,ch}|6ír:iríais{e,o}|6ir:dríais{ven,sal}~2íais:sentirse|4iríais:decir",
-      "thirdPlural": "2drían:enir,alir|2irían:ír|2ían:se|4drían:nerse~0ían:r|3rían:acer{f,h}|2drían:ner,aler|2rían:er{od,er,ab}~3se:rían{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},ove,treve,penti,lli}|3:arían{nf,ch}|5ír:irían{e,o}|5ir:drían{ven,sal}~2ían:sentirse|4irían:decir"
+      "first": "2dría:enir,alir|2iría:ír~0ía:r|3ría:acer{f,h}|2dría:ner,aler|2ría:er{od,er,ab}~2:aría{nf,ch}|4ír:iría{e,o}|4ir:dría{ven,sal}~4iría:decir",
+      "second": "2drías:enir,alir|2irías:ír~0ías:r|3rías:acer{f,h}|2drías:ner,aler|2rías:er{od,er,ab}~3:arías{nf,ch}|5ír:irías{e,o}|5ir:drías{ven,sal}~4irías:decir",
+      "third": "2dría:enir,alir|2iría:ír~0ía:r|3ría:acer{f,h}|2dría:ner,aler|2ría:er{od,er,ab}~2:aría{nf,ch}|4ír:iría{e,o}|4ir:dría{ven,sal}~4iría:decir",
+      "firstPlural": "2dríamos:enir,alir|2iríamos:ír~0íamos:r|3ríamos:acer{f,h}|2dríamos:ner,aler|2ríamos:er{od,er,ab}~5:aríamos{nf,ch}|7ír:iríamos{e,o}|7ir:dríamos{ven,sal}~4iríamos:decir",
+      "secondPlural": "2dríais:enir,alir|2iríais:ír~0íais:r|3ríais:acer{f,h}|2dríais:ner,aler|2ríais:er{od,er,ab}~4:aríais{nf,ch}|6ír:iríais{e,o}|6ir:dríais{ven,sal}~4iríais:decir",
+      "thirdPlural": "2drían:enir,alir|2irían:ír~0ían:r|3rían:acer{f,h}|2drían:ner,aler|2rían:er{od,er,ab}~3:arían{nf,ch}|5ír:irían{e,o}|5ir:drían{ven,sal}~4irían:decir"
     },
     "subjunctive": {
-      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3zcas:cir|4igas:ecir|2igas:ír|4es:arse|7iebres:ebrarse|5ques:carse|7ientes:entarse|7uestes:ostarse|7iertes:ertarse|5íes:riarse|7uerdes:ordarse|5úes:uarse|6iegues:egarse|4as:rse{e,di,ri}|4gas:nerse|5zcas:cerse|6uevas:overse|4vayas:irse|7ientas:entirse|7istas:estirse|7iertas:ertirse|7uermas:ormirse~2as:ir|3zcas:cer|2yas:uir|3yas:haber|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4as:lirse|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:negar|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:volar|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr,pl}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientas|3gir:ijas{ir,fl,x}|3ger:jas{e,o}|2erse:evas|2arse:es{ct,ter,uej,nce}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
-      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír|4e:arse|7iebre:ebrarse|5que:carse|7iente:entarse|7ueste:ostarse|7ierte:ertarse|5íe:riarse|7uerde:ordarse|5úe:uarse|6iegue:egarse|4a:rse{e,di,ri}|4ga:nerse|5zca:cerse|6ueva:overse|4vaya:irse|7ienta:entirse|7ista:estirse|7ierta:ertirse|7uerma:ormirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4a:lirse|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr,pl}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|5entirse:pienta|2gir:ija{ir,fl,x}|2ger:eja,oja|1erse:eva|1arse:e{ct,ter,uej,nce}~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
-      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír|4emos:arse|5quemos:carse|4uemos:garse|4amos:rse{e,di,ri}|4gamos:nerse|5zcamos:cerse|4vayamos:irse|7intamos:entirse|7istamos:estirse|7irtamos:ertirse|7urmamos:ormirse~2amos:er|3zcamos:cer|2yamos:uir|3yamos:haber|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:ever|4amos:lirse|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|4er:amos{et,ol,eb}|7entirse:pintamos|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}|4erse:evamos|4arse:emos{ct,ter,uej,nce}~1amos:ver,ser|2vayamos:ir",
-      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír|4éis:arse|5quéis:carse|4uéis:garse|4áis:rse{e,di,ri}|4gáis:nerse|5zcáis:cerse|4vayáis:irse|7intáis:entirse|7istáis:estirse|7irtáis:ertirse|7urmáis:ormirse~2áis:er|3zcáis:cer|2yáis:uir|3yáis:haber|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:ever|4áis:lirse|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,pl,b,n}|3er:áis{et,ol,eb}|6entirse:pintáis|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}|3erse:eváis|3arse:éis{ct,ter,uej,nce}~2eis:dar|1áis:ver,ser|2vayáis:ir",
-      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír|4en:arse|7iebren:ebrarse|5quen:carse|7ienten:entarse|7uesten:ostarse|7ierten:ertarse|5íen:riarse|7uerden:ordarse|5úen:uarse|6ieguen:egarse|4an:rse{e,di,ri}|4gan:nerse|5zcan:cerse|6uevan:overse|4vayan:irse|7ientan:entirse|7istan:estirse|7iertan:ertirse|7uerman:ormirse~2an:ir|3zcan:cer|2yan:uir|3yan:haber|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4an:lirse|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:negar|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr,pl}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|6entirse:pientan|3gir:ijan{ir,fl,x}|3ger:jan{e,o}|2erse:evan|2arse:en{ct,ter,uej,nce}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
+      "first": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "second": "2as:er|2gas:ner,ler|3jas:ger|4ieras:erer|2es:cuar|3zcas:cir|4igas:ecir|2igas:ír~2as:ir,trever|3zcas:cer|2yas:uir|3yas:haber|3as:guir|3gas:acer{f,h}|2gas:enir,alir|5igas:eguir|2igas:aer|4itas:etir|5ientas:entir|5istas:estir|5iertas:ertir|5uermas:ormir|4uedas:oder|5iendas:ender{c,t,ef}|4idas:edir|5ierdas:erder|4ieras:erir|4ueras:orir|3jas:gir|4ijas:egir|4iñas:eñir|5uelvas:olver|5irvas:ervir|5iervas:hervir|4uevas:over|4epas:aber|5quepas:caber|1as:ver|4uelas:oler|3ías:eír|4íbas:ohibir|3zas:cer{r,n}|5uerzas:orcer|2es:ar|2ues:gar|5uelgues:olgar|4iegues:negar|4uegues:ogar|3ques:car|5uestes:ostar|5ientes:lentar|5uentes:contar|5iertes:ertar|4ietes:apretar|6uestres:ostrar|6uentres:ontrar|5ierres:errar|4üeres:gorar|5iebres:uebrar|3ces:zar|4ieces:pezar|5uerces:orzar|5iences:enzar|5uerdes:cordar|5iendes:endar|4ueves:ovar|4ueñes:oñar|3íes:iar{r,u,ac,f,nv}|5iernes:ernar|4uenes:sonar|4ueles:volar|5ienses:ensar|4úses:husar|4ieses:esar{v,f}|3úes:uar|4uebes:probar|3ües:guar~4cir:uzcas|3er:gas{ten,on,val}|4ecir:digas|4ír:oigas|2ir:as{mit,sist,cid,urr}|2er:as{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3gir:ijas{ir,fl,x}|3ger:jas{e,o}~5ientes:sentar|5yerres:errar|4huelas:oler|2és:estar|4ieles:helar|4iegues:regar|1as:ser|2vayas:ir|3egues:jugar|4ieras:querer",
+      "third": "2a:er|2ga:ner,ler|3ja:ger|4iera:erer|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir,trever|3zca:cer|2ya:uir|3ya:haber|3a:guir|3ga:acer{f,h}|2ga:enir,alir|5iga:eguir|2iga:aer|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|5uerma:ormir|4ueda:oder|5ienda:ender{c,t,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|3ja:gir|4ija:egir|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|4epa:aber|5quepa:caber|1a:ver|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|5uelgue:olgar|4iegue:negar|4uegue:ogar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|6uestre:ostrar|6uentre:ontrar|5ierre:errar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|5uerde:cordar|5iende:endar|4ueve:ovar|4ueñe:oñar|3íe:iar{r,u,ac,f,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|1ir:a{mit,sist,cid,urr}|1er:a{et,om,em,ed,nd,rr,añ,p,e,s,eb}|2gir:ija{ir,fl,x}|2ger:eja,oja~5iente:sentar|5yerre:errar|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|1a:ser|2vaya:ir|3egue:jugar|4iera:querer",
+      "firstPlural": "2gamos:ner,alir|3jamos:ger|2amos:ir|3zcamos:cir|4igamos:ecir|2igamos:ír~2amos:er|3zcamos:cer|2yamos:uir|3yamos:haber|3amos:guir|3gamos:acer{f,h}|2gamos:enir,aler|5igamos:eguir|2igamos:aer|4itamos:etir|5intamos:entir|5istamos:estir|5irtamos:ertir|5urmamos:ormir|4idamos:edir|4iramos:erir|4uramos:orir|3jamos:gir|4ijamos:egir|4iñamos:eñir|5irvamos:ervir|4epamos:aber|5quepamos:caber|1amos:prever|3iamos:eír|3zamos:cer{r,n}|2emos:ar|2uemos:gar|3quemos:car|3cemos:zar|3üemos:guar~6cir:uzcamos|5er:ngamos{te,o}|6ecir:digamos|6ír:oigamos|5ir:salgamos|4ir:amos{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,l,b,n}|4er:amos{et,ol,eb}|5gir:ijamos{ir,fl,x}|5ger:jamos{e,o}~1amos:ver,ser|2vayamos:ir",
+      "secondPlural": "2gáis:ner,alir|3jáis:ger|2éis:opezar|2áis:ir|3zcáis:cir|4igáis:ecir|2igáis:ír~2áis:er|3zcáis:cer|2yáis:uir|3yáis:haber|3áis:guir|3gáis:acer{f,h}|2gáis:enir,aler|5igáis:eguir|2igáis:aer|4itáis:etir|5intáis:entir|5istáis:estir|5irtáis:ertir|5urmáis:ormir|4idáis:edir|4iráis:erir|4uráis:orir|3jáis:gir|4ijáis:egir|4iñáis:eñir|5irváis:ervir|4epáis:aber|5quepáis:caber|1áis:prever|3iáis:eír|3záis:cer{r,n}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar|3üéis:guar~5cir:uzcáis|4er:ngáis{te,o}|5ecir:digáis|5ír:oigáis|4ir:salgáis|3ir:áis{t,mit,sist,um,im,cid,ad,ud,fr,br,urr,uñ,iv,l,b,n}|3er:áis{et,ol,eb}|4gir:ijáis{ir,fl,x}|4ger:jáis{e,o}~2eis:dar|1áis:ver,ser|2vayáis:ir",
+      "thirdPlural": "2an:er|2gan:ner,ler|3jan:ger|4ieran:erer|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír~2an:ir,trever|3zcan:cer|2yan:uir|3yan:haber|3an:guir|3gan:acer{f,h}|2gan:enir,alir|5igan:eguir|2igan:aer|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|5uerman:ormir|4uedan:oder|5iendan:ender{c,t,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|3jan:gir|4ijan:egir|4iñan:eñir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|4epan:aber|5quepan:caber|1an:ver|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|5uelguen:olgar|4ieguen:negar|4ueguen:ogar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|6uestren:ostrar|6uentren:ontrar|5ierren:errar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|5uerden:cordar|5ienden:endar|4ueven:ovar|4ueñen:oñar|3íen:iar{r,u,ac,f,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|2ir:an{mit,sist,cid,urr}|2er:an{et,om,em,ed,nd,rr,añ,p,e,s,eb}|3gir:ijan{ir,fl,x}|3ger:jan{e,o}~5ienten:sentar|5yerren:errar|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|1an:ser|2vayan:ir|3eguen:jugar|4ieran:querer"
     },
     "imperfectSubjunctive": {
-      "first": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
-      "second": "3fueras:ser|2ieras:oser|0as:ñer|1eras:ir|3ieras:eír|2as:se|4ieras:erse|6usieras:onerse|6uvieras:enerse|4fueras:irse|7irtieras:ertirse|7intieras:entirse|7istieras:estirse|7urmieras:ormirse|3eras:irse{d,r}~0as:r|2ieras:er|4ubieras:haber|5intieras:entir|5irtieras:ertir|4itieras:etir|5istieras:estir|4icieras:acer{f,h}|4usieras:oner|4isieras:erer|4uvieras:ener|5irvieras:ervir|5urmieras:ormir|4igieras:egir|4idieras:edir|4udieras:oder|4irieras:erir|4urieras:orir|4upieras:aber|4inieras:enir|1eras:guir|5iguieras:eguir|3jeras:cir|2jeras:aer|4ijeras:ecir|2yeras:r{í,ui,ee,cae}|2eras:ñir|4iñeras:eñir|4eras:lirse~2se:aras{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieras{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieras|5erse:vieras{o,tre}|5eír:rieras|5er:rrieras|2:añeras~2fueras:ir|2uvieras:andar,estar|7intieras:sentirse|2ieras:dar",
-      "third": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír|2a:se|4iera:erse|6usiera:onerse|6uviera:enerse|4fuera:irse|7irtiera:ertirse|7intiera:entirse|7istiera:estirse|7urmiera:ormirse|3era:irse{d,r}~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir|4iñera:eñir|4era:lirse~1se:ara{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7entirse:pintiera|4erse:viera{o,tre}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|7intiera:sentirse|2iera:dar",
-      "firstPlural": "1éramos:r|3fuéramos:ser|2iéramos:oser|2éramos:ñer|3iéramos:eír|4iéramos:erse|6usiéramos:onerse|6uviéramos:enerse|4áramos:arse|4fuéramos:irse|7irtiéramos:ertirse|7intiéramos:entirse|7istiéramos:estirse|7urmiéramos:ormirse|3éramos:irse{d,r}~2áramos:ar|2iéramos:er|4ubiéramos:haber|5intiéramos:entir|5irtiéramos:ertir|4itiéramos:etir|5istiéramos:estir|4iciéramos:acer{f,h}|4usiéramos:oner|4isiéramos:erer|4uviéramos:ener|5irviéramos:ervir|5urmiéramos:ormir|4igiéramos:egir|4idiéramos:edir|4udiéramos:oder|4iriéramos:erir|4uriéramos:orir|4upiéramos:aber|4iniéramos:enir|1éramos:guir|5iguiéramos:eguir|3jéramos:cir|2jéramos:aer|4ijéramos:ecir|2yéramos:r{í,ui,ee,cae}|2éramos:ñir|4iñéramos:eñir|4éramos:lirse~6arse:áramos{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|6r:iéramos{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|10entirse:pintiéramos|7erse:viéramos{o,tre}|7eír:riéramos|7er:rriéramos|6er:añéramos~2fuéramos:ir|2uviéramos:andar,estar|7intiéramos:sentirse|2iéramos:dar",
-      "secondPlural": "3fuerais:ser|2ierais:oser|0ais:ñer|1erais:ir|3ierais:eír|2ais:se|4ierais:erse|6usierais:onerse|6uvierais:enerse|4fuerais:irse|7irtierais:ertirse|7intierais:entirse|7istierais:estirse|7urmierais:ormirse|3erais:irse{d,r}~0ais:r|2ierais:er|4ubierais:haber|5intierais:entir|5irtierais:ertir|4itierais:etir|5istierais:estir|4icierais:acer{f,h}|4usierais:oner|4isierais:erer|4uvierais:ener|5irvierais:ervir|5urmierais:ormir|4igierais:egir|4idierais:edir|4udierais:oder|4irierais:erir|4urierais:orir|4upierais:aber|4inierais:enir|1erais:guir|5iguierais:eguir|3jerais:cir|2jerais:aer|4ijerais:ecir|2yerais:r{í,ui,ee,cae}|2erais:ñir|4iñerais:eñir|4erais:lirse~3se:arais{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|5r:ierais{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|9entirse:pintierais|6erse:vierais{o,tre}|6eír:rierais|6er:rrierais|3:añerais~2fuerais:ir|2uvierais:andar,estar|7intierais:sentirse|2ierais:dar",
-      "thirdPlural": "3fueran:ser|2ieran:oser|0an:ñer|1eran:ir|3ieran:eír|2an:se|4ieran:erse|6usieran:onerse|6uvieran:enerse|4fueran:irse|7irtieran:ertirse|7intieran:entirse|7istieran:estirse|7urmieran:ormirse|3eran:irse{d,r}~0an:r|2ieran:er|4ubieran:haber|5intieran:entir|5irtieran:ertir|4itieran:etir|5istieran:estir|4icieran:acer{f,h}|4usieran:oner|4isieran:erer|4uvieran:ener|5irvieran:ervir|5urmieran:ormir|4igieran:egir|4idieran:edir|4udieran:oder|4irieran:erir|4urieran:orir|4upieran:aber|4inieran:enir|1eran:guir|5iguieran:eguir|3jeran:cir|2jeran:aer|4ijeran:ecir|2yeran:r{í,ui,ee,cae}|2eran:ñir|4iñeran:eñir|4eran:lirse~2se:aran{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam}|4r:ieran{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|8entirse:pintieran|5erse:vieran{o,tre}|5eír:rieran|5er:rrieran|2:añeran~2fueran:ir|2uvieran:andar,estar|7intieran:sentirse|2ieran:dar"
+      "first": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir,llir|4iñera:eñir~3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|2iera:dar",
+      "second": "3fueras:ser|2ieras:oser|0as:ñer|1eras:ir|3ieras:eír~0as:r|2ieras:er|4ubieras:haber|5intieras:entir|5irtieras:ertir|4itieras:etir|5istieras:estir|4icieras:acer{f,h}|4usieras:oner|4isieras:erer|4uvieras:ener|5irvieras:ervir|5urmieras:ormir|4igieras:egir|4idieras:edir|4udieras:oder|4irieras:erir|4urieras:orir|4upieras:aber|4inieras:enir|1eras:guir|5iguieras:eguir|3jeras:cir|2jeras:aer|4ijeras:ecir|2yeras:r{í,ui,ee,cae}|2eras:ñir,llir|4iñeras:eñir~4r:ieras{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|5eír:rieras|5er:rrieras|2:añeras~2fueras:ir|2uvieras:andar,estar|2ieras:dar",
+      "third": "3fuera:ser|2iera:oser|0a:ñer|1era:ir|3iera:eír~0a:r|2iera:er|4ubiera:haber|5intiera:entir|5irtiera:ertir|4itiera:etir|5istiera:estir|4iciera:acer{f,h}|4usiera:oner|4isiera:erer|4uviera:ener|5irviera:ervir|5urmiera:ormir|4igiera:egir|4idiera:edir|4udiera:oder|4iriera:erir|4uriera:orir|4upiera:aber|4iniera:enir|1era:guir|5iguiera:eguir|3jera:cir|2jera:aer|4ijera:ecir|2yera:r{í,ui,ee,cae}|2era:ñir,llir|4iñera:eñir~3r:iera{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|4eír:riera|4er:rriera|1:añera~2fuera:ir|2uviera:andar,estar|2iera:dar",
+      "firstPlural": "1éramos:r|3fuéramos:ser|2iéramos:oser|2éramos:ñer|3iéramos:eír~2áramos:ar|2iéramos:er|4ubiéramos:haber|5intiéramos:entir|5irtiéramos:ertir|4itiéramos:etir|5istiéramos:estir|4iciéramos:acer{f,h}|4usiéramos:oner|4isiéramos:erer|4uviéramos:ener|5irviéramos:ervir|5urmiéramos:ormir|4igiéramos:egir|4idiéramos:edir|4udiéramos:oder|4iriéramos:erir|4uriéramos:orir|4upiéramos:aber|4iniéramos:enir|1éramos:guir|5iguiéramos:eguir|3jéramos:cir|2jéramos:aer|4ijéramos:ecir|2yéramos:r{í,ui,ee,cae}|2éramos:ñir,llir|4iñéramos:eñir~6r:iéramos{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|7eír:riéramos|7er:rriéramos|6er:añéramos~2fuéramos:ir|2uviéramos:andar,estar|2iéramos:dar",
+      "secondPlural": "3fuerais:ser|2ierais:oser|0ais:ñer|1erais:ir|3ierais:eír~0ais:r|2ierais:er|4ubierais:haber|5intierais:entir|5irtierais:ertir|4itierais:etir|5istierais:estir|4icierais:acer{f,h}|4usierais:oner|4isierais:erer|4uvierais:ener|5irvierais:ervir|5urmierais:ormir|4igierais:egir|4idierais:edir|4udierais:oder|4irierais:erir|4urierais:orir|4upierais:aber|4inierais:enir|1erais:guir|5iguierais:eguir|3jerais:cir|2jerais:aer|4ijerais:ecir|2yerais:r{í,ui,ee,cae}|2erais:ñir,llir|4iñerais:eñir~5r:ierais{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|6eír:rierais|6er:rrierais|3:añerais~2fuerais:ir|2uvierais:andar,estar|2ierais:dar",
+      "thirdPlural": "3fueran:ser|2ieran:oser|0an:ñer|1eran:ir|3ieran:eír~0an:r|2ieran:er|4ubieran:haber|5intieran:entir|5irtieran:ertir|4itieran:etir|5istieran:estir|4icieran:acer{f,h}|4usieran:oner|4isieran:erer|4uvieran:ener|5irvieran:ervir|5urmieran:ormir|4igieran:egir|4idieran:edir|4udieran:oder|4irieran:erir|4urieran:orir|4upieran:aber|4inieran:enir|1eran:guir|5iguieran:eguir|3jeran:cir|2jeran:aer|4ijeran:ecir|2yeran:r{í,ui,ee,cae}|2eran:ñir,llir|4iñeran:eñir~4r:ieran{ib,ub,t{r,mi,sis,a},iv,im,um,g{iri,xi,fli,r,n},d{ci,cu,au,a},ufr,urr,br,n,sal,pl}|5eír:rieran|5er:rrieran|2:añeran~2fueran:ir|2uvieran:andar,estar|2ieran:dar"
     },
     "imperative": {
       "first": "~~~",
-      "second": "1:r{,e{c{ya,e{en,aman,or,fr,bl,aqu},n},vend,pond},a{nt{gu,me,se,a},amin}}|2as:ter,rer|2gas:detener|4iere:erer|4uevas:over|5uestes:costar|2es:ar{vant,prepar,erm,am,cu}|5iertes:ertar|3úa:ectuar|4ige:egir|3zcas:cir|4gas:erse|5zcas:cerse|4as:rse{de,ri}|4es:arse|7ientes:sentarse|5ques:carse|7uerdes:ordarse|4vayas:irse|7ientas:sentirse~2e:ir{duc{n,a},mbat,it,insist,fr,scubr,curr,um,v,ud,ad,g,l,hib,gu}|4ice:edecir|6iégate:egarse|6écate:ecarse|6ócate:ocarse|7ércate:ercarse|7íllate:illarse|7úrlate:urlarse|5íate:iarse|7úntate:guntarse|7iéntate:entarse|7ústate:ustarse|6émate:emarse|7álmate:almarse|7ásmate:asmarse|7ánsate:ansarse|6ásate:asarse|6édate:edarse|6ídate:idarse|6ójate:ojarse|6éjate:ejarse|7úchate:ucharse|5úate:uarse|6áñate:añarse|8órciate:orciarse|7iébrate:ebrarse|7uérmete:ormirse|7iéntete:entirse|6ídete:idirse|6écete:uecerse|6évete:everse|4ite:mpetir|5iente:entir|5iste:estir|5ierte:ertir|4uere:orir|4iere:uerir|4iñe:eñir|5uerme:ormir|4ueve:lover|5ierve:hervir|5iende:ender{nc,t}|3íe:eír|2ye:r{í,ui{h,nstr,b,fl}}|5igue:eguir|4e:haber|2as:r{i,e{p,d,om,le}}|6uevas:overse|5uelvas:olver|5irvas:ervir|2yas:uir|3zcas:cer|4itas:etir|5ientas:sentir|7istas:estirse|7iertas:ertirse|5iertas:nvertir|4uedas:oder|5iendas:ender{nt,c,ef}|4idas:edir|5ierdas:erder|2gas:ner,ler,enir|3as:stinguir|4igas:ecir|5igas:rseguir|2igas:caer|4ieras:erir|4as:lirse|4uelas:oler|3jas:oger|4iñas:reñir|4íbas:ohibir|3ías:nreír|3zas:rcer|5uerzas:orcer|2es:ar{,t{n,o,is,mi,vi,osi,bor,epor,nsul,fal,pe},min,scin,afirm,nform,astim}|4üeres:gorar|6uentres:ontrar|7uestes:ostarse|7iertes:ertarse|2ues:gar|4uegues:ogar|5uelgues:olgar|3ques:car|3íes:iar{u,ar,f}|5iernes:ernar|5uerdes:cordar|3ces:zar|5iences:enzar|4úses:husar|4ieses:esar{v,f}|5ienses:ensar|3úes:tuar|4uebes:probar|1:ar{g{ti,pe,ve,ra},t,r{mo,do,dmi,aspi,espi,p,r,a,ju,ig,nt,eb},z{ra,ha,ti,oli,van},c{e,i{t,l,if{er,ur,s},r},lo,ovo,ar,ta},pañ,bañ,d{ra,fa,abor,uar,u,in,ue,i},j{a,i,o,se},goci,uci,vi,l{uil,r,g,ña,i,gu,ab,ve},us,ns,cas,m,en,in,uch,ech,e{c,s,t,pl},ab,iv,preserv,ev,y,gu}|4iega:negar|5uesta:ostar|5ienta:lentar|5uenta:contar|4ieta:apretar|5ierra:errar|6uestra:ostrar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|4ueña:oñar|5uerda:ecordar|5ienda:endar|4uela:volar|3ía:iar{r,ac,nv}|4uena:sonar|3úa:uar|4ueva:ovar|4ieva:nevar|4ón:poner{u,ro}|4én:ener|3z:acer{h,f}|2é:ever|2:alir~0r:e,ege|3egir:ige{rr,el}|4cerse:jezcas|4cir:uzcas|2er:etas,rras|2ir:sistas,cidas|3erse:tengas|2irse:urras|2arse:es{r{te,mo,eg,mb},t,unt,ce,in,m,ud,fad,ll,icul,h}|2ar:illes,nches~2gas:tener|4gas:ponerse|7ientas:sentirse|1:r{dura,unta,e{parec,nac,v,cog}}|4huelas:oler|2es:amar|4ide:pedir|4ueba:probar|5igas:seguir|2á:estar|4ieles:helar|2:poner|4iegues:regar|2e:escribir|5uestes:costar|4iere:querer|5ientes:sentar|1as:ser|5yerres:errar|2vayas:ir|3ega:jugar|5iente:sentir|6uestres:mostrar|4ijas:regir",
-      "secondPlural": "1d:r{e{ec{d,aman,r,al,j},orr,evolv,ov,scog},a{g{esti,ne,pe,ve,a,r},t{,es,vis,cos,men,esi,xpor},r{o{m,g,ll,d},ti,pi,bor,a,su,nt,eb},z{e,i{ir,eal,vil,an},u,r,ha,ca,lan},iv,nev,ov,c{e,ivo,i{t,epl,apl,if{or,ur,c,s},ed,p,n,r},r,us,sa,u},pañ,bañ,nseñ,ap,d{fa,uar,u,ren,lvi},i{gu,c{go,e,anun,i},r,ud,op,iv},j,n{e,do,io,i{cam,rm,oc,e,t}},m{ir,asti,u,l,s},l{zc,r,he,ve,ga,ña,i,gu,vo,io},us,pres,is,e,ch{du,cu,e},u,y},i{nsegu,onsist,ed,ñad,eprim,produc,educ,edec}}|3zcáis:ecer{sagrad,apar,fr}|2gáis:detener,enir|2éis:preparar,yudar|3quéis:aticar|5urmáis:ormir|4igáis:ecir|5zcáis:cerse|4éis:arse|4vayáis:irse|4áis:irse{d,r}~1d:r|4áis:rse{e,ti}|5irváis:servir|2áis:r{e{lv,p,omet,em,d{ven,ten,con,r},re,r,ñ,tos,sol,deb},i{dmit,ist,mbat,m,d,br,uñ,pl,ub}}|2yáis:uir{estr,l}|5quepáis:caber|4epáis:saber|3zcáis:cir,ecer,enacer|4itáis:retir|7irtáis:ertirse|5irtáis:onvertir|7urmáis:ormirse|4idáis:medir|1áis:ver|4ijáis:regir|3jáis:xigir,rgir,oger|4iráis:erir{g,u}|4iñáis:reñir|3áis:guir|4gáis:enerse|2gáis:er{nten,mpon,al}|5igáis:eguir|2igáis:aer|3záis:cer{or,nven}|2éis:ar{,re,ele,nu,t{n{gu,e,ca,o},ci,si,vi,s,ra,por,p,vo},uj,iaj}|2uéis:gar|3quéis:car|5quéis:rcarse|4éis:callarse|3céis:zar|3os:rse{a{or,mbr,tr,g,c,ud,ad,ll,rl,i,t{i,us,r,an,len},am,lm,sm,oj,ñ,as,ech},ne}|4íos:irse{pent,l}~5cerse:ezcáis{aqu,j}|3irse:áis{id,urr}|4ir:vengáis|5ecir:digáis|3arse:éis{ter,egr,ebr,e,u,t,cost,ued,lvid,ein,icul,erm,em,duch,ach,j}~1d:r{a{reserv,pas,d{,bor,agra,an},am,alent,gust},trae}|2gáis:oponer|3iais:reír|2áis:escribir|1ais:ser|2vayáis:ir|5intáis:sentir",
+      "second": "1:r{,e{c{ya,e{en,aman,or,fr,bl,aqu},n},vend,pond},a{nt{gu,me,se,a},amin}}|2as:ter,rer|4iere:erer|2es:ar{t{is,n,van,osi,mi,vi,o,bor,epor,nsul,fal,pe},prepar,min,scin,m{afir,nfor,er,a,asti},cu}|3úa:ectuar|4ige:egir|3zcas:cir~2e:ir{duc{n,a},fr,scubr,curr,um,v,ud,ad,it,insist,mbat,g,l,hib,gu}|4ice:edecir|4uere:orir|4iere:uerir|4iñe:eñir|5uerme:ormir|4ueve:lover|5ierve:hervir|5iende:ender{nc,t}|4ite:mpetir|5iente:entir|5iste:estir|5ierte:ertir|3íe:eír|2ye:r{í,ui{h,nstr,b,fl}}|5igue:eguir|4e:haber|1:ar{g{ti,pe,ve,ra},t,r{mo,do,dmi,aspi,espi,p,r,a,ju,ig,nt,eb},z{ra,ha,ti,oli,van},c{e,i{t,l,if{er,ur,s},r},lo,ovo,ar,ta},pañ,bañ,d{ra,fa,abor,uar,u,in,ue,i},j{a,i,o,se},goci,uci,vi,l{uil,r,g,ña,i,gu,ab,ve},us,ns,cas,m,en,in,uch,ech,e{c,s,t,pl},ab,iv,preserv,ev,y,gu}|4iega:negar|5uesta:ostar|5ienta:lentar|5uenta:contar|4ieta:apretar|5ierra:errar|6uestra:ostrar|5iebra:uebrar|4ieza:pezar|5uerza:orzar|4ueña:oñar|5uerda:ecordar|5ienda:endar|4uela:volar|3ía:iar{r,ac,nv}|4uena:sonar|3úa:uar|4ueva:ovar|4ieva:nevar|2as:r{i,e{p,d,om,le}}|2yas:uir|3zcas:cer|4itas:etir|5iertas:nvertir|5ientas:sentir|4uedas:oder|5iendas:ender{nt,c,ef}|4idas:edir|5ierdas:erder|2gas:r{ne,detene,le,eni}|3as:stinguir|4igas:ecir|5igas:rseguir|2igas:caer|4ieras:erir|5uelvas:olver|5irvas:ervir|4uevas:over|4uelas:oler|3jas:oger|4iñas:reñir|4íbas:ohibir|3ías:nreír|3zas:rcer|5uerzas:orcer|2es:ar|5uestes:costar|5iertes:ertar|2ues:gar|4uegues:ogar|5uelgues:olgar|3ques:car|6uentres:ontrar|4üeres:gorar|3íes:iar{u,ar,f}|5iernes:ernar|3ces:zar|5iences:enzar|4úses:husar|4ieses:esar{v,f}|5ienses:ensar|5uerdes:cordar|3úes:tuar|4uebes:probar|4ón:poner{u,ro}|4én:ener|3z:acer{h,f}|2é:ever|2:alir~0r:e,ege|3egir:ige{rr,el}|4cir:uzcas|2er:etas,rras|2ir:cidas,urras~2gas:tener|1:r{dura,unta,e{parec,nac,v,cog}}|4huelas:oler|4ide:pedir|4ueba:probar|5igas:seguir|2á:estar|4ieles:helar|2:poner|4iegues:regar|2e:escribir|4iere:querer|5ientes:sentar|1as:ser|5yerres:errar|2vayas:ir|3ega:jugar|5iente:sentir|6uestres:mostrar|4ijas:regir",
+      "secondPlural": "1d:r{e{ec{d,aman,r,al,j},orr,evolv,ov,scog},a{g{esti,ne,pe,ve,a,r},t{,es,vis,cos,men,esi,xpor},r{o{m,g,ll,d},ti,pi,bor,a,su,nt,eb},z{e,i{ir,eal,vil,an},u,r,ha,ca,lan},iv,nev,ov,c{e,ivo,i{t,epl,apl,if{or,ur,c,s},ed,p,n,r},r,us,sa,u},pañ,bañ,nseñ,ap,d{fa,uar,u,ren,lvi},i{gu,c{go,e,anun,i},r,ud,op,iv},j,n{e,do,io,i{cam,rm,oc,e,t}},m{ir,asti,u,l,s},l{zc,r,he,ve,ga,ña,i,gu,vo,io},us,pres,is,e,ch{du,cu,e},u,y},i{nsegu,onsist,ed,ñad,eprim,produc,educ,edec}}|3zcáis:ecer{sagrad,apar,fr}|2éis:ar{t{s,n{gu,e,ca,o},si,ci,vi,vo,ra,por,p},prepar,yud,iaj,uj,re,ele,nu}|3quéis:aticar|4igáis:ecir~1d:r|2yáis:uir{estr,l}|2áis:r{e{p,omet,em,d{ven,ten,con,r},re,r,ñ,lv,tos,sol,deb},i{dmit,ist,mbat,m,d,br,uñ,pl,ub}}|5quepáis:caber|4epáis:saber|3zcáis:cir,ecer,enacer|4itáis:retir|5irtáis:onvertir|5urmáis:ormir|4idáis:medir|1áis:ver|4ijáis:regir|3jáis:xigir,rgir,oger|4iráis:erir{g,u}|4iñáis:reñir|3áis:guir|2gáis:r{eni,e{nten,deten,mpon,al}}|5igáis:eguir|2igáis:aer|5irváis:servir|3záis:cer{or,nven}|2éis:ar|2uéis:gar|3quéis:car|3céis:zar~5ecir:digáis~1d:r{a{reserv,pas,d{,bor,agra,an},am,alent,gust},trae}|2gáis:oponer|3iais:reír|2áis:escribir|1ais:ser|2vayáis:ir|5intáis:sentir",
       "firstPlural": "~~~",
-      "third": "2a:er|2ga:ner,ler|4iera:erer|3ja:ger|5iebre:uebrar|2e:cuar|5ista:estir|5uerma:ormir|3zca:cir|4iga:ecir|2iga:ír|4ga:erse|5zca:cerse|4e:arse|7iente:entarse|7ueste:ostarse|5íe:riarse|5úe:uarse|4a:irse|7ienta:entirse|7ierta:ertirse~2a:ir|3zca:cer|2ya:uir|3ya:haber|4epa:aber|5quepa:caber|4ita:etir|5ienta:entir|7ista:estirse|5ierta:ertir|4ueda:oder|5ienda:ender{t,c,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|7uerma:ormirse|4iña:eñir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|3a:guir|2ga:enir,alir|3ga:acer{h,f}|5iga:eguir|2iga:aer|1a:ver|3ja:gir|4ija:egir|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|6évase:everse|6uévase:overse|6ídase:idirse|7óndase:onderse|7úrrase:urrirse|6óngase:oponerse|6órese:orarse|6árese:ararse|6iéguese:egarse|6équese:ecarse|6óquese:ocarse|6íquese:icarse|7érquese:ercarse|5éese:earse|6údese:udarse|7uérdese:ordarse|6ídese:idarse|7íllese:illarse|7állese:hallarse|7óllese:ollarse|7úrlese:urlarse|7úntese:guntarse|7ántese:antarse|7iértese:ertarse|7áctese:actarse|7áchese:acharse|7échese:echarse|7ánsese:ansarse|6ásese:asarse|7éinese:einarse|6ámese:amarse|7érmese:ermarse|7álmese:almarse|6éjese:ejarse|4iese:esar{v,f}|5iense:ensar|4úse:husar|2ue:gar|4iegue:negar|4uegue:ogar|5uelgue:olgar|3que:car|4üere:gorar|5ierre:errar|6uestre:ostrar|6uentre:ontrar|7iebre:ebrarse|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|5uerde:cordar|5iende:endar|3íe:iar{u,r,f,ac,nv}|5ierne:ernar|4uene:sonar|4uele:volar|3úe:uar|4uebe:probar|3üe:guar~3cerse:ezca{aqu,j}|3cir:uzca|1er:a{p,et,ed,nd,rr,em,om,añ,e,s,eb}|1ir:a{mit,sist,cid,urr}|5entirse:pienta|5ertirse:ivierta|2er:ga{ten,on,val}|2erse:detenga|3ecir:diga|3ír:oiga|2gir:ija{ir,fl,x}|2ger:oja,eja|1irse:lla|1arse:e{ter,egr,mbr,junt,eit,fad,ued,em,sm,call,icul}|5ostarse:acueste|2uarse:dúe~4ga:ponerse|7ienta:sentirse|4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|4iera:querer|5iente:sentar|1a:ser|5yerre:errar|2vaya:ir|4váyase:irse|3egue:jugar",
-      "thirdPlural": "2an:er|2gan:ner,ler|4ieran:erer|4uevan:over|3jan:ger|4ieguen:negar|5ierten:ertar|2en:cuar|5uerman:ormir|3zcan:cir|4igan:ecir|2igan:ír|4gan:erse|5zcan:cerse|4an:rse{de,i}|4en:arse|7ienten:entarse|7uesten:ostarse|5quen:carse~2an:ir|3zcan:cer|6uevan:overse|5uelvan:olver|5irvan:ervir|5iervan:hervir|2yan:uir|3yan:haber|4epan:aber|5quepan:caber|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|4uedan:oder|5iendan:ender{t,c,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|7uerman:ormirse|4iñan:eñir|3an:guir|2gan:enir,alir|3gan:acer{h,f}|5igan:eguir|2igan:aer|1an:ver|3jan:gir|4ijan:egir|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|6ieguen:egarse|4ueguen:ogar|5uelguen:olgar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|7ierten:ertarse|4ieten:apretar|5ierren:errar|6uestren:ostrar|6uentren:ontrar|5iebren:uebrar|4üeren:gorar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|5uerden:cordar|5ienden:endar|3íen:iar{u,r,f,ac,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar|6érense:erarse|6órense:orarse|8ístrense:istrarse|7égrense:egrarse|7iébrense:ebrarse|5éense:earse|6équense:ecarse|6údense:udarse|6édense:edarse|7uérdense:ordarse|6ádense:adarse|6ídense:idarse|7íllense:illarse|7úrlense:urlarse|5íense:riarse|7úntense:guntarse|7éitense:eitarse|7ústense:ustarse|7áctense:actarse|7ánsense:ansarse|6ásense:asarse|7éinense:einarse|6ójense:ojarse|7úchense:ucharse|7échense:echarse|5úense:uarse|6áñense:añarse|7álmense:almarse|7ásmense:asmarse|6ávense:avarse|7iéntanse:entirse|7ístanse:estirse|7iértanse:ertirse|6ézcanse:uecerse|6évanse:everse|7úrranse:urrirse~4cerse:jezcan|4cir:uzcan|5over:luevan|2er:an{p,et,ed,nd,rr,em,om,añ,e,s,eb}|2ir:an{mit,sist,urr}|2irse:cidan,llan|3er:gan{ten,on,val}|3erse:detengan|4ecir:digan|4ír:oigan|3gir:ijan{ir,fl,x}|3ger:jan{o,e}|4carse:erquen|6ostarse:acuesten|2arse:en{junt,mbr,uej,erm,em,lam,ll,icul,ach}|2ar:illen~4gan:ponerse|4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|4ieran:querer|5ienten:sentar|1an:ser|5yerren:errar|2vayan:ir|4váyanse:irse|3eguen:jugar"
+      "third": "2a:er|2ga:ner,ler|4iera:erer|3ja:ger|2e:cuar|3zca:cir|4iga:ecir|2iga:ír~2a:ir|3zca:cer|2ya:uir|3ya:haber|4epa:aber|5quepa:caber|4ita:etir|5ienta:entir|5ista:estir|5ierta:ertir|4ueda:oder|5ienda:ender{t,c,ef}|4ida:edir|5ierda:erder|4iera:erir|4uera:orir|4iña:eñir|5uerma:ormir|5uelva:olver|5irva:ervir|5ierva:hervir|4ueva:over|3a:guir|2ga:enir,alir|3ga:acer{h,f}|5iga:eguir|2iga:aer|1a:ver|3ja:gir|4ija:egir|4uela:oler|3ía:eír|4íba:ohibir|3za:cer{r,n}|5uerza:orcer|2e:ar|2ue:gar|4iegue:negar|4uegue:ogar|5uelgue:olgar|3que:car|5ueste:ostar|5iente:lentar|5uente:contar|5ierte:ertar|4iete:apretar|5ierre:errar|6uestre:ostrar|6uentre:ontrar|4üere:gorar|5iebre:uebrar|3ce:zar|4iece:pezar|5uerce:orzar|5ience:enzar|4ueve:ovar|4ieve:nevar|4ueñe:oñar|5uerde:cordar|5iende:endar|3íe:iar{u,r,f,ac,nv}|5ierne:ernar|4uene:sonar|4uele:volar|5iense:ensar|4úse:husar|4iese:esar{v,f}|3úe:uar|4uebe:probar|3üe:guar~3cir:uzca|1er:a{p,et,ed,nd,rr,añ,em,om,e,s,eb}|1ir:a{mit,sist,cid,urr}|2er:ga{ten,on,val}|3ecir:diga|3ír:oiga|2gir:ija{ir,fl,x}|2ger:oja,eja~4huela:oler|2é:estar,dar|4iele:helar|4iegue:regar|4iera:querer|5iente:sentar|1a:ser|5yerre:errar|2vaya:ir|3egue:jugar",
+      "thirdPlural": "2an:er|2gan:ner,ler|4ieran:erer|3jan:ger|2en:cuar|3zcan:cir|4igan:ecir|2igan:ír~2an:ir|3zcan:cer|2yan:uir|3yan:haber|4epan:aber|5quepan:caber|4itan:etir|5ientan:entir|5istan:estir|5iertan:ertir|4uedan:oder|5iendan:ender{t,c,ef}|4idan:edir|5ierdan:erder|4ieran:erir|4ueran:orir|4iñan:eñir|5uerman:ormir|5uelvan:olver|5irvan:ervir|5iervan:hervir|4uevan:over|3an:guir|2gan:enir,alir|3gan:acer{h,f}|5igan:eguir|2igan:aer|1an:ver|3jan:gir|4ijan:egir|4uelan:oler|3ían:eír|4íban:ohibir|3zan:cer{r,n}|5uerzan:orcer|2en:ar|2uen:gar|4ieguen:negar|4ueguen:ogar|5uelguen:olgar|3quen:car|5uesten:ostar|5ienten:lentar|5uenten:contar|5ierten:ertar|4ieten:apretar|5ierren:errar|6uestren:ostrar|6uentren:ontrar|4üeren:gorar|5iebren:uebrar|3cen:zar|4iecen:pezar|5uercen:orzar|5iencen:enzar|4ueven:ovar|4ieven:nevar|4ueñen:oñar|5uerden:cordar|5ienden:endar|3íen:iar{u,r,f,ac,nv}|5iernen:ernar|4uenen:sonar|4uelen:volar|5iensen:ensar|4úsen:husar|4iesen:esar{v,f}|3úen:uar|4ueben:probar|3üen:guar~4cir:uzcan|2er:an{p,et,ed,nd,rr,añ,em,om,e,s,eb}|2ir:an{mit,sist,cid,urr}|3er:gan{ten,on,val}|4ecir:digan|4ír:oigan|3gir:ijan{ir,fl,x}|3ger:jan{o,e}~4huelan:oler|2én:estar|4ielen:helar|4ieguen:regar|4ieran:querer|5ienten:sentar|1an:ser|5yerren:errar|2vayan:ir|3eguen:jugar"
     },
     "gerunds": {
       "gerunds": "2yendo:oer|1ndo:ñer|1endo:ir|4ibiendo:ebir|3uyendo:üir|3iendo:eír~1ndo:r|2iendo:er|4iniendo:enir|5istiendo:estir|5irtiendo:ertir|4itiendo:etir|5intiendo:entir|4iciendo:ecir|1endo:ir{gu,qu,red}|5iguiendo:eguir|5indiendo:endir|4udiendo:poder|4idiendo:edir|4igiendo:egir|5urmiendo:ormir|5irviendo:ervir|4iriendo:erir|4uriendo:orir|5udriendo:odrir|2yendo:r{í,ui,ee,ae}|4iñendo:eñir|2endo:llir~4r:iendo{ib,ub,mb,un,fin,rn,t{,sis,xis,mi},uc,unc,arc,d{un,an,cin,u,a,ci,vi,si},g{i{ir,er,fl,x},n,ur,umer,u},l{sa,p,bo,u},im,um,iv,r{ur,qui{d,n},uf,b,t},as,p}|7ebir:ncibiendo|5er:endo{i{ert,et,er,rr,omp},roy}|5eír:riendo|6üir:guyendo~2yendo:ir"
     },
     "perfecto": {
-      "perfecto": "2ido:er,over|3do:rse|4ido:erse|6uesto:onerse|0ado:t~1do:r,ndecir|2ía cepillado:pillar|2ído:eer,aer|4to:mper|4uesto:oner|2isto:ver|5uelto:olver|3to:ribir|3ito:freír|4uerto:orir|3ierto:brir|4echo:acer{f,h}|4icho:ecir~2rse:do{a{ec,uej,junt,eit,ct,prepar,ter,ued,mud,hall,nce,lam},penti,lli}|3:mitado|3er:ido{eb,ab,met,c,s,em,om,teg,og,d{ce,n,o,r},rr,ten,añ,ol,val}|2r:do{uci,urri,nreí}|3erse:vido{o,e}~2ido:querer|3do:sentirse|1do:reír"
+      "perfecto": "2ido:er|0ado:t~1do:r,ndecir|2ído:eer,aer|4to:mper|4uesto:oner|2isto:prever|5uelto:olver|3to:ribir|3ito:freír|4uerto:orir|3ierto:brir|4echo:acer{f,h}|4icho:ecir~3:mitado|3er:ido{eb,ab,met,c,s,em,om,teg,og,d{ce,n,o,r},rr,ten,ev,ov,añ,ol,val}|2r:do{uci,urri,nreí}~2ido:querer|1do:reír|2isto:ver"
     }
   };
 
@@ -9351,6 +10018,8 @@ designate
     return convert(str, m$3.fromGerund)
   };
   const toGerund$1 = function (str) {
+    // 'acostarse' conjugates as 'acostar'
+    str = str.replace(/([aeií]r)se$/, '$1');
     return convert(str, m$3.toGerund)
   };
 
@@ -9366,6 +10035,8 @@ designate
     return convert(str, m$2.fromPerfecto)
   };
   const toPerfecto$1 = function (str) {
+    // 'acostarse' conjugates as 'acostar'
+    str = str.replace(/([aeií]r)se$/, '$1');
     return convert(str, m$2.toPerfecto)
   };
 
@@ -9388,7 +10059,11 @@ designate
 
   const { presentTense: presentTense$1, pastTense: pastTense$1, imperfectTense: imperfectTense$1, futureTense: futureTense$1, conditional: conditional$1, subjunctive: subjunctive$1, imperfectSubjunctive, imperative: imperative$1 } = model$1;
 
+  // the pronoun is not part of the conjugation - 'acostarse' conjugates as 'acostar'
+  const plain$1 = (str) => str.replace(/([aeií]r)se$/, '$1');
+
   const doEach = function (str, m) {
+    str = plain$1(str);
     return {
       first: convert(str, m.first),
       second: convert(str, m.second),
@@ -9596,10 +10271,218 @@ designate
     return str
   };
 
-  const pRev = reverse(model$1.nouns.plurals);
+  // rule-based noun inflection - spanish plurals are regular, but their written accents move around
 
-  const toPlural$1 = (str) => convert(str, model$1.nouns.plurals);
-  const toSingular$1 = (str) => convert(str, pRev);
+  // [singular, plural]
+  const pairs = [
+    // the stress moves over a syllable
+    ['carácter', 'caracteres'],
+    ['régimen', 'regímenes'],
+    ['espécimen', 'especímenes'],
+    // loanwords
+    ['club', 'clubes'],
+    ['film', 'filmes'],
+    ['álbum', 'álbumes'],
+    ['jersey', 'jerséis'],
+    ['espray', 'espráis'],
+    ['gay', 'gais'],
+    ['lord', 'lores'],
+    ['fan', 'fans'],
+    ['sándwich', 'sándwiches'],
+    ['hipérbaton', 'hipérbatos'],
+    // consonant + s
+    ['vals', 'valses'],
+    ['reloj', 'relojes'],
+    ['boj', 'bojes'],
+    ['carcaj', 'carcajes']
+  ];
+  const irregular$1 = { toPlural: {}, fromPlural: {} };
+  pairs.forEach((a) => {
+    irregular$1.toPlural[a[0]] = a[1];
+    irregular$1.fromPlural[a[1]] = a[0];
+  });
+
+  // stressed '-í' and '-ú' take '-es', but not these - 'menús', 'esquís'
+  const plainS = new Set(['menú', 'champú', 'tutú', 'vermú', 'interviú', 'ragú', 'canesú', 'esquí', 'popurrí', 'pirulí', 'gachí']);
+
+  const strip = { á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u' };
+  const mark = { a: 'á', e: 'é', i: 'í', o: 'ó', u: 'ú' };
+  const hasAccent = /[áéíóú]/;
+  const noAccent = (str) => str.replace(/[áéíóú]/g, (c) => strip[c]);
+  const setChar = (str, i, c) => str.slice(0, i) + c + str.slice(i + 1);
+
+  // where the vowel of each syllable is - 'le|ón' is two, 'dios' is one
+  const nuclei = function (str) {
+    const out = [];
+    let weak = -1;
+    let found = false;
+    for (let i = 0; i <= str.length; i += 1) {
+      const c = str[i] || '';
+      if (/[aeoáéíóú]/.test(c)) {
+        out.push(i);
+        found = true;
+      } else if (/[iuü]/.test(c)) {
+        weak = i;
+      } else {
+        // a diphthong of weak vowels - 'ruin'
+        if (!found && weak !== -1) {
+          out.push(weak);
+        }
+        weak = -1;
+        found = false;
+      }
+    }
+    return out
+  };
+
+  // a singular word, by its stress - 'país', 'mes', 'dios' - but not 'lunes'
+  const isOxytone = function (str) {
+    const arr = nuclei(str);
+    return arr.length < 2 || hasAccent.test(str[arr[arr.length - 1]])
+  };
+
+  // move the written accent, before adding '-es' - 'canción' -> 'cancion', 'joven' -> 'jóven'
+  const toStem = function (str) {
+    const arr = nuclei(str);
+    const last = arr[arr.length - 1];
+    if (hasAccent.test(str[last])) {
+      // a hiatus keeps it - 'país' -> 'países'
+      if (/[aeo]h?[íú]$/.test(str.slice(0, last + 1))) {
+        return str
+      }
+      return setChar(str, last, strip[str[last]])
+    }
+    // 'examen' -> 'exámenes'
+    if (str.endsWith('n') && arr.length > 1 && !hasAccent.test(str)) {
+      const i = arr[arr.length - 2];
+      return setChar(str, i, mark[str[i]] || str[i])
+    }
+    return str
+  };
+
+  // .. and put it back, after removing '-es' - 'cancion' -> 'canción', 'jóven' -> 'joven'
+  const fromStem = function (str) {
+    const arr = nuclei(str);
+    const last = arr[arr.length - 1];
+    if (!/[ns]$/.test(str) || hasAccent.test(str[last])) {
+      return str
+    }
+    if (hasAccent.test(str)) {
+      return noAccent(str)
+    }
+    return arr.length > 1 ? setChar(str, last, mark[str[last]] || str[last]) : str
+  };
+
+  // singular nouns that end in an unstressed '-s'
+  const same = new Set(
+    ('vals,lunes,martes,miércoles,jueves,viernes,virus,campus,cactus,estatus,bonus,ómnibus,atlas,caries,iris,pelvis,brindis,tenis,' +
+      'gratis,bíceps,tríceps,paraguas,cumpleaños,lavaplatos,abrelatas,sacacorchos,rascacielos,paracaídas,parabrisas,sacapuntas,' +
+      'salvavidas,guardaespaldas,tocadiscos,portaaviones,pararrayos,lavavajillas,rompecabezas,saltamontes,ciempiés,traspiés').split(',')
+  );
+  // .. or in a stressed one - 'inglés', 'país', 'autobús' - but 'cafés', 'esquís', 'menús' are plurals
+  const stressed =
+    /([aeiou]nés|ñés|glés|galés|rancés|océs|gués|ndés|obés|vés|siamés|marqués|rtés|ontés|terés|trés|prés|grés|ayés|compás|[dm]emás|jamás|trás|quizás|país|anís|diós|[oei]bús|jesús)$/;
+
+  // 'crisis', 'tórax', 'lunes', 'mes' are not plurals
+  const isSingular = function (str) {
+    if (!str.endsWith('s') || same.has(str) || stressed.test(str) || /([aeiouáéíóúp]sis|[^f]itis)$/.test(str)) {
+      return true
+    }
+    // 'gas', 'dios', 'tos' - but 'pies'
+    return nuclei(str).length < 2 && /[aeiou]s$/.test(str) && !/[aeiou]es$/.test(str)
+  };
+
+  // is this a noun, or an adjective, in the given lexicon?
+  const isWord = (str, lex) => Boolean(lex) && lex.hasOwnProperty(str) && /Noun|Adjective/.test(lex[str]);
+
+  // feminine nouns that begin with a stressed 'a' take the masculine article - 'el agua', 'las aguas'
+  const takesEl = (str) => /^(h?á.*a|ave|hambre)$/.test(str) || (/^h?a.*a$/.test(str) && nuclei(str).length === 2);
+
+  const { plurals } = model$1.nouns;
+  const pRev = reverse(plurals);
+
+  // irregulars -> invariables -> spelling rules -> model -> '-s'
+  const toPlural$1 = (str) => {
+    if (irregular$1.toPlural.hasOwnProperty(str)) {
+      return irregular$1.toPlural[str]
+    }
+    // 'casa' -> 'casas', 'café' -> 'cafés'
+    if (/[aeiouáéó]$/.test(str)) {
+      return str + 's'
+    }
+    // 'rubí' -> 'rubíes', 'menú' -> 'menús'
+    if (/[íú]$/.test(str)) {
+      return str + (plainS.has(str) ? 's' : 'es')
+    }
+    // 'luz' -> 'luces'
+    if (str.endsWith('z')) {
+      return str.slice(0, -1) + 'ces'
+    }
+    if (/[sx]$/.test(str)) {
+      // 'lunes', 'crisis', 'tórax', 'bíceps' never change - but 'mes' -> 'meses', 'inglés' -> 'ingleses'
+      return isOxytone(str) && !/[^aeiouáéíóú]s$/.test(str) ? toStem(str) + 'es' : str
+    }
+    // 'papel' -> 'papeles', 'canción' -> 'canciones', 'joven' -> 'jóvenes'
+    if (/[aeiouáéíóú]([lrndj]|ch)$/.test(str)) {
+      return toStem(str) + 'es'
+    }
+    // 'ferry' -> 'ferris'
+    if (/[^aeiouáéíóú]y$/.test(str)) {
+      return str.slice(0, -1) + 'is'
+    }
+    // a loanword - 'cómic' -> 'cómics', 'récord' -> 'récords' - or 'rey' -> 'reyes'
+    const res = convert(str, plurals);
+    if (res === str + 's' || res === str + 'es') {
+      return res
+    }
+    return str + (str.endsWith('y') ? 'es' : 's')
+  };
+
+  // does this '-es' plural have a singular in '-e'? - 'clases' -> 'clase', but 'meses' -> 'mes'
+  const isE = function (str, e, cons, lex) {
+    // 'canciones', 'ciudades', 'reyes', 'faxes'
+    if (/(iones|[dt]ades|tudes|[yx]es)$/.test(str)) {
+      return false
+    }
+    // is only one of them a word that we know?
+    if (isWord(e, lex) !== isWord(cons, lex)) {
+      return isWord(e, lex)
+    }
+    // has the model seen it? - 'cines', 'índices' - or 'luces', 'sándwiches'
+    const res = convert(str, pRev);
+    if (res === e) {
+      return true
+    }
+    if (noAccent(res) === noAccent(cons)) {
+      return false
+    }
+    // 'viajes', 'coches'
+    return /[jh]e$/.test(e)
+  };
+
+  // irregulars -> invariables -> spelling rules -> known words -> model -> consonant
+  // 'lex' is an optional lexicon, to look for the singular in
+  const fromPlural = (str, lex) => {
+    if (irregular$1.fromPlural.hasOwnProperty(str)) {
+      return irregular$1.fromPlural[str]
+    }
+    if (isSingular(str)) {
+      return str
+    }
+    const stem = str.slice(0, -2);
+    // 'rubíes' -> 'rubí'
+    if (/[íú]es$/.test(str)) {
+      return stem
+    }
+    // 'casas' -> 'casa', 'cafés' -> 'café', 'cómics' -> 'cómic' - and 'héroes', 'bosques', 'padres', 'jefes'
+    const e = str.slice(0, -1);
+    if (!str.endsWith('es') || !/([aeiouáéíóú][lrndsjyxc]|[cs]h)$/.test(stem)) {
+      return e
+    }
+    // 'luces' -> 'luz', 'canciones' -> 'canción', 'jóvenes' -> 'joven', 'árboles' -> 'árbol'
+    const cons = stem.endsWith('c') ? stem.slice(0, -1) + 'z' : fromStem(stem);
+    return isE(str, e, cons, lex) ? e : cons
+  };
 
   const all$1 = function (str) {
     const plur = toPlural$1(str);
@@ -9608,11 +10491,6 @@ designate
     }
     return [str, plur]
   };
-  // console.log(toFemale("principesco") === "principesca")
-  // console.log(fromFemale("principesca") === "principesco")
-  // console.log(toPlural("principesco") === "principescos")
-  // console.log(toSingular("principescos") === "principesco")
-  // console.log(toSingular("sombras") === "sombra")
 
   const toMasculine = function (str) {
     const arr = [
@@ -9660,27 +10538,77 @@ designate
     return str
   };
 
-  const { f: f$2, mp, fp } = model$1.adjectives;
+  // the model only knows adjectives with four forms - so the rules choose which ones those are
+  const fRev = reverse(model$1.adjectives.f);
 
-  const fRev = reverse(f$2);
-  const mpRev = reverse(mp);
-  const fpRev = reverse(fp);
+  // shortened forms - [female, plural]
+  const irregular = {
+    buen: ['buena', 'buenos'],
+    primer: ['primera', 'primeros'],
+    tercer: ['tercera', 'terceros']
+  };
+  // consonant endings that add an '-a' - 'trabajador', 'alemán', 'inglés', 'español'
+  const gendered = /(or|[óáí]n|és|^español|^andaluz)$/;
+  // .. but not these ones - 'mejor', 'superior', 'marrón', 'cortés'
+  const common = /(^(mejor|peor|mayor|menor)|[eu]rior|color|^marrón|afín|cortés)$/;
+  // '-a' adjectives that have no '-o' form - 'optimista', 'agrícola', 'belga'
+  const commonA = /^(persa|maya|celta|rosa|lila|malva|violeta)$|([ií]sta|ícola|icida|crata|polita|elita|ócrita|[ip]ota|belga|azteca|nómada|indígena|naranja)$/;
+  // .. but these ones do - 'lista', 'prevista'
+  const notCommon = /^(lista|mixta|(impre|pre|pro)?vista)$/;
 
-  const toFemale = (str) => convert(str, f$2);
-  const toPlural = (str) => convert(str, mp);
-  const toFemalePlural = (str) => convert(str, fp);
-  const fromFemale = (str) => convert(str, fRev);
-  const toSingular = (str) => convert(str, mpRev);
-  const fromFemalePlural = (str) => convert(str, fpRev);
+  // 'rojo' -> 'roja', 'inglés' -> 'inglesa', but 'grande' -> 'grande'
+  const toFemale = (str) => {
+    if (irregular.hasOwnProperty(str)) {
+      return irregular[str][0]
+    }
+    if (str.endsWith('o')) {
+      return str.slice(0, -1) + 'a'
+    }
+    if (gendered.test(str) && !common.test(str)) {
+      return str.slice(0, -2) + noAccent(str.slice(-2)) + 'a'
+    }
+    return str
+  };
+  // the same spelling rules as the nouns - 'feliz' -> 'felices', 'joven' -> 'jóvenes'
+  const toPlural = (str) => (irregular.hasOwnProperty(str) ? irregular[str][1] : toPlural$1(str));
+  const toFemalePlural = (str) => toPlural$1(toFemale(str));
+
+  // 'alemana' -> 'alemán', 'habladora' -> 'hablador'
+  const toConsonant = function (str) {
+    const stem = str.slice(0, -1);
+    if (/([aoi]n|es)$/.test(stem)) {
+      return stem.slice(0, -2) + mark[stem.slice(-2, -1)] + stem.slice(-1)
+    }
+    return stem
+  };
+
+  // 'roja' -> 'rojo', 'inglesa' -> 'inglés', but 'optimista' -> 'optimista'
+  // 'lex' is an optional lexicon, to look for the adjective in
+  const fromFemale = (str, lex) => {
+    if (!str.endsWith('a')) {
+      return str
+    }
+    const o = str.slice(0, -1) + 'o';
+    const cons = toConsonant(str);
+    if (isWord(o, lex)) {
+      return o
+    }
+    // 'habladora' -> 'hablador'
+    if (isWord(cons, lex) || /([aei]d|[ts])ora$/.test(str)) {
+      return cons
+    }
+    if (commonA.test(str) && !notCommon.test(str)) {
+      return str
+    }
+    // 'alemana' -> 'alemán', but 'cubana' -> 'cubano' - the model has seen these
+    return convert(str, fRev) === cons && gendered.test(cons) ? cons : o
+  };
+  const toSingular = (str, lex) => fromPlural(str, lex);
+  const fromFemalePlural = (str, lex) => (str.endsWith('as') ? fromFemale(str.slice(0, -1), lex) : fromPlural(str, lex));
 
   const all = function (str) {
-    let arr = [str];
-    arr.push(toFemale(str));
-    arr.push(toPlural(str));
-    arr.push(toFemalePlural(str));
-    arr = arr.filter(s => s);
-    arr = new Set(arr);
-    return Array.from(arr)
+    const arr = [str, toFemale(str), toPlural(str), toFemalePlural(str)];
+    return Array.from(new Set(arr))
   };
 
   var adjective = {
@@ -9690,12 +10618,125 @@ designate
     toFemalePlural,
     fromFemale,
     toSingular,
-    fromFemalePlural,
+    fromFemalePlural
   };
-  // console.log(toFemale("principesco") === "principesca")
-  // console.log(fromFemale("principesca") === "principesco")
-  // console.log(toPlural("principesco") === "principescos")
-  // console.log(toSingular("principescos") === "principesco")
+
+  // find a conjugated verb in the conjugation table of its infinitive.
+  //
+  // the reverse-models (fromPresent, fromPast..) each guess at an infinitive,
+  // and they need to be told the tense + person, which we often do not know.
+  // so try them all, and only keep an infinitive that conjugates back into our word.
+  //
+  // (this file is the same in each of the *-compromise libraries - the list of tenses is not)
+
+  const persons$3 = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural'];
+
+  // tenses is a list of { name, to(infinitive), from(word, person) }
+  // opts.extra(word) may give more infinitives to try
+  const makeLookup = function (tenses, opts = {}) {
+    // what an infinitive looks like - 'hablar', 'parlare', 'sprechen'
+    const shape = opts.shape || /./;
+    const pick = (only) => (only ? tenses.filter((o) => only.includes(o.name)) : tenses);
+
+    // every form of this verb, by tense, and then person
+    const table = function (inf, only) {
+      const res = {};
+      pick(only).forEach((o) => {
+        res[o.name] = o.to(inf) || {};
+      });
+      return res
+    };
+
+    // where is this word, in the conjugations of this infinitive?
+    const findHits = function (str, inf, only) {
+      const forms = table(inf, only);
+      const hits = [];
+      Object.keys(forms).forEach((tense) => {
+        persons$3.forEach((person) => {
+          if (forms[tense][person] === str) {
+            hits.push({ tense, person });
+          }
+        });
+      });
+      return hits
+    };
+
+    // every infinitive that has this word as one of its forms
+    const candidates = function (str, only) {
+      // the word itself may be one - 'wir gehen'
+      let roots = shape.test(str) ? [str] : [];
+      // any irregular verbs, that the models do not reverse
+      if (opts.extra) {
+        roots = roots.concat(opts.extra(str) || []);
+      }
+      pick(only).forEach((o) => {
+        persons$3.forEach((person) => {
+          // 'rad fahren' -> 'fahren'
+          const inf = (o.from(str, person) || '').split(' ').pop();
+          if (inf && inf !== str && shape.test(inf)) {
+            roots.push(inf);
+          }
+        });
+      });
+      roots = roots.filter((s, i) => roots.indexOf(s) === i);
+      const found = [];
+      roots.forEach((root) => {
+        const hits = findHits(str, root, only);
+        if (hits.length > 0) {
+          found.push({ root, hits });
+        }
+      });
+      return found
+    };
+
+    // the best of them - or null
+    // - isVerb(infinitive) says if this is a verb that we know. these are preferred.
+    // - known: only accept a verb that we know
+    // - tenses: only look in these tenses
+    const lookup = function (str, options = {}) {
+      const isVerb = options.isVerb || (() => false);
+      let found = candidates(str, options.tenses);
+      found = found.map((o, i) => ({ o, i, known: isVerb(o.root) }));
+      if (options.known) {
+        found = found.filter((a) => a.known);
+      }
+      // prefer a real verb - 'pude' is 'poder', not 'pudir'
+      found.sort((a, b) => {
+        const diff = Number(b.known) - Number(a.known);
+        if (diff !== 0) {
+          return diff
+        }
+        // then the shortest - 'sagte' is 'sagen', not 'sagten'
+        return a.o.root.length - b.o.root.length || a.i - b.i
+      });
+      return found.length > 0 ? found[0].o : null
+    };
+
+    return { table, findHits, candidates, lookup }
+  };
+
+  // the reverse-models take a tag for the person
+  const tags$1 = {
+    first: 'FirstPerson',
+    second: 'SecondPerson',
+    third: 'ThirdPerson',
+    firstPlural: 'FirstPersonPlural',
+    secondPlural: 'SecondPersonPlural',
+    thirdPlural: 'ThirdPersonPlural',
+  };
+  // the models learned some verbs in their reflexive form - 'llovió' -> 'lloverse'
+  const wrap = (fn) => (str, person) => (fn(str, tags$1[person]) || '').replace(/([aeií]r)se$/, '$1');
+
+  // the indicative tenses
+  const tenses$3 = [
+    { name: 'present', to: toPresent$1, from: wrap(fromPresent) },
+    { name: 'past', to: toPast$1, from: wrap(fromPast) },
+    { name: 'imperfect', to: toImperfect$1, from: wrap(fromImperfect) },
+    { name: 'future', to: toFuture$1, from: wrap(fromFuture) },
+    { name: 'conditional', to: toConditional$1, from: wrap(fromConditional) },
+  ];
+
+  const { table, findHits, candidates, lookup } = makeLookup(tenses$3, { shape: /[aeií]r$/ });
 
   var methods$1 = {
     verb: {
@@ -9721,12 +10762,18 @@ designate
       toPerfecto: toPerfecto$1,
       toReflexive: toReflexive$1,
       stripReflexive: stripReflexive$3,
+      table,
+      findHits,
+      candidates,
+      lookup,
       all: all$2
     },
     noun: {
       toPlural: toPlural$1,
-      toSingular: toSingular$1,
+      fromPlural,
+      toSingular: fromPlural,
       toMasculine,
+      takesEl,
       all: all$1
     },
     adjective
@@ -9828,6 +10875,7 @@ designate
     toReflexive
   } = methods$1.verb;
   const lexicon$1 = {};
+  const infinitives = [];
 
   const tagMap = {
     first: 'FirstPerson',
@@ -9907,26 +10955,20 @@ designate
         // add reflexive infinitive forms
         obj = toReflexive(w);
         addWords(obj, 'Reflexive', lexicon$1);
-        // add imperative
-        obj = toImperative(w);
-        addWords(obj, 'Imperative', lexicon$1);
-        // add reflexive for some imperative forms
-        obj = toImperativeReflexive(obj);
-        addWords(obj, 'Reflexive', lexicon$1);
-        // add toSubjunctive
-        obj = toSubjunctive(w);
-        addWords(obj, 'Subjunctive', lexicon$1);
-        // imperfect subjunctive - 'si pudiera', 'si pudiese'
-        obj = toImperfectSubjunctive(w);
-        addWords(obj, 'Subjunctive', lexicon$1);
-        obj = toImperfectSubjunctiveSe(w);
-        addWords(obj, 'Subjunctive', lexicon$1);
+        // the moods come after every verb has its tenses
+        infinitives.push(w);
       }
       if (tag === 'Adjective') {
-        const f = methods$1.adjective.toFemale(w);
-        lexicon$1[f] = lexicon$1[f] || ['Adjective', 'FemaleAdjective', 'SingularAdjective'];
-        const fs = methods$1.adjective.toFemalePlural(w);
-        lexicon$1[fs] = lexicon$1[fs] || ['Adjective', 'FemaleAdjective', 'PluralAdjective'];
+        const { toFemale, toPlural, toFemalePlural } = methods$1.adjective;
+        const f = toFemale(w);
+        // 'rojos' - or 'grandes', for both genders
+        const p = toPlural(w);
+        lexicon$1[p] = lexicon$1[p] || ['Adjective', 'PluralAdjective'];
+        if (f !== w) {
+          lexicon$1[f] = lexicon$1[f] || ['Adjective', 'FemaleAdjective', 'SingularAdjective'];
+          const fs = toFemalePlural(w);
+          lexicon$1[fs] = lexicon$1[fs] || ['Adjective', 'FemaleAdjective', 'PluralAdjective'];
+        }
       }
       if (tag === 'Cardinal') {
         lexicon$1[w] = ['Cardinal', 'TextValue'];
@@ -9935,6 +10977,24 @@ designate
         lexicon$1[w] = ['Ordinal', 'TextValue'];
       }
     });
+  });
+
+  // a tense wins over a mood - 'sienten' is the present of 'sentir', before it is a command of 'sentar'
+  infinitives.forEach((w) => {
+    // add imperative
+    let obj = toImperative(w);
+    addWords(obj, 'Imperative', lexicon$1);
+    // add reflexive for some imperative forms
+    obj = toImperativeReflexive(obj);
+    addWords(obj, 'Reflexive', lexicon$1);
+    // add toSubjunctive
+    obj = toSubjunctive(w);
+    addWords(obj, 'Subjunctive', lexicon$1);
+    // imperfect subjunctive - 'si pudiera', 'si pudiese'
+    obj = toImperfectSubjunctive(w);
+    addWords(obj, 'Subjunctive', lexicon$1);
+    obj = toImperfectSubjunctiveSe(w);
+    addWords(obj, 'Subjunctive', lexicon$1);
   });
 
   // hand-curated entries always win
@@ -9992,8 +11052,61 @@ designate
     return verb.fromPresent(str, form)
   };
 
+  // most-specific first - an #Imperfect is also a #PastTense
+  const tenses$2 = [
+    ['Imperfect', 'fromImperfect'],
+    ['PresentTense', 'fromPresent'],
+    ['PastTense', 'fromPast'],
+    ['FutureTense', 'fromFuture'],
+    ['Conditional', 'fromConditional'],
+  ];
+
+  // the tagger's tense + person are often a guess, and so is the infinitive we get from them.
+  // if it does not conjugate back into our word, look for a known verb that does
+  const checkRoot = function (str, guess, world) {
+    const verb = world.methods.two.transform.verb;
+    // the models learned some verbs in their reflexive form - 'llovió' -> 'lloverse'
+    guess = (guess || '').replace(/([aeií]r)se$/, '$1');
+    const lexicon = world.model.one.lexicon;
+    const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive');
+    const isOk = Boolean(guess) && guess !== str && verb.findHits(str, guess).length > 0;
+    if (isOk && isVerb(guess)) {
+      return guess
+    }
+    // a verb that we know beats one that we do not - 'queremos' is 'querer', not the future of 'quer'
+    const found = verb.lookup(str, { isVerb, known: true });
+    return found ? found.root : guess
+  };
+
+  // the infinitive of a command with pronouns attached - the tagger has left its stem in 'machine'
+  // 'levántate' is 'levanta' + 'te', and 'siéntese' is 'siente' + 'se'
+  const fromCommand = function (term, world) {
+    const verb = world.methods.two.transform.verb;
+    const lexicon = world.model.one.lexicon;
+    const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive');
+    const stem = term.machine;
+    // the 'tú' command is the present-tense - 'levanta'
+    const present = verb.candidates(stem, ['present']).filter((o) => isVerb(o.root) && o.hits.some((h) => h.person === 'third' || h.person === 'firstPlural'));
+    // the 'usted' command is the subjunctive - 'levante'
+    let formal = null;
+    const tags = ['ThirdPerson', 'ThirdPersonPlural'];
+    for (let i = 0; i < tags.length && !formal; i += 1) {
+      const inf = (verb.fromSubjunctive(stem, tags[i]) || '').replace(/([aeií]r)se$/, '$1');
+      if (inf && isVerb(inf) && verb.toSubjunctive(inf)[persons$2[tags[i]]] === stem) {
+        formal = inf;
+      }
+    }
+    // '-se' is only for 'usted' - 'siéntese' is 'sentar', but 'siéntete' is 'sentir'
+    const isFormal = /se$/.test(term.normal);
+    const informal = present.length > 0 ? present[0].root : null;
+    return isFormal ? formal || informal : informal || formal
+  };
+
+  const sitWords = new Set(['en', 'a', 'al', 'junto', 'aquí', 'allí', 'ahí', 'cerca', 'delante', 'detrás']);
+
   const root = function (view) {
     const { verb, noun, adjective } = view.world.methods.two.transform;
+    const lexicon = view.world.model.one.lexicon;
     view.docs.forEach((terms) => {
       terms.forEach((term) => {
         // 'machine' may hold a clitic-stripped stem - 'dámelo' → 'da'
@@ -10015,34 +11128,38 @@ designate
             return
           }
           const form = verbForm(term);
-          if (term.tags.has('Subjunctive')) {
+          // 'levántate', 'siéntese' - a command, with its pronouns attached
+          const imp = term.machine && term.tags.has('Imperative') ? fromCommand(term, view.world) : null;
+          if (imp) {
+            term.root = imp;
+          } else if (term.tags.has('Subjunctive')) {
             term.root = fromSubjunctive(str, form, verb);
           } else if (term.tags.has('Gerund')) {
             term.root = verb.fromGerund(str, form);
           } else if (term.tags.has('Perfecto')) {
             term.root = verb.fromPerfecto(str, form);
-          } else if (term.tags.has('Imperfect')) {
-            term.root = verb.fromImperfect(str, form);
-          } else if (term.tags.has('PresentTense')) {
-            term.root = verb.fromPresent(str, form);
-          } else if (term.tags.has('PastTense')) {
-            term.root = verb.fromPast(str, form);
-          } else if (term.tags.has('FutureTense')) {
-            term.root = verb.fromFuture(str, form);
-          } else if (term.tags.has('Conditional')) {
-            term.root = verb.fromConditional(str, form);
-          } else if (term.tags.has('Imperative')) {
-            term.root = verb.fromImperative(str, form);
           } else {
-            // guess!
-            term.root = verb.fromPresent(str, form);
+            // an indicative tense - 'hablo', 'habló', 'hablaba', 'hablará', 'hablaría'
+            const from = tenses$2.find((o) => term.tags.has(o[0]));
+            if (!from && term.tags.has('Imperative')) {
+              term.root = verb.fromImperative(str, form);
+            } else {
+              // .. or a guess
+              term.root = checkRoot(str, verb[(from || tenses$2[1])[1]](str, form), view.world);
+            }
           }
+        }
+
+        // 'me siento mal' is 'sentir', but 'me siento en la silla' is 'sentar'
+        if (term.tags.has('Verb') && term.normal === 'siento') {
+          const next = terms[terms.indexOf(term) + 1];
+          term.root = next && sitWords.has(next.normal) ? 'sentar' : 'sentir';
         }
 
         // nouns -> singular masculine form
         if (term.tags.has('Noun')) {
           if (term.tags.has('Plural')) {
-            str = noun.toSingular(str);
+            str = noun.toSingular(str, lexicon);
           }
           if (term.tags.has('FemaleNoun')) ;
           term.root = str;
@@ -10052,13 +11169,13 @@ designate
         if (term.tags.has('Adjective')) {
           if (term.tags.has('PluralAdjective')) {
             if (term.tags.has('FemaleAdjective')) {
-              str = adjective.fromFemalePlural(str);
+              str = adjective.fromFemalePlural(str, lexicon);
             } else {
-              str = adjective.toSingular(str);
+              str = adjective.toSingular(str, lexicon);
             }
           }
           if (term.tags.has('FemaleAdjective')) {
-            str = adjective.fromFemale(str);
+            str = adjective.fromFemale(str, lexicon);
           }
           term.root = str;
         }
@@ -10138,11 +11255,29 @@ designate
     { word: 'del', out: ['de', 'el'] },
   ];
 
+  // words that end in a period, but don't end a sentence - 'Dr.'
+  // (these replace the english abbreviations, which collide with real words here)
+  const toObj = str => Object.fromEntries(str.trim().split(/\s+/).map(w => [w, true]));
+
+  var abbreviations = toObj(`
+  sr sra srta sres sras dr dra drs dras dña ud uds vd vds
+  lic licda ing arq prof profa gral cnel tte cap pdte excmo excma ilmo ilma mons sto sta fr
+  av avda cía hnos depto dpto atte vs univ ed eds
+  pág págs núm art vol fig tab apdo ej p.ej tel tfno teléf aprox máx mín doc etc
+  ee uu ee.uu
+  kg km cm mm ml min
+  lun mié jue vie sáb
+  ene feb abr jun jul ago sept oct nov dic
+`);
+
   var tokenizer = {
     mutate: (world) => {
       world.model.one.unicode = unicode;
 
       world.model.one.contractions = contractions;
+
+      // our own abbreviations, for the sentence-parser
+      world.model.one.abbreviations = { ...abbreviations };
 
       // 'que' -> 'quebec'
       delete world.model.one.lexicon.que;
@@ -10367,7 +11502,7 @@ designate
   const deAccent = (str) => str.replace(/[áéíóú]/g, (c) => accents[c]);
 
   const isGerund = /(ando|iendo|yendo)$/;
-  const isInfinitive$2 = /(ar|er|ir)$/;
+  const isInfinitive$4 = /(ar|er|ir)$/;
 
   const verbish = ['Imperative', 'PresentTense', 'Infinitive', 'Verb', 'Copula', 'Subjunctive'];
   const isVerb = function (entry) {
@@ -10386,7 +11521,7 @@ designate
     }
     // 'quemarme', 'mezclarlo' - verify against the lexicon,
     // or accept a long-enough infinitive shape ('bloguearlo')
-    if (isInfinitive$2.test(plain)) {
+    if (isInfinitive$4.test(plain)) {
       if (isVerb(lexicon[plain]) || plain.length >= 5) {
         return { tags: ['Infinitive'], stem: plain }
       }
@@ -10858,7 +11993,7 @@ designate
   // 'yo como' - 'como' is usually a conjunction, 'vivo' an adjective, 'trabajo' a noun
   // but 'yo' and 'tú' are only ever the subject of a verb,
   // so a first-person form of a known verb, after 'yo', is that verb.
-  const subjects$1 = {
+  const subjects$2 = {
     yo: ['FirstPerson', 'first'],
     tú: ['SecondPerson', 'second'],
   };
@@ -10869,14 +12004,9 @@ designate
     'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
   ]);
 
-  const tenses = [
-    ['PresentTense', 'fromPresent', 'toPresent'],
-    ['PastTense', 'fromPast', 'toPast'],
-    ['Imperfect', 'fromImperfect', 'toImperfect'],
-    ['FutureTense', 'fromFuture', 'toFuture'],
-  ];
+  const tenses$1 = { present: 'PresentTense', past: 'PastTense', imperfect: 'Imperfect', future: 'FutureTense' };
 
-  const isInfinitive$1 = function (str, lexicon) {
+  const isInfinitive$3 = function (str, lexicon) {
     if (!lexicon.hasOwnProperty(str)) {
       return false
     }
@@ -10885,7 +12015,7 @@ designate
   };
 
   const subjectVerb = function (terms, i, world) {
-    const found = subjects$1[terms[i].normal];
+    const found = subjects$2[terms[i].normal];
     if (!found) {
       return
     }
@@ -10900,15 +12030,11 @@ designate
     const [tag, form] = found;
     const verb = world.methods.two.transform.verb;
     const lexicon = world.model.one.lexicon;
-    const str = term.normal;
-    for (let k = 0; k < tenses.length; k += 1) {
-      const [tense, from, to] = tenses[k];
-      const inf = verb[from](str, tag);
-      // it has to be a known verb, that conjugates back to this word
-      if (inf && inf !== str && isInfinitive$1(inf, lexicon) && verb[to](inf)[form] === str) {
-        world.methods.one.setTag([term], ['Verb', tense, tag], world, false, '3-subject-verb');
-        return
-      }
+    // it has to be a known verb, that conjugates back to this word
+    const res = verb.lookup(term.normal, { isVerb: (inf) => isInfinitive$3(inf, lexicon), known: true, tenses: Object.keys(tenses$1) });
+    const hit = res ? res.hits.find((o) => o.person === form) : null;
+    if (hit) {
+      world.methods.one.setTag([term], ['Verb', tenses$1[hit.tense], tag], world, false, '3-subject-verb');
     }
   };
 
@@ -10920,7 +12046,7 @@ designate
     'molestar', 'alegrar',
   ];
   // 'para que sepas', 'ojalá que llueva'
-  const before = new Set(['para', 'sin', 'ojalá', 'aunque']);
+  const before$2 = new Set(['para', 'sin', 'ojalá', 'aunque']);
   // 'es importante que estudies'
   const impersonal = new Set(['importante', 'necesario', 'posible', 'imposible', 'mejor', 'probable', 'bueno', 'malo']);
 
@@ -10939,7 +12065,7 @@ designate
     ['ThirdPersonPlural', 'thirdPlural'],
   ];
 
-  const isInfinitive = function (str, lexicon) {
+  const isInfinitive$2 = function (str, lexicon) {
     if (!lexicon.hasOwnProperty(str)) {
       return false
     }
@@ -10963,7 +12089,7 @@ designate
     if (!prev) {
       return false
     }
-    if (before.has(prev.normal) || impersonal.has(prev.normal)) {
+    if (before$2.has(prev.normal) || impersonal.has(prev.normal)) {
       return true
     }
     // 'quiero que', 'te pido a ti que'
@@ -10998,7 +12124,7 @@ designate
     for (let k = 0; k < order.length; k += 1) {
       const [tag, form] = order[k];
       const inf = verb.fromSubjunctive(str, tag);
-      if (inf && inf !== str && isInfinitive(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
+      if (inf && inf !== str && isInfinitive$2(inf, lexicon) && verb.toSubjunctive(inf)[form] === str) {
         const { setTag, unTag } = world.methods.one;
         const old = ['PresentTense', 'Imperative'].concat(persons$1.map((a) => a[0]));
         old.forEach((t) => unTag([term], t, world.model.one.tagSet));
@@ -11006,6 +12132,249 @@ designate
         return
       }
     }
+  };
+
+  // 'como' is nearly always a conjunction - 'tan alto como su padre', 'como siempre'
+  // but it is also 'I eat' - 'como pan', 'no como carne', 'como y bebo'
+  // a comparison needs a clause to hang from, so when 'como' leads a sentence that has
+  // no other verb, it is the verb.
+
+  // words that may come before the verb - 'hoy no lo como'
+  const before$1 = new Set([
+    'no', 'nunca', 'ya', 'también', 'tampoco', 'siempre', 'casi', 'solo', 'sólo', 'hoy', 'ahora', 'aquí',
+    'normalmente', 'generalmente', 'mañana', 'luego', 'después', 'entonces', 'y', 'pero',
+    'me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os',
+  ]);
+  // 'como siempre', 'como tú', 'como si nada', 'como resultado'
+  const notAfter = new Set([
+    'siempre', 'nunca', 'antes', 'si', 'que', 'yo', 'tú', 'él', 'ella', 'usted', 'nosotros', 'nosotras', 'vosotros',
+    'ellos', 'ellas', 'ustedes', 'mucho', 'máximo', 'mínimo', 'resultado', 'consecuencia', 'ejemplo', 'respuesta',
+    'parte', 'regla', 'norma', 'tal', 'era', 'es', 'ayer', 'hoy', 'mañana', 'entonces', 'nadie', 'todos', 'todo',
+    'cualquier', 'cualquiera', 'quien', 'cuando', 'para', 'por', 'de', 'prueba', 'muestra',
+  ]);
+  const pronouns = new Set(['me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os']);
+  // verb-forms that can not hold-up a clause on their own
+  const nonFinite$1 = ['Infinitive', 'Gerund', 'Perfecto', 'Participle'];
+
+  const isFinite$3 = (term) => term.tags.has('Verb') && !nonFinite$1.some((tag) => term.tags.has(tag));
+
+  const como = function (terms, i, world) {
+    const term = terms[i];
+    if (term.normal !== 'como' || term.tags.has('Verb')) {
+      return
+    }
+    const setVerb = (reason) => {
+      term.tags.clear();
+      world.methods.one.setTag([term], ['Verb', 'PresentTense', 'FirstPerson'], world, false, reason);
+    };
+    const prev = terms[i - 1];
+    const next = terms[i + 1];
+    // 'como y bebo', 'bebo y como'
+    const isFirst = (t) => Boolean(t) && t.tags.has('Verb') && t.tags.has('FirstPerson');
+    if (next && (next.normal === 'y' || next.normal === 'o') && isFirst(terms[i + 2])) {
+      setVerb('3-como-y-verb');
+      return
+    }
+    if (prev && (prev.normal === 'y' || prev.normal === 'o') && isFirst(terms[i - 2]) && !terms[i - 2].tags.has('Copula')) {
+      setVerb('3-verb-y-como');
+      return
+    }
+    // 'me lo como todo' - an object-pronoun is right before its verb
+    if (prev && pronouns.has(prev.normal)) {
+      setVerb('3-clitic-como');
+      return
+    }
+    // nothing before it, but words like 'no', 'hoy'
+    if (!terms.slice(0, i).every((t) => before$1.has(t.normal))) {
+      return
+    }
+    // .. and no other verb for it to lean on
+    if (terms.some((t, k) => k !== i && isFinite$3(t))) {
+      return
+    }
+    if (!next) {
+      // 'nunca como'
+      if (i > 0) {
+        setVerb('3-neg-como');
+      }
+      return
+    }
+    // 'no como mucho'
+    const isNegated = prev && ['no', 'nunca', 'tampoco', 'casi'].includes(prev.normal);
+    if (next.normal === 'mucho' && isNegated) {
+      setVerb('3-como-mucho');
+      return
+    }
+    if (notAfter.has(next.normal) || next.tags.has('Pronoun') || next.tags.has('Conjunction')) {
+      return
+    }
+    setVerb('3-como-verb');
+  };
+
+  // many verb-forms are also a noun or an adjective - 'vino', 'juego', 'trabajo', 'camino', 'vivo'
+  // and the lexicon gives them to the noun.
+  // so look for one of these, in a place where a verb goes.
+
+  // each subject, and the person of its verb - 'yo vino' is not a verb
+  const subjects$1 = {
+    yo: 'first',
+    tú: 'second',
+    él: 'third',
+    ella: 'third',
+    usted: 'third',
+    nosotros: 'firstPlural',
+    nosotras: 'firstPlural',
+    vosotros: 'secondPlural',
+    vosotras: 'secondPlural',
+    ellos: 'thirdPlural',
+    ellas: 'thirdPlural',
+    ustedes: 'thirdPlural',
+  };
+  // words that are followed by a verb - 'no [vino]', 'se [cierra]', 'dice que [vino]'
+  const before = new Set(['no', 'nunca', 'ya', 'también', 'tampoco', 'siempre', 'me', 'te', 'se', 'nos', 'os', 'le', 'les', 'que', 'si', 'cuando', 'porque', 'donde', 'quien']);
+  // .. these ones begin a clause, and a noun can follow them too
+  const clauseWords = new Set(['que', 'si', 'cuando', 'porque', 'donde', 'quien']);
+  // 'qué vino [tan] bueno'
+  const degrees = new Set(['tan', 'más', 'muy', 'menos']);
+  const reflexives$1 = new Set(['me', 'te', 'se', 'nos', 'os']);
+  const joins$1 = new Set(['y', 'o', 'pero']);
+  // 'vino [mañana]'
+  const dates$1 = new Set(['mañana', 'ayer', 'hoy', 'tarde', 'temprano', 'anoche', 'ahora']);
+  // 'trabajo [de] noche' - but 'trabajo de equipo' is a noun-phrase
+  const deWords = new Set(['día', 'noche', 'tarde', 'mañana', 'nuevo', 'prisa', 'vez', 'pie']);
+  const tenses = { present: 'PresentTense', past: 'PastTense', imperfect: 'Imperfect', future: 'FutureTense' };
+  const persons = {
+    first: 'FirstPerson',
+    second: 'SecondPerson',
+    third: 'ThirdPerson',
+    firstPlural: 'FirstPersonPlural',
+    secondPlural: 'SecondPersonPlural',
+    thirdPlural: 'ThirdPersonPlural',
+  };
+  const nonFinite = ['Infinitive', 'Gerund', 'Perfecto', 'Participle'];
+
+  const isInfinitive$1 = function (str, lexicon) {
+    const tags = lexicon.hasOwnProperty(str) ? lexicon[str] : null;
+    return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
+  };
+  const isFiniteTag = (term) => term.tags.has('Verb') && !nonFinite.some((tag) => term.tags.has(tag));
+  // a verb-form after 'la' or 'mi' will become a noun - 'pago la [cuenta]'
+  const isFinite$2 = function (term, i, terms) {
+    const prev = terms[i - 1];
+    return isFiniteTag(term) && !(prev && prev.tags.has('Determiner'))
+  };
+  const isNoun = (term) => Boolean(term) && term.tags.has('Noun') && !term.tags.has('Pronoun');
+  // something that a verb can lead into - 'juego [al] fútbol', 'cierra [la] puerta', 'vivo [aquí]'
+  const isObject = function (term) {
+    if (!term) {
+      return false
+    }
+    const tags = term.tags;
+    return tags.has('Determiner') || tags.has('Preposition') || tags.has('Adverb') || tags.has('Value') || dates$1.has(term.normal)
+  };
+
+  const homographVerbs = function (terms, world) {
+    const lexicon = world.model.one.lexicon;
+    const verb = world.methods.two.transform.verb;
+    const isVerb = (inf) => isInfinitive$1(inf, lexicon);
+    const lookup = function (term, i) {
+      const tags = term.tags;
+      // 'me [visto]' is 'vestir' - a participle needs its auxiliary before it
+      const prev = terms[i - 1];
+      const isReflexive = tags.has('Perfecto') && Boolean(prev) && reflexives$1.has(prev.normal);
+      if (!isReflexive && (tags.has('Verb') || !(tags.has('Noun') || tags.has('Adjective')))) {
+        return null
+      }
+      if (tags.has('Pronoun') || term.implicit !== undefined) {
+        return null
+      }
+      // a name, or a place - 'en Vino Tinto'
+      if (term.normal.length < 3 || (i > 0 && /^\p{Lu}/u.test(term.text || ''))) {
+        return null
+      }
+      return verb.lookup(term.normal, { isVerb, known: true, tenses: Object.keys(tenses) })
+    };
+    const tag = function (term, hit, reason) {
+      term.tags.clear();
+      world.methods.one.setTag([term], ['Verb', tenses[hit.tense], persons[hit.person]], world, false, reason);
+    };
+    // is there a verb already, in this part of the sentence? - 'trabajo de día | y estudio de noche'
+    const hasVerb = function (i) {
+      const isEdge = (t) => joins$1.has(t.normal) || /[,;:]/.test(t.post);
+      let start = i;
+      while (start > 0 && !isEdge(terms[start - 1])) {
+        start -= 1;
+      }
+      let end = i;
+      while (end < terms.length - 1 && !isEdge(terms[end]) && !joins$1.has(terms[end + 1].normal)) {
+        end += 1;
+      }
+      return terms.slice(start, end + 1).some(isFinite$2)
+    };
+    let person = null;
+    for (let i = 0; i < terms.length; i += 1) {
+      const term = terms[i];
+      const prev = terms[i - 1];
+      const next = terms[i + 1];
+      const found = lookup(term, i);
+      if (!found) {
+        continue
+      }
+      // one more verb, for the same subject - 'trabajo de día y [estudio] de noche'
+      if (person !== null && prev && joins$1.has(prev.normal)) {
+        const same = found.hits.find((o) => o.person === person);
+        if (same) {
+          tag(term, same, '3-homograph-verb-and');
+        }
+        continue
+      }
+      let hit = null;
+      if (prev && subjects$1.hasOwnProperty(prev.normal)) {
+        // 'ella cierra la puerta'
+        hit = found.hits.find((o) => o.person === subjects$1[prev.normal]);
+      } else if (prev && before.has(prev.normal)) {
+        // 'no vino', 'dice que vino mañana' - but 'más alto que bajo', 'dice que nada importa'
+        // .. and 'donde vivo, nieva mucho'
+        const isEnd = prev.normal !== 'que' && (!next || /,/.test(term.post));
+        const isLoose = clauseWords.has(prev.normal) && !isObject(next) && !isEnd;
+        // an exclamation, with no clause before it - 'que vino tan bueno!'
+        const isExclaim = i === 1 && prev.normal === 'que' && next && degrees.has(next.normal);
+        hit = isLoose || isExclaim ? null : found.hits[0];
+      } else if (hasVerb(i)) ; else if (!prev) {
+        // 'Juego al fútbol.', 'Vino mañana.'
+        const after = terms[i + 2];
+        const isOf = next && next.normal === 'de' && !(after && (deWords.has(after.normal) || after.tags.has('Infinitive')));
+        hit = isObject(next) && !isOf ? found.hits[0] : null;
+      } else if (isNoun(prev) && isObject(next)) {
+        // 'mi madre cocina la cena'
+        hit = found.hits.find((o) => o.person === 'third' || o.person === 'thirdPlural');
+      }
+      if (hit) {
+        tag(term, hit, '3-homograph-verb');
+        person = hit.person;
+      }
+    }
+  };
+
+  // our list of names has few accents - 'María' is found as 'maria'
+  // (and without this, the '-ría' suffix makes it a conditional verb)
+  const names = ['FemaleName', 'MaleName', 'FirstName', 'LastName'];
+  const plain = { á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u' };
+
+  const accentName = function (terms, i, world) {
+    const term = terms[i];
+    const text = term.text || '';
+    if (term.tags.size > 0 || !/^\p{Lu}\p{Ll}/u.test(text) || !/[áéíóú]/.test(term.normal)) {
+      return null
+    }
+    const str = term.normal.replace(/[áéíóú]/g, (c) => plain[c]);
+    const lexicon = world.model.one.lexicon;
+    const tags = lexicon.hasOwnProperty(str) ? [].concat(lexicon[str]) : [];
+    if (tags.some((tag) => names.includes(tag))) {
+      world.methods.one.setTag([term], tags, world, false, '2-accent-name');
+      return true
+    }
+    return null
   };
 
   // 1st pass
@@ -11024,6 +12393,7 @@ designate
   const secondPass = function (terms, world) {
     for (let i = 0; i < terms.length; i += 1) {
       let found = isAcronym(terms, i, world);
+      found = found || accentName(terms, i, world);
       found = found || checkEnclitic(terms, i, world);
       found = found || suffixCheck(terms, i, world);
       // found = found || neighbours(terms, i, world)
@@ -11048,6 +12418,7 @@ designate
     for (let i = 0; i < terms.length; i += 1) {
       subjectVerb(terms, i, world);
       checkSubjunctive(terms, i, world);
+      como(terms, i, world);
     }
   };
 
@@ -11058,6 +12429,7 @@ designate
       secondPass(terms, world);
       thirdPass(terms, world);
       fourthPass(terms, world);
+      homographVerbs(terms, world);
     });
     return view
   };
@@ -11493,9 +12865,9 @@ designate
     'fecha', 'sede', 'sociedad', 'noche',
     'gente', 'calle', 'ley', 'clase',
     'mano', 'foto', 'moto', 'flor', 'radio',
-    'sal', 'piel', 'miel', 'nube', 'sangre',
+    'sal', 'piel', 'miel', 'nube', 'sangre', 'tos',
   ]);
-  var exceptions$1 = { f, m };
+  var genders = { f, m };
 
   //sweep-through all suffixes
   const bySuffix = function (str) {
@@ -11516,10 +12888,10 @@ designate
   };
 
   const guessGender = function (str) {
-    if (exceptions$1.f.has(str)) {
+    if (genders.f.has(str)) {
       return 'f'
     }
-    if (exceptions$1.m.has(str)) {
+    if (genders.m.has(str)) {
       return 'm'
     }
     return bySuffix(str)
@@ -11583,51 +12955,13 @@ designate
     return arr
   };
 
-  // singular words that end in -s
-  const exceptions = new Set([
-    'análisis',
-    'jueves',
-    'ciempiés',
-    // weekdays
-    'lunes',
-    'martes',
-    'miércoles',
-    'viernes',
-    // invariants + singulars in -s
-    'crisis',
-    'tesis',
-    'dosis',
-    'sintaxis',
-    'énfasis',
-    'paréntesis',
-    'oasis',
-    'virus',
-    'campus',
-    'dios',
-    'adiós',
-    'vals',
-  ]);
-
+  // 'gatos', 'cafés' - but not 'lunes', 'crisis', 'país', 'paraguas'
   const looksPlural = function (str) {
     // not long enough to be plural - 'gas', 'mes', 'res', 'tos'
     if (!str || str.length <= 3) {
       return false
     }
-    if (exceptions.has(str)) {
-      return false
-    }
-    if (!str.endsWith('s')) {
-      return false
-    }
-    // stressed final syllable - 'país', 'inglés', 'autobús', 'cortés'
-    if (/[áéíóú]s$/.test(str)) {
-      return false
-    }
-    // 'crisis'-type words
-    if (str.endsWith('sis') || str.endsWith('xis')) {
-      return false
-    }
-    return true
+    return !isSingular(str)
   };
 
   var methods = {
@@ -11668,16 +13002,12 @@ designate
 
     // homographs - 'él vino a casa' (he came home)
     { match: '#Pronoun [vino] (a|de|en|con)', group: 0, tag: ['Verb', 'PastTense', 'ThirdPerson'], reason: 'el-vino' },
-    // 'la cura', 'el canto' - determiner + verb-form is a noun
-    { match: '(el|la|un|una) [#PresentTense]$', group: 0, tag: 'Noun', reason: 'la-cura' },
-    { match: '(el|la|un|una) [#PresentTense] #Preposition', group: 0, tag: 'Noun', reason: 'el-canto-de' },
-    // 'las casas' - plural determiner + verb-form is a plural noun
-    { match: '(los|las|unos|unas) [#PresentTense]$', group: 0, tag: 'Plural', reason: 'las-casas' },
+    // (articles before a verb-form are done in ./article-clitic.js)
     // 'gran parte de', 'forma parte de'
     { match: '(gran|mayor|buena|toda|esa|esta) [parte]', group: 0, tag: 'Noun', reason: 'gran-parte' },
 
     // no exageres
-    { match: 'no [#Noun]', group: 0, tag: 'Verb', reason: 'no-noun' },
+    { match: 'no [(#Noun && !#Pronoun)]', group: 0, tag: 'Verb', reason: 'no-noun' },
 
     // moods
     // 'espero que tengas' - a command-form after 'que' is subjunctive
@@ -11716,20 +13046,225 @@ designate
     { match: '[{quedar/verb} en] #Infinitive', group: 0, tag: 'Auxiliary', reason: 'quedar-en-inf' },
     // poder  "to be able to"
     { match: '[{poder/verb}] #Infinitive', group: 0, tag: 'Auxiliary', reason: 'poder-inf' },
+    // 'se venden casas' - the thing that is sold, not 'tú casas'
+    { match: 'se #ThirdPersonPlural [(#SecondPerson && /s$/)]', group: 0, tag: 'Plural', reason: 'se-venden-casas' },
     // any missing estar
     { match: '[#Copula] #Infinitive', group: 0, tag: 'Auxiliary', reason: 'copula-inf' },
-
-    // possessives - 'my taste'
-    { match: '(#Possessive && #Determiner) [#FirstPerson]', group: 0, tag: 'Noun', reason: 'mi-gusto' },
-    //Los avances en
-    { match: '(los|las) [#Verb] #Preposition', group: 0, tag: 'Plural', reason: 'los-advances' },
-    //confundo los numbres
-    { match: '#Verb (los|las) [#Verb]$', group: 0, tag: 'Plural', reason: 'los-numbres' },
-    //de la cola
-    { match: 'de (la|las) [#Verb]', group: 0, tag: 'Noun', reason: 'de-la-cola' },
-    //of the #verb
-    { match: 'del [#Verb]', group: 0, tag: 'Noun', reason: 'del-verb' }
   ];
+
+  // la / los / las are articles, and are also object-pronouns - 'las compras' is 'the purchases', and 'you buy them'
+  // so when the next word is a verb-form, choose between them:
+  //  1. can it follow this article at all? - 'los tengo', 'la veo', 'la tienen' can not
+  //  2. is it a real verb-form? - 'la calle', 'los bailes' are only a subjunctive, and want a 'no' or a 'que'
+  //     and 'la tiene', 'los vendes' are '-er' verbs, that do not look like a noun
+  //  3. what is around it? - 'ella la cuenta' and 'la paga Juan', but 'en la cuenta' and 'la cuenta es alta'
+  // .. while un / una / unos / unas, and mi / tu / su, are never pronouns - and 'el' is one only by a typo ('el tiene')
+
+  // is it a plural?
+  const articles = { el: false, un: false, una: false, unos: true, unas: true, la: false, los: true, las: true };
+  const clitics$1 = new Set(['la', 'los', 'las', 'lo']);
+  // feminine nouns in '-o'
+  const femaleO = new Set(['mano', 'foto', 'moto', 'radio', 'modelo']);
+  // words that an object-pronoun follows - 'no la veo', 'ella la cuenta', 'se la doy'
+  const verbBefore = new Set('no,nunca,tampoco,me,te,se,nos,os,le,les'.split(',').concat(Object.keys(subjects$1)));
+  // .. or a noun - 'si la cuenta es alta', but 'si la compra'
+  const clauseBefore = new Set('que,si,cuando,porque,donde,quien,como,ya,también,siempre,aquí,ahora,hoy'.split(','));
+  const joins = new Set(['y', 'o', 'pero', 'ni']);
+
+  const getStr = (term) => term.implicit || term.normal;
+  const has = (term, tag) => Boolean(term) && term.tags.has(tag);
+  const hasPunct = (term) => /[,;:.!?]/.test(term.post || '');
+  const isFinite$1 = (term) => has(term, 'Verb') && !['Infinitive', 'Gerund', 'Perfecto'].some((tag) => has(term, tag));
+  const isAdverb = (term) => has(term, 'Adverb') || has(term, 'Negative');
+
+  const tagArticles = function (view) {
+    const world = view.world;
+    const setTag = world.methods.one.setTag;
+    const { noun, verb } = world.methods.two.transform;
+    const lexicon = world.model.one.lexicon;
+    const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive');
+    // a noun that we know - 'la parte', 'las partes'
+    const isKnown = (str) => [str, noun.fromPlural(str)].some((s) => genders.f.has(s) || genders.m.has(s) || lexicon[s] === 'Noun');
+
+    view.docs.forEach((terms) => {
+      // does a verb begin here? - '[es] alta', '[la paga] Juan', '[ya no] van'
+      const verbAt = function (n) {
+        while (isAdverb(terms[n])) {
+          n += 1;
+        }
+        const term = terms[n];
+        if (term && (clitics$1.has(getStr(term)) || verbBefore.has(getStr(term)))) {
+          return isFinite$1(terms[n + 1])
+        }
+        return isFinite$1(term)
+      };
+      let choose = null;
+      // what do the words after it say?
+      const lookAfter = function (i) {
+        const next = terms[i + 1];
+        if (!next || hasPunct(terms[i])) {
+          return null
+        }
+        // 'la intenta comprar'
+        if (has(next, 'Infinitive') || has(next, 'Gerund')) {
+          return 'Verb'
+        }
+        // 'la cuenta es alta', 'la toma de la ciudad', 'las cocinas modernas'
+        if (verbAt(i + 1) || getStr(next) === 'de' || has(next, 'Adjective')) {
+          return 'Noun'
+        }
+        // 'la compra y la vende', but 'las casas y el gato'
+        if (joins.has(getStr(next)) && terms[i + 2]) {
+          const str = getStr(terms[i + 2]);
+          if (articles.hasOwnProperty(str) && has(terms[i + 3], 'Verb')) {
+            return choose(i + 2)
+          }
+          return verbAt(i + 2) ? 'Verb' : 'Noun'
+        }
+        // 'la limpia cada día', 'la paga Juan', 'la canta muy bien'
+        const isAfter = ['Adverb', 'Determiner', 'Value', 'ProperNoun', 'Pronoun', 'Date'].some((tag) => has(next, tag));
+        return isAfter ? 'Verb' : null
+      };
+      // is the verb-form after this article a noun, or a verb?
+      choose = function (i) {
+        const art = getStr(terms[i]);
+        const term = terms[i + 1];
+        const str = term.normal;
+        const prev = terms[i - 1];
+        const before = prev && !hasPunct(prev) ? getStr(prev) : '';
+        // 'el baile', 'un viaje', 'del hecho' - but 'el' may be 'él', before its own verb-form - 'el tiene'
+        const isEl = art === 'el';
+        if (!clitics$1.has(art) && !(isEl && has(term, 'ThirdPerson'))) {
+          return 'Noun'
+        }
+        // 'la mujer', 'los vestidos', 'los cuadernos' - and 'en la cuenta', 'pago la cuenta'
+        const isObject = before && (has(prev, 'Preposition') || has(prev, 'Verb'));
+        if (!isFinite$1(term) || (/[^m]os$/.test(str) && art !== 'la') || isObject) {
+          return 'Noun'
+        }
+        // 'los tengo', 'la veo', 'la vi', 'la tienen', 'la tienes', 'los tenemos' - but 'la caries'
+        const agrees = art === 'la' ? !/[oéíón]$/.test(str) && (!str.endsWith('s') || noun.fromPlural(str) === str) : isEl || /[sx]$/.test(str);
+        if (!agrees || has(term, 'FirstPersonPlural')) {
+          return 'Verb'
+        }
+        // 'la calle', 'los bailes' are only a subjunctive - 'no la calle', 'que la calle', but 'que la calle es larga'
+        const isPresent = has(term, 'PresentTense');
+        if (has(term, 'Subjunctive') || has(term, 'Imperative') || (!isPresent && !has(term, 'PastTense') && !has(term, 'FutureTense') && !has(term, 'Conditional'))) {
+          const isClause = verbBefore.has(before) || (clauseBefore.has(before) && lookAfter(i + 1) !== 'Noun');
+          return isClause ? 'Verb' : 'Noun'
+        }
+        // 'la tenía', 'la tiene', 'los vendes' - but 'la parte', 'las luces'
+        if (!isPresent || (/es?$/.test(str) && !isKnown(str))) {
+          return 'Verb'
+        }
+        // 'ella la cuenta', 'María la visita', 'mi madre la cocina'
+        if (!isEl && (verbBefore.has(before) || (before && has(prev, 'Noun') && !has(prev, 'Date')))) {
+          return 'Verb'
+        }
+        // 'si la cuenta es alta', but 'dice que la compra'
+        return lookAfter(i + 1) || (clauseBefore.has(before) ? 'Verb' : 'Noun')
+      };
+
+      for (let i = 0; i < terms.length - 1; i += 1) {
+        const art = getStr(terms[i]);
+        const term = terms[i + 1];
+        const str = term.normal;
+        // 'mi cuenta', 'sus viajes' - but 'tu compras' is a typo
+        const isPossessive = has(terms[i], 'Possessive') && has(terms[i], 'Determiner') && !(art === 'tu' && has(term, 'SecondPerson'));
+        if (!clitics$1.has(art) && !articles.hasOwnProperty(art) && !isPossessive) {
+          continue
+        }
+        const isPlural = isPossessive ? art.endsWith('s') : articles[art];
+        const isClitic = clitics$1.has(art) && (terms[i].tags.has('Determiner') || art === 'lo');
+        // 'la ha visto', 'los puede ver'
+        if (isClitic && (has(term, 'Auxiliary') || (has(term, 'Modal') && isFinite$1(term)))) {
+          terms[i].tags.clear();
+          setTag([terms[i]], 'Pronoun', world, false, 'clitic-aux');
+          continue
+        }
+        if (has(term, 'Pronoun') || has(term, 'Copula') || has(term, 'Auxiliary') || /\p{Lu}/u.test(term.text) || !(isClitic || terms[i].tags.has('Determiner'))) {
+          continue
+        }
+        if (has(term, 'Verb')) {
+          // 'el puede' is 'él puede' - but 'el suelo'
+          if (art === 'lo' || (has(term, 'Modal') && has(term, 'ThirdPerson'))) {
+            continue
+          }
+          if (choose(i) === 'Noun') {
+            term.tags.clear();
+            setTag([term], 'Noun', world, false, 'article-noun');
+          } else {
+            if (isClitic) {
+              terms[i].tags.clear();
+              setTag([terms[i]], 'Pronoun', world, false, 'clitic-verb');
+            }
+            continue
+          }
+        } else if (isClitic && (has(term, 'Noun') || (has(term, 'Adjective') && art !== 'lo'))) {
+          // a word in the lexicon, that can not follow this article - 'la trabajo', 'los camino', 'lo cuento', 'la presto'
+          const agrees = art === 'la' ? !str.endsWith('o') || femaleO.has(str) : art !== 'lo' && /[sx]$/.test(str);
+          const found = agrees || str.length < 3 ? null : verb.lookup(str, { isVerb, known: true, tenses: Object.keys(tenses) });
+          if (found) {
+            const hit = found.hits[0];
+            terms[i].tags.clear();
+            setTag([terms[i]], 'Pronoun', world, false, 'clitic-verb');
+            term.tags.clear();
+            setTag([term], ['Verb', tenses[hit.tense], persons[hit.person]], world, false, 'clitic-verb');
+            continue
+          }
+        }
+        if (!has(term, 'Noun') || art === 'lo') {
+          continue
+        }
+        // 'las flores', 'la rosa' are not names
+        if (has(term, 'ProperNoun')) {
+          term.tags.clear();
+          setTag([term], 'Noun', world, false, 'article-noun');
+        }
+        // 'los lunes', 'las crisis' - but 'el paraguas'
+        if (isPlural && /[sx]$/.test(str)) {
+          setTag([term], 'Plural', world, false, 'plural-article');
+        } else if (!isPlural && has(term, 'Plural')) {
+          setTag([term], 'Singular', world, false, 'singular-article');
+        }
+      }
+    });
+  };
+
+  // the lexicon gives 'limpia', 'duras', 'alegres' to a verb, and 'cara', 'rojas', 'china' to a name
+  // but after 'ser' or 'estar', a form of an adjective that we know is that adjective - 'es limpia', 'son rojas'
+  const copulaAdjective = function (view) {
+    const world = view.world;
+    const setTag = world.methods.one.setTag;
+    const lexicon = world.model.one.lexicon;
+    const { fromFemale, fromFemalePlural, toSingular } = world.methods.two.transform.adjective;
+    const isAdj = (str) => lexicon[str] === 'Adjective';
+    view.docs.forEach((terms) => {
+      for (let i = 1; i < terms.length; i += 1) {
+        const term = terms[i];
+        const tags = term.tags;
+        if (!terms[i - 1].tags.has('Copula') || /\p{Lu}/u.test(term.text) || !(tags.has('Verb') || tags.has('ProperNoun'))) {
+          continue
+        }
+        const str = term.normal;
+        const isPlural = str.endsWith('s');
+        let isFemale = false;
+        let found = isAdj(str);
+        if (!found && /as?$/.test(str)) {
+          isFemale = isAdj(isPlural ? fromFemalePlural(str, lexicon) : fromFemale(str, lexicon));
+          found = isFemale;
+        }
+        if (found || (isPlural && isAdj(toSingular(str, lexicon)))) {
+          tags.clear();
+          const out = ['Adjective', isPlural ? 'PluralAdjective' : 'SingularAdjective'];
+          if (isFemale || /os?$/.test(str)) {
+            out.push(isFemale ? 'FemaleAdjective' : 'MaleAdjective');
+          }
+          setTag([term], out, world, false, 'copula-adjective');
+        }
+      }
+    });
+  };
 
   let net = null;
 
@@ -11747,6 +13282,10 @@ designate
   const postTagger$1 = function (view) {
     const { world } = view;
     const { methods } = world;
+    // 'la cuenta' or 'la cuenta ella'
+    tagArticles(view);
+    // 'es limpia'
+    copulaAdjective(view);
     // rebuild this only lazily
     net = net || methods.one.buildNet(matches, world);
     // perform these matches on a comma-seperated document
@@ -12412,58 +13951,49 @@ designate
     return sum
   };
 
-  const fromNumber = function (m) {
-    let str = m.text('normal').toLowerCase();
-    str = str.replace(/(e|er)$/, '');
-    let hasComma = false;
-    if (/,/.test(str)) {
-      hasComma = true;
-      str = str.replace(/,/g, '');
+  const isNumeric = term => /[0-9]/.test(term.text);
+
+  // read digits with the shared european-numbers plugin - '1.234,56', '-5', '3,5%'
+  const fromNumber = function (terms, m) {
+    const { read } = m.methods.two.europeanNumbers;
+    const locale = m.model.two.europeanNumbers;
+    const pre = terms[0].pre;
+    // thousands may be split-up by a space - '1 000'
+    const res = read(terms.map(t => t.text).join(' '), pre, locale);
+    if (res.num !== null || terms.length === 1) {
+      return res
     }
-    // get prefix/suffix
-    const arr = str.split(/([0-9.,]*)/);
-    let [prefix, num] = arr;
-    let suffix = arr.slice(2).join('');
-    if (num !== '' && m.length < 2) {
-      num = Number(num || str);
-      //ensure that num is an actual number
-      if (typeof num !== 'number') {
-        num = null;
-      }
-      // strip an ordinal off the suffix
-      if (suffix === 'e' || suffix === 'er') {
-        suffix = '';
-      }
-    }
-    return {
-      hasComma,
-      prefix,
-      num,
-      suffix,
-    }
+    return read(terms[0].text, pre, locale)
   };
 
   const parseNumber = function (m) {
     const terms = m.docs[0];
-    let num = null;
-    let prefix = '';
-    let suffix = '';
-    let hasComma = false;
     const isText = m.has('#TextValue');
+    // any digits come first - '2,5 millones'
+    const split = terms.findIndex(t => !isNumeric(t));
+    const digits = split === -1 ? terms : terms.slice(0, split);
+    const words = split === -1 ? [] : terms.slice(split);
+    let res = { num: null, prefix: '', suffix: '', hasComma: false };
+    if (digits.length > 0) {
+      res = fromNumber(digits, m);
+    }
     if (isText) {
-      num = fromText(terms);
-    } else {
-      const res = fromNumber(m);
-      prefix = res.prefix;
-      suffix = res.suffix;
-      num = res.num;
-      hasComma = res.hasComma;
+      const num = fromText(words);
+      // '2,5 millones' is 2.5 * 1,000,000
+      if (res.num !== null && num) {
+        res.num = Number((res.num * num).toPrecision(15));
+      } else {
+        res.num = num;
+      }
     }
     return {
-      hasComma,
-      prefix,
-      num,
-      suffix,
+      hasComma: res.hasComma,
+      prefix: res.prefix,
+      num: res.num,
+      suffix: res.suffix,
+      // how the digits were written
+      decimal: res.decimal,
+      group: res.group,
       isText,
       isOrdinal: m.has('#Ordinal'),
       isFraction: m.has('#Fraction'),
@@ -12553,7 +14083,7 @@ designate
     }
     let words = [];
     if (num < 0) {
-      words.push('moins');
+      words.push('menos');
       num = Math.abs(num);
     }
     // handle multiples
@@ -12589,6 +14119,8 @@ designate
   // add extras
   toOrdinal.cien = 'centésimo';
 
+  const { write } = europeanNumbers.methods.two.europeanNumbers;
+
   const formatNumber = function (parsed, fmt) {
     if (fmt === 'TextOrdinal') {
       let words = toText(parsed.num);
@@ -12607,10 +14139,10 @@ designate
     if (fmt === 'Ordinal') {
       return String(parsed.num) + '°'
     }
-    if (fmt === 'Cardinal') {
-      return String(parsed.num)
-    }
-    return String(parsed.num || '')
+    // digits go back the way they were found - '1.234,5', '5,3€'
+    // .. but a unit is its own (implicit) term - '9km'
+    const suffix = /\p{L}/u.test(parsed.suffix || '') ? '' : parsed.suffix;
+    return write(parsed.num, { ...parsed, suffix })
   };
 
   // return the nth elem of a doc
@@ -12636,6 +14168,12 @@ designate
     }
     const num = parseNumber(m.eq(0)).num;
     return typeof num === 'number' && Number.isFinite(num) ? num : null
+  };
+
+  // the new text has its own sign, so remove one left in the punctuation - '-|3,5'
+  const dropSign = function (val) {
+    const term = val.docs[0][0];
+    term.pre = term.pre.replace(/[-−]$/, '');
   };
 
   const api$3 = function (View) {
@@ -12691,6 +14229,7 @@ designate
           const fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal';
           const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val.replaceWith(str, { tags: true });
             val.tag('NumericValue');
           }
@@ -12706,12 +14245,14 @@ designate
             return val
           }
           const obj = parseNumber(val);
-          if (obj.num === null) {
+          // there are no words for '3,5'
+          if (obj.num === null || !Number.isInteger(obj.num)) {
             return val
           }
           const fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
           const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val.replaceWith(str, { tags: true });
             val.tag('TextValue');
           }
@@ -12733,6 +14274,7 @@ designate
           const fmt = val.has('#TextValue') ? 'TextCardinal' : 'Cardinal';
           const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val.replaceWith(str, { tags: true });
             val.tag('Cardinal');
           }
@@ -12754,6 +14296,7 @@ designate
           const fmt = val.has('#TextValue') ? 'TextOrdinal' : 'Ordinal';
           const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val.replaceWith(str, { tags: true });
             val.tag('Ordinal');
           }
@@ -12810,12 +14353,9 @@ designate
           if (val.has('#TextValue')) {
             fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal';
           }
-          let str = formatNumber(obj, fmt);
-          // add commas to number
-          if (obj.hasComma && fmt === 'Cardinal') {
-            str = Number(str).toLocaleString();
-          }
+          const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val = val.not('#Currency');
             val.replaceWith(str, { tags: true });
             // handle plural/singular unit
@@ -12843,6 +14383,7 @@ designate
           }
           const str = formatNumber(obj, fmt);
           if (str) {
+            dropSign(val);
             val.replaceWith(str, { tags: true });
             // handle plural/singular unit
             // agreeUnits(agree, val, obj)
@@ -12890,11 +14431,14 @@ designate
   };
 
   var numbers = {
-    api: api$3
+    api: api$3,
+    // the shared european-numbers plugin reads '1.234,56' - these are our ordinals: '2ª', '3er'
+    model: { two: { europeanNumbers: { ordinal: '\\.?[ºª°]|er' } } },
   };
 
   const getNth$2 = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc);
 
+  // each determiner, and its plural
   const toPluralArt = {
     el: 'los',
     la: 'las',
@@ -12902,35 +14446,50 @@ designate
     una: 'unas',
     mi: 'mis',
     tu: 'tus',
+    su: 'sus',
     nuestro: 'nuestros',
     nuestra: 'nuestras',
     vuestro: 'vuestros',
     vuestra: 'vuestras',
+    este: 'estos',
+    esta: 'estas',
+    ese: 'esos',
+    esa: 'esas',
+    aquel: 'aquellos',
+    aquella: 'aquellas'
   };
-  const toSingularArt = {
-    los: 'el',
-    las: 'la',
-    unos: 'un',
-    unas: 'una',
-    mis: 'mi',
-    tus: 'tu',
-    nuestros: 'nuestro',
-    nuestras: 'nuestra',
-    vuestros: 'vuestro',
-    vuestras: 'vuestra',
-  };
+  const toSingularArt = {};
+  Object.keys(toPluralArt).forEach((k) => {
+    toSingularArt[toPluralArt[k]] = k;
+  });
+  // 'el agua' is feminine - 'las aguas'
+  const female = { el: 'las', un: 'unas', las: 'el', unas: 'un' };
 
   // flip 'los' → 'el', etc
-  const swapArticle = function (m, mapping) {
+  const swapArticle = function (m, mapping, isEl) {
+    // 'del gato' ↔ 'de los gatos', 'al agua' ↔ 'a las aguas'
+    const isPlural = mapping === toPluralArt;
+    const prep = m.before(isPlural ? '(de|a) el$' : '(de|a) (los|las)$');
+    if (prep.found) {
+      const str = prep.text('normal');
+      const p = str.startsWith('a') ? 'a' : 'de';
+      if (isPlural) {
+        prep.replaceWith(p + (isEl ? ' las' : ' los'));
+      } else if (isEl || str.endsWith('los')) {
+        prep.replaceWith(p === 'a' ? 'al' : 'del');
+      } else {
+        prep.replaceWith(p + ' la');
+      }
+      return
+    }
     const art = m.before(`(${Object.keys(mapping).join('|')})$`);
     if (art.found) {
       const w = art.text('normal');
       if (mapping.hasOwnProperty(w)) {
-        art.replaceWith(mapping[w]);
+        art.replaceWith(isEl && female.hasOwnProperty(w) ? female[w] : mapping[w]);
       }
     }
   };
-
 
   const api$2 = function (View) {
     class Nouns extends View {
@@ -12940,12 +14499,13 @@ designate
       }
       conjugate(n) {
         const methods = this.methods.two.transform.noun;
+        const lexicon = this.model.one.lexicon;
         return getNth$2(this, n).map(m => {
-          const str = m.text();
+          const str = m.text('normal');
           if (m.has('#Plural')) {
             return {
-              plural: str,
-              singular: methods.toSingular(str)
+              singular: methods.fromPlural(str, lexicon),
+              plural: str
             }
           }
           return {
@@ -12959,23 +14519,24 @@ designate
       }
       toPlural(n) {
         const methods = this.methods.two.transform.noun;
-        getNth$2(this, n).ifNo('#Plural').forEach(m => {
+        getNth$2(this, n).ifNo('(#Plural|#Pronoun)').forEach(m => {
           const str = m.text('normal');
-          const plural = methods.toPlural(str);
-          m.replaceWith(plural);
+          m.replaceWith(methods.toPlural(str));
+          m.tag('Plural', 'toPlural');
           // flip article, too
-          swapArticle(m, toPluralArt);
+          swapArticle(m, toPluralArt, methods.takesEl(str));
         });
         return this
       }
       toSingular(n) {
         const methods = this.methods.two.transform.noun;
-        getNth$2(this, n).if('#Plural').forEach(m => {
-          const str = m.text('normal');
-          const singular = methods.toSingular(str);
+        const lexicon = this.model.one.lexicon;
+        getNth$2(this, n).if('#Plural').ifNo('#Pronoun').forEach(m => {
+          const singular = methods.fromPlural(m.text('normal'), lexicon);
           m.replaceWith(singular);
+          m.tag('Singular', 'toSingular');
           // flip article, too
-          swapArticle(m, toSingularArt);
+          swapArticle(m, toSingularArt, methods.takesEl(singular));
         });
         return this
       }
@@ -12997,14 +14558,15 @@ designate
   // get root form of adjective
   const getRoot$2 = function (m, methods) {
     const str = m.text('normal');
+    const lexicon = m.model.one.lexicon;
     const isPlural = m.has('#PluralAdjective');
     const isFemale = m.has('#FemaleAdjective');
     if (isPlural && isFemale) {
-      return methods.fromFemalePlural(str)
+      return methods.fromFemalePlural(str, lexicon)
     } else if (isFemale) {
-      return methods.fromFemale(str)
+      return methods.fromFemale(str, lexicon)
     } else if (isPlural) {
-      return methods.toSingular(str)
+      return methods.toSingular(str, lexicon)
     }
     return str
   };
@@ -13046,8 +14608,6 @@ designate
   // only the finite verb is changed - 'quiero ir' -> 'quise ir'
   // and its grammatical person is kept - 'hablamos' -> 'hablaremos'
   // spanish drops its subject pronouns, so the person is read from the verb itself
-
-  const persons = ['first', 'second', 'third', 'firstPlural', 'secondPlural', 'thirdPlural'];
 
   const personTags = {
     FirstPerson: 'first',
@@ -13097,77 +14657,32 @@ designate
   // verb-forms that are not an indicative tense
   const skipTags = ['Infinitive', 'Gerund', 'Perfecto', 'Participle', 'Imperative', 'Subjunctive'];
 
-  // every indicative form of this verb
-  const getForms = function (root, methods) {
-    return {
-      present: methods.toPresent(root),
-      past: methods.toPast(root),
-      imperfect: methods.toImperfect(root),
-      future: methods.toFuture(root),
-      conditional: methods.toConditional(root),
-    }
-  };
+  const reflexives = new Set(['me', 'te', 'se', 'nos', 'os']);
 
-  const getRoot$1 = function (term, next) {
+  const getRoot$1 = function (term, next, prev) {
     const str = term.normal;
     if (serOrIr.has(str) && next && (afterIr.has(next.normal) || next.tags.has('Infinitive'))) {
+      return 'ir'
+    }
+    // 'se fue', 'me fui' - 'irse' is to leave
+    if (serOrIr.has(str) && prev && reflexives.has(prev.normal)) {
       return 'ir'
     }
     return term.root
   };
 
-  const fromTense = {
-    present: 'fromPresent',
-    past: 'fromPast',
-    imperfect: 'fromImperfect',
-    future: 'fromFuture',
-    conditional: 'fromConditional',
-  };
-
-  // find the word in the conjugation table of this infinitive
-  const findHits = function (str, root, methods) {
-    const forms = getForms(root, methods);
-    const hits = [];
-    Object.keys(forms).forEach((tense) => {
-      persons.forEach((person) => {
-        if (forms[tense][person] === str) {
-          hits.push({ tense, person });
-        }
-      });
-    });
-    return hits
-  };
-
-  // the tagger gives some verbs no tense, and so no root - 'sabe', 'pude'
-  // try each tense, and keep an infinitive that conjugates back to our word
-  const guessRoot = function (str, methods, lexicon) {
-    const tenses = Object.keys(fromTense);
-    let found = null;
-    for (let i = 0; i < tenses.length; i += 1) {
-      for (let k = 0; k < persons.length; k += 1) {
-        const root = methods[fromTense[tenses[i]]](str, toPersonTag[persons[k]]);
-        if (root && root !== str && /[aeií]r$/.test(root)) {
-          const hits = findHits(str, root, methods);
-          if (hits.length > 0) {
-            // prefer a real verb - 'pude' is 'poder', not 'pudir'
-            if (lexicon.hasOwnProperty(root)) {
-              return { root, hits }
-            }
-            found = found || { root, hits };
-          }
-        }
-      }
-    }
-    return found
+  const isInfinitive = function (str, lexicon) {
+    const tags = lexicon.hasOwnProperty(str) ? lexicon[str] : null;
+    return tags === 'Infinitive' || (Array.isArray(tags) && tags.includes('Infinitive'))
   };
 
   // which tense + person is this word?
-  const parseTerm = function (term, next, methods, lexicon) {
+  const parseTerm = function (term, next, methods, lexicon, prev) {
     const str = term.normal;
     if (!term.tags.has('Verb') || clitics.has(str) || skipTags.some((tag) => term.tags.has(tag))) {
       return null
     }
-    const root = getRoot$1(term, next);
+    const root = getRoot$1(term, next, prev);
     if (!root) {
       return null
     }
@@ -13177,10 +14692,11 @@ designate
     }
     // find the word in its own conjugation table
     // no root was found for this one
+    // the tagger gives some verbs no tense, and so no root - 'sabe', 'pude'
     if (root === str) {
-      return guessRoot(str, methods, lexicon)
+      return methods.lookup(str, { isVerb: (inf) => isInfinitive(inf, lexicon) })
     }
-    const hits = findHits(str, root, methods);
+    const hits = methods.findHits(str, root);
     if (hits.length > 0) {
       return { root, hits }
     }
@@ -13260,7 +14776,7 @@ designate
     let index = null;
     let parsed = null;
     for (let i = start; i < end; i += 1) {
-      parsed = parseTerm(terms[i], terms[i + 1], methods, lexicon);
+      parsed = parseTerm(terms[i], terms[i + 1], methods, lexicon, terms[i - 1]);
       if (parsed) {
         index = i;
         break
@@ -13296,7 +14812,7 @@ designate
       // already there
       return same
     }
-    let str = getForms(root, methods)[want][person];
+    let str = methods.table(root, [want])[want][person];
     // existential - 'había un gato' -> 'hay un gato'
     if (root === 'haber' && want === 'present' && person === 'third' && !isPerfect) {
       str = 'hay';
@@ -13312,13 +14828,43 @@ designate
     return [n, start, end - (len - 1)]
   };
 
+  // a verb-phrase can hold two clauses - 'la mujer que [canta es] mi tía', 'donde [vivo, nieva]'
+  // so give each conjugated verb a phrase of its own
+  const convertEach = function (vb, want, methods, lexicon) {
+    const ptr = vb.fullPointer[0];
+    if (!ptr) {
+      return null
+    }
+    vb.compute('root');
+    const [n, start, end] = ptr;
+    const terms = vb.document[n];
+    const found = [];
+    for (let i = start; i < end; i += 1) {
+      if (parseTerm(terms[i], terms[i + 1], methods, lexicon, terms[i - 1])) {
+        found.push(i);
+      }
+    }
+    if (found.length < 2) {
+      return convertOne(vb, want, methods, lexicon)
+    }
+    // last one first, so that the indexes before it stay true
+    let shrink = 0;
+    for (let k = found.length - 1; k >= 0; k -= 1) {
+      const from = k === 0 ? start : found[k];
+      const to = k === found.length - 1 ? end : found[k + 1];
+      const res = convertOne(vb.update([[n, from, to]]), want, methods, lexicon);
+      shrink += res ? to - res[2] : 0;
+    }
+    return [n, start, end - shrink]
+  };
+
   const convertTo = function (view, want) {
     const methods = view.methods.two.transform.verb;
     // replacing a word orphans the pointer that held it, so rebuild them as we go
     const lexicon = view.model.one.lexicon;
     const ptrs = [];
     view.forEach((vb) => {
-      const ptr = convertOne(vb, want, methods, lexicon);
+      const ptr = convertEach(vb, want, methods, lexicon);
       if (ptr) {
         ptrs.push(ptr);
       }
@@ -13395,11 +14941,15 @@ designate
   nlp.plugin(tagset);
   nlp.plugin(lexicon);
   nlp.plugin(preTagger);
+  // tags '1.234,56' and '5,30€' from their raw text
+  nlp.plugin(europeanNumbers);
   nlp.plugin(postTagger);
   nlp.plugin(nouns);
   nlp.plugin(adjectives);
   nlp.plugin(verbs);
   nlp.plugin(numbers);
+  // names of people and places, shared by every language - after our own words
+  nlp.plugin(names$1);
 
 
   const es = function (txt, lex) {

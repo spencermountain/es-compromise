@@ -16,6 +16,7 @@ const notAfter = new Set([
   'parte', 'regla', 'norma', 'tal', 'era', 'es', 'ayer', 'hoy', 'mañana', 'entonces', 'nadie', 'todos', 'todo',
   'cualquier', 'cualquiera', 'quien', 'cuando', 'para', 'por', 'de', 'prueba', 'muestra',
 ])
+const pronouns = new Set(['me', 'te', 'se', 'lo', 'la', 'le', 'los', 'las', 'les', 'nos', 'os'])
 // verb-forms that can not hold-up a clause on their own
 const nonFinite = ['Infinitive', 'Gerund', 'Perfecto', 'Participle']
 
@@ -40,6 +41,11 @@ const como = function (terms, i, world) {
   }
   if (prev && (prev.normal === 'y' || prev.normal === 'o') && isFirst(terms[i - 2]) && !terms[i - 2].tags.has('Copula')) {
     setVerb('3-verb-y-como')
+    return
+  }
+  // 'me lo como todo' - an object-pronoun is right before its verb
+  if (prev && pronouns.has(prev.normal)) {
+    setVerb('3-clitic-como')
     return
   }
   // nothing before it, but words like 'no', 'hoy'

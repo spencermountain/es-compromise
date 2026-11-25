@@ -53,9 +53,15 @@ const afterIr = new Set(['a', 'al', 'hacia', 'hasta', 'para', 'allí', 'allá', 
 // verb-forms that are not an indicative tense
 const skipTags = ['Infinitive', 'Gerund', 'Perfecto', 'Participle', 'Imperative', 'Subjunctive']
 
-const getRoot = function (term, next) {
+const reflexives = new Set(['me', 'te', 'se', 'nos', 'os'])
+
+const getRoot = function (term, next, prev) {
   const str = term.normal
   if (serOrIr.has(str) && next && (afterIr.has(next.normal) || next.tags.has('Infinitive'))) {
+    return 'ir'
+  }
+  // 'se fue', 'me fui' - 'irse' is to leave
+  if (serOrIr.has(str) && prev && reflexives.has(prev.normal)) {
     return 'ir'
   }
   return term.root
@@ -67,12 +73,12 @@ const isInfinitive = function (str, lexicon) {
 }
 
 // which tense + person is this word?
-const parseTerm = function (term, next, methods, lexicon) {
+const parseTerm = function (term, next, methods, lexicon, prev) {
   const str = term.normal
   if (!term.tags.has('Verb') || clitics.has(str) || skipTags.some((tag) => term.tags.has(tag))) {
     return null
   }
-  const root = getRoot(term, next)
+  const root = getRoot(term, next, prev)
   if (!root) {
     return null
   }
@@ -166,7 +172,7 @@ const convertOne = function (vb, want, methods, lexicon) {
   let index = null
   let parsed = null
   for (let i = start; i < end; i += 1) {
-    parsed = parseTerm(terms[i], terms[i + 1], methods, lexicon)
+    parsed = parseTerm(terms[i], terms[i + 1], methods, lexicon, terms[i - 1])
     if (parsed) {
       index = i
       break
@@ -230,7 +236,7 @@ const convertEach = function (vb, want, methods, lexicon) {
   const terms = vb.document[n]
   const found = []
   for (let i = start; i < end; i += 1) {
-    if (parseTerm(terms[i], terms[i + 1], methods, lexicon)) {
+    if (parseTerm(terms[i], terms[i + 1], methods, lexicon, terms[i - 1])) {
       found.push(i)
     }
   }

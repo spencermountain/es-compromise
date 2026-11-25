@@ -65,17 +65,46 @@ const checkRoot = function (str, guess, world) {
   const verb = world.methods.two.transform.verb
   // the models learned some verbs in their reflexive form - 'llovió' -> 'lloverse'
   guess = (guess || '').replace(/([aeií]r)se$/, '$1')
-  if (guess && guess !== str && verb.findHits(str, guess).length > 0) {
-    return guess
-  }
   const lexicon = world.model.one.lexicon
   const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive')
+  const isOk = Boolean(guess) && guess !== str && verb.findHits(str, guess).length > 0
+  if (isOk && isVerb(guess)) {
+    return guess
+  }
+  // a verb that we know beats one that we do not - 'queremos' is 'querer', not the future of 'quer'
   const found = verb.lookup(str, { isVerb, known: true })
   return found ? found.root : guess
 }
 
+// the infinitive of a command with pronouns attached - the tagger has left its stem in 'machine'
+// 'levántate' is 'levanta' + 'te', and 'siéntese' is 'siente' + 'se'
+const fromCommand = function (term, world) {
+  const verb = world.methods.two.transform.verb
+  const lexicon = world.model.one.lexicon
+  const isVerb = (inf) => lexicon.hasOwnProperty(inf) && [].concat(lexicon[inf]).includes('Infinitive')
+  const stem = term.machine
+  // the 'tú' command is the present-tense - 'levanta'
+  const present = verb.candidates(stem, ['present']).filter((o) => isVerb(o.root) && o.hits.some((h) => h.person === 'third' || h.person === 'firstPlural'))
+  // the 'usted' command is the subjunctive - 'levante'
+  let formal = null
+  const tags = ['ThirdPerson', 'ThirdPersonPlural']
+  for (let i = 0; i < tags.length && !formal; i += 1) {
+    const inf = (verb.fromSubjunctive(stem, tags[i]) || '').replace(/([aeií]r)se$/, '$1')
+    if (inf && isVerb(inf) && verb.toSubjunctive(inf)[persons[tags[i]]] === stem) {
+      formal = inf
+    }
+  }
+  // '-se' is only for 'usted' - 'siéntese' is 'sentar', but 'siéntete' is 'sentir'
+  const isFormal = /se$/.test(term.normal)
+  const informal = present.length > 0 ? present[0].root : null
+  return isFormal ? formal || informal : informal || formal
+}
+
+const sitWords = new Set(['en', 'a', 'al', 'junto', 'aquí', 'allí', 'ahí', 'cerca', 'delante', 'detrás'])
+
 const root = function (view) {
   const { verb, noun, adjective } = view.world.methods.two.transform
+  const lexicon = view.world.model.one.lexicon
   view.docs.forEach((terms) => {
     terms.forEach((term) => {
       // 'machine' may hold a clitic-stripped stem - 'dámelo' → 'da'
@@ -97,7 +126,11 @@ const root = function (view) {
           return
         }
         const form = verbForm(term)
-        if (term.tags.has('Subjunctive')) {
+        // 'levántate', 'siéntese' - a command, with its pronouns attached
+        const imp = term.machine && term.tags.has('Imperative') ? fromCommand(term, view.world) : null
+        if (imp) {
+          term.root = imp
+        } else if (term.tags.has('Subjunctive')) {
           term.root = fromSubjunctive(str, form, verb)
         } else if (term.tags.has('Gerund')) {
           term.root = verb.fromGerund(str, form)
@@ -115,10 +148,16 @@ const root = function (view) {
         }
       }
 
+      // 'me siento mal' is 'sentir', but 'me siento en la silla' is 'sentar'
+      if (term.tags.has('Verb') && term.normal === 'siento') {
+        const next = terms[terms.indexOf(term) + 1]
+        term.root = next && sitWords.has(next.normal) ? 'sentar' : 'sentir'
+      }
+
       // nouns -> singular masculine form
       if (term.tags.has('Noun')) {
         if (term.tags.has('Plural')) {
-          str = noun.toSingular(str)
+          str = noun.toSingular(str, lexicon)
         }
         if (term.tags.has('FemaleNoun')) {
           // not sure about this
@@ -131,13 +170,13 @@ const root = function (view) {
       if (term.tags.has('Adjective')) {
         if (term.tags.has('PluralAdjective')) {
           if (term.tags.has('FemaleAdjective')) {
-            str = adjective.fromFemalePlural(str)
+            str = adjective.fromFemalePlural(str, lexicon)
           } else {
-            str = adjective.toSingular(str)
+            str = adjective.toSingular(str, lexicon)
           }
         }
         if (term.tags.has('FemaleAdjective')) {
-          str = adjective.fromFemale(str)
+          str = adjective.fromFemale(str, lexicon)
         }
         term.root = str
       }

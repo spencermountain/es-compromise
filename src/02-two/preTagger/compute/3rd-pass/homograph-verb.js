@@ -144,4 +144,5 @@ const homographVerbs = function (terms, world) {
     }
   }
 }
+export { subjects, tenses, persons }
 export default homographVerbs

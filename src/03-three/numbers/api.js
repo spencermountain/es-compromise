@@ -27,6 +27,12 @@ const toNumber = function (view, n) {
   return typeof num === 'number' && Number.isFinite(num) ? num : null
 }
 
+// the new text has its own sign, so remove one left in the punctuation - '-|3,5'
+const dropSign = function (val) {
+  const term = val.docs[0][0]
+  term.pre = term.pre.replace(/[-−]$/, '')
+}
+
 const api = function (View) {
   /**   */
   class Numbers extends View {
@@ -80,6 +86,7 @@ const api = function (View) {
         const fmt = val.has('#Ordinal') ? 'Ordinal' : 'Cardinal'
         const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val.replaceWith(str, { tags: true })
           val.tag('NumericValue')
         }
@@ -95,12 +102,14 @@ const api = function (View) {
           return val
         }
         const obj = parse(val)
-        if (obj.num === null) {
+        // there are no words for '3,5'
+        if (obj.num === null || !Number.isInteger(obj.num)) {
           return val
         }
         const fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal'
         const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val.replaceWith(str, { tags: true })
           val.tag('TextValue')
         }
@@ -122,6 +131,7 @@ const api = function (View) {
         const fmt = val.has('#TextValue') ? 'TextCardinal' : 'Cardinal'
         const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val.replaceWith(str, { tags: true })
           val.tag('Cardinal')
         }
@@ -143,6 +153,7 @@ const api = function (View) {
         const fmt = val.has('#TextValue') ? 'TextOrdinal' : 'Ordinal'
         const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val.replaceWith(str, { tags: true })
           val.tag('Ordinal')
         }
@@ -199,12 +210,9 @@ const api = function (View) {
         if (val.has('#TextValue')) {
           fmt = val.has('#Ordinal') ? 'TextOrdinal' : 'TextCardinal'
         }
-        let str = format(obj, fmt)
-        // add commas to number
-        if (obj.hasComma && fmt === 'Cardinal') {
-          str = Number(str).toLocaleString()
-        }
+        const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val = val.not('#Currency')
           val.replaceWith(str, { tags: true })
           // handle plural/singular unit
@@ -232,6 +240,7 @@ const api = function (View) {
         }
         const str = format(obj, fmt)
         if (str) {
+          dropSign(val)
           val.replaceWith(str, { tags: true })
           // handle plural/singular unit
           // agreeUnits(agree, val, obj)

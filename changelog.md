@@ -5,6 +5,20 @@
 - **[new]** - types for `nlp.fromSpec()`, `nlp.testSpec()` and `nlp.compile()`
 - **[change]** - remove `nlp.lazy()` from types and docs - it lives in a plugin now
 - **[fix]** - `.nouns().isPlural()` finds plural nouns, and `.nouns().conjugate()` is right for them - 'casas' → { singular: 'casa', plural: 'casas' }
+- **[fix]** - noun plurals are done by rule, before the model - written accents move with the stress ('canción' ↔ 'canciones', 'joven' ↔ 'jóvenes', 'país' ↔ 'países'), 'lunes', 'crisis' and 'paraguas' do not change, 'rubí' → 'rubíes', 'club' → 'clubes'
+- **[fix]** - the singular of an '-es' plural - 'meses' → 'mes', 'ingleses' → 'inglés', but 'clases' → 'clase', 'cafés' → 'café'
+- **[fix]** - 272 pairs removed from the plurals model that were not plurals - 'tío' → 'tías', 'botón' → 'botoncillos'
+- **[fix]** - adjectives with one form for both genders - 'grande', 'fácil', 'feliz', 'mejor', 'optimista', 'marrón' - no longer get a feminine ('fácila')
+- **[fix]** - adjective plurals and their singulars - 'feliz' ↔ 'felices', 'joven' ↔ 'jóvenes', 'inglesa' → 'inglés', 'buena' → 'bueno'
+- **[fix]** - la/los/las before a verb-form - 'las casas', 'la calle es larga' are nouns, and 'la veo', 'los tengo', 'ella la cuenta' are a Pronoun and a Verb
+- **[fix]** - a verb-form after el/un/una/unos/unas or mi/tu/su is a noun - 'el baile', 'un viaje', 'sus compras'
+- **[fix]** - 'los cuadernos', 'los pájaros' are not an infinitive + 'nos'/'os'
+- **[fix]** - a lowercase name after an article is a noun - 'las flores', 'las torres' - and after ser/estar, a form of a known adjective is that adjective - 'es limpia', 'son rojas'
+- **[fix]** - a noun's number follows its article, when it does not show it - 'los lunes', 'las crisis' are Plural, 'el paraguas' is not - and 'los cafés', 'los sofás' are Plural
+- **[fix]** - `.nouns().toPlural()` and `.toSingular()` - 'el agua' ↔ 'las aguas', 'del gato' ↔ 'de los gatos', and su/este/ese/aquel follow their noun
+- **[change]** - `.nouns().toPlural()` and `.toSingular()` skip pronouns
+- **[new]** - `fromPlural(str, lexicon?)` in the noun methods - `toSingular` is the same function - and a lexicon as second parameter of the adjective `fromFemale`, `toSingular`, `fromFemalePlural`
+- **[change]** - male plurals of the lexicon's adjectives are in the lexicon - 'rojos' is a PluralAdjective
 - **[fix]** - `.numbers().set()`, `.add()` and `.subtract()` accept a written number - `.add('dos')` - and ignore a string that isn't one
 - **[fix]** - `.numbers().json(n)` returns the nth number, instead of throwing
 - **[fix]** - `.numbers().get()` and `.parse()` return `[]` when there are no numbers

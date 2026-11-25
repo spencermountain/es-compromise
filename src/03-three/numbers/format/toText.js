@@ -81,7 +81,7 @@ const toText = function (num) {
   }
   let words = []
   if (num < 0) {
-    words.push('moins')
+    words.push('menos')
     num = Math.abs(num)
   }
   // handle multiples

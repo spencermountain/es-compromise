@@ -52,10 +52,6 @@ export default [
     "instrumentos"
   ],
   [
-    "octava",
-    "octavitas"
-  ],
-  [
     "registro",
     "registros"
   ],
@@ -2216,10 +2212,6 @@ export default [
     "pinturas"
   ],
   [
-    "flamenco",
-    "flamencas"
-  ],
-  [
     "visita",
     "visitas"
   ],
@@ -2426,10 +2418,6 @@ export default [
   [
     "ambulancia",
     "ambulancias"
-  ],
-  [
-    "chico",
-    "chicas"
   ],
   [
     "obligación",
@@ -3596,10 +3584,6 @@ export default [
     "dorados"
   ],
   [
-    "tío",
-    "tías"
-  ],
-  [
     "penuria",
     "penurias"
   ],
@@ -4042,10 +4026,6 @@ export default [
   [
     "explorador",
     "exploradores"
-  ],
-  [
-    "chino",
-    "chinas"
   ],
   [
     "máscara",
@@ -5816,10 +5796,6 @@ export default [
     "lavas"
   ],
   [
-    "hawaiano",
-    "hawaianas"
-  ],
-  [
     "profundidad",
     "profundidades"
   ],
@@ -6084,10 +6060,6 @@ export default [
     "experimentaciones"
   ],
   [
-    "primero",
-    "primeras"
-  ],
-  [
     "decorador",
     "decoradores"
   ],
@@ -6238,10 +6210,6 @@ export default [
   [
     "panadero",
     "panaderos"
-  ],
-  [
-    "curandero",
-    "curanderas"
   ],
   [
     "bolo",
@@ -6660,10 +6628,6 @@ export default [
     "proponentes"
   ],
   [
-    "britónico",
-    "britónicas"
-  ],
-  [
     "consonante",
     "consonantes"
   ],
@@ -6682,10 +6646,6 @@ export default [
   [
     "semivocal",
     "semivocales"
-  ],
-  [
-    "céltico",
-    "célticas"
   ],
   [
     "verbo",
@@ -6754,10 +6714,6 @@ export default [
   [
     "padrino",
     "padrinos"
-  ],
-  [
-    "socio",
-    "socias"
   ],
   [
     "examen",
@@ -7624,10 +7580,6 @@ export default [
     "linotipos"
   ],
   [
-    "computador",
-    "computadoras"
-  ],
-  [
     "accionista",
     "accionistas"
   ],
@@ -7762,10 +7714,6 @@ export default [
   [
     "abogado",
     "abogados"
-  ],
-  [
-    "abuelo",
-    "abuelas"
   ],
   [
     "cura",
@@ -7924,10 +7872,6 @@ export default [
     "altitudes"
   ],
   [
-    "lanzador",
-    "lanzadoras"
-  ],
-  [
     "oscilación",
     "oscilaciones"
   ],
@@ -8050,10 +7994,6 @@ export default [
   [
     "suicidio",
     "suicidios"
-  ],
-  [
-    "desaparecido",
-    "desaparecidas"
   ],
   [
     "ahorrista",
@@ -8668,10 +8608,6 @@ export default [
     "combinaciones"
   ],
   [
-    "ciego",
-    "ciegas"
-  ],
-  [
     "ficha",
     "fichas"
   ],
@@ -8978,10 +8914,6 @@ export default [
   [
     "secreto",
     "secretos"
-  ],
-  [
-    "privilegiado",
-    "privilegiadas"
   ],
   [
     "diezmo",
@@ -9296,10 +9228,6 @@ export default [
     "despachos"
   ],
   [
-    "asegurador",
-    "aseguradoras"
-  ],
-  [
     "contador",
     "contadores"
   ],
@@ -9538,10 +9466,6 @@ export default [
   [
     "borrego",
     "borregos"
-  ],
-  [
-    "nopal",
-    "nopalitos"
   ],
   [
     "tuna",
@@ -9980,10 +9904,6 @@ export default [
     "dispensarios"
   ],
   [
-    "enfermero",
-    "enfermeras"
-  ],
-  [
     "nacido",
     "nacidos"
   ],
@@ -9994,10 +9914,6 @@ export default [
   [
     "nimiedad",
     "nimiedades"
-  ],
-  [
-    "conífero",
-    "coníferas"
   ],
   [
     "hielo",
@@ -10040,20 +9956,12 @@ export default [
     "trashumantes"
   ],
   [
-    "recolector",
-    "recolectoras"
-  ],
-  [
     "ganado",
     "ganados"
   ],
   [
     "nacionalidad",
     "nacionalidades"
-  ],
-  [
-    "argentino",
-    "argentinas"
   ],
   [
     "litigio",
@@ -10110,10 +10018,6 @@ export default [
   [
     "recua",
     "recuas"
-  ],
-  [
-    "mulo",
-    "mulas"
   ],
   [
     "carguero",
@@ -10504,10 +10408,6 @@ export default [
     "presas"
   ],
   [
-    "mensajero",
-    "mensajeras"
-  ],
-  [
     "arpía",
     "arpías"
   ],
@@ -10602,10 +10502,6 @@ export default [
   [
     "ganglio",
     "ganglios"
-  ],
-  [
-    "iliaco",
-    "ilíacas"
   ],
   [
     "lubricante",
@@ -12220,10 +12116,6 @@ export default [
     "comarcas"
   ],
   [
-    "barcelonés",
-    "barcelonesas"
-  ],
-  [
     "revoltoso",
     "revoltosos"
   ],
@@ -13076,10 +12968,6 @@ export default [
     "dacios"
   ],
   [
-    "externo",
-    "externas"
-  ],
-  [
     "interno",
     "internos"
   ],
@@ -13580,10 +13468,6 @@ export default [
     "contenedores"
   ],
   [
-    "trepador",
-    "trepadoras"
-  ],
-  [
     "cánido",
     "cánidos"
   ],
@@ -13626,10 +13510,6 @@ export default [
   [
     "polimorfismo",
     "polimorfismos"
-  ],
-  [
-    "cadera",
-    "caderazos"
   ],
   [
     "incapacidad",
@@ -14022,10 +13902,6 @@ export default [
   [
     "fallo",
     "fallos"
-  ],
-  [
-    "perjudicado",
-    "perjudicadas"
   ],
   [
     "bengala",
@@ -14572,10 +14448,6 @@ export default [
     "denominaciones"
   ],
   [
-    "polaco",
-    "polacas"
-  ],
-  [
     "autobiografía",
     "autobiografías"
   ],
@@ -14868,10 +14740,6 @@ export default [
     "casales"
   ],
   [
-    "iluminado",
-    "iluminadas"
-  ],
-  [
     "lotería",
     "loterías"
   ],
@@ -14886,10 +14754,6 @@ export default [
   [
     "letrero",
     "letreros"
-  ],
-  [
-    "valenciano",
-    "valencianas"
   ],
   [
     "mecha",
@@ -15042,10 +14906,6 @@ export default [
   [
     "troyano",
     "troyanos"
-  ],
-  [
-    "asociado",
-    "asociadas"
   ],
   [
     "trayectoria",
@@ -15300,14 +15160,6 @@ export default [
     "gorgoteos"
   ],
   [
-    "competidor",
-    "competidoras"
-  ],
-  [
-    "escamoso",
-    "escamosas"
-  ],
-  [
     "diápsido",
     "diápsidos"
   ],
@@ -15422,10 +15274,6 @@ export default [
   [
     "microvoltio",
     "microvoltios"
-  ],
-  [
-    "millonésimo",
-    "millonésimas"
   ],
   [
     "fallecimiento",
@@ -15700,10 +15548,6 @@ export default [
     "estímulos"
   ],
   [
-    "barranca",
-    "barranquillas"
-  ],
-  [
     "cicatriz",
     "cicatrices"
   ],
@@ -15774,10 +15618,6 @@ export default [
   [
     "traficante",
     "traficantes"
-  ],
-  [
-    "africano",
-    "africanas"
   ],
   [
     "caníbal",
@@ -16152,10 +15992,6 @@ export default [
     "insecticidas"
   ],
   [
-    "picor",
-    "picorcillos"
-  ],
-  [
     "resfriado",
     "resfriados"
   ],
@@ -16306,10 +16142,6 @@ export default [
   [
     "partisano",
     "partisanos"
-  ],
-  [
-    "extranjero",
-    "extranjeras"
   ],
   [
     "norteamericano",
@@ -17204,10 +17036,6 @@ export default [
     "criadores"
   ],
   [
-    "jugo",
-    "jugones"
-  ],
-  [
     "úlcera",
     "úlceras"
   ],
@@ -17376,10 +17204,6 @@ export default [
     "fotones"
   ],
   [
-    "billonésimo",
-    "billonésimas"
-  ],
-  [
     "ionización",
     "ionizaciones"
   ],
@@ -17394,10 +17218,6 @@ export default [
   [
     "nucleótido",
     "nucleótidos"
-  ],
-  [
-    "neutralizador",
-    "neutralizadoras"
   ],
   [
     "mitocondria",
@@ -17530,10 +17350,6 @@ export default [
   [
     "plana",
     "planas"
-  ],
-  [
-    "grafo",
-    "graficos"
   ],
   [
     "semimetal",
@@ -17712,10 +17528,6 @@ export default [
     "misóginos"
   ],
   [
-    "despectivo",
-    "despectivas"
-  ],
-  [
     "oposición",
     "oposiciones"
   ],
@@ -17808,14 +17620,6 @@ export default [
     "beduinos"
   ],
   [
-    "libio",
-    "libias"
-  ],
-  [
-    "espontáneo",
-    "espontáneas"
-  ],
-  [
     "palestino",
     "palestinos"
   ],
@@ -17858,10 +17662,6 @@ export default [
   [
     "gastronomía",
     "gastronomías"
-  ],
-  [
-    "divisa",
-    "divisones"
   ],
   [
     "compra",
@@ -19324,10 +19124,6 @@ export default [
     "mates"
   ],
   [
-    "bizcocho",
-    "bizcochitos"
-  ],
-  [
     "trago",
     "tragos"
   ],
@@ -19592,10 +19388,6 @@ export default [
     "arenales"
   ],
   [
-    "costero",
-    "costeras"
-  ],
-  [
     "caladero",
     "caladeros"
   ],
@@ -19700,10 +19492,6 @@ export default [
     "rudimentos"
   ],
   [
-    "monocotiledóneo",
-    "monocotiledóneas"
-  ],
-  [
     "tépalo",
     "tépalos"
   ],
@@ -19806,10 +19594,6 @@ export default [
   [
     "ranura",
     "ranuras"
-  ],
-  [
-    "excavador",
-    "excavadoras"
   ],
   [
     "cáscara",
@@ -20788,10 +20572,6 @@ export default [
     "plegarias"
   ],
   [
-    "buscador",
-    "buscadoras"
-  ],
-  [
     "posicionamiento",
     "posicionamientos"
   ],
@@ -20996,10 +20776,6 @@ export default [
     "homicidios"
   ],
   [
-    "jovencito",
-    "jovencitas"
-  ],
-  [
     "despecho",
     "despechos"
   ],
@@ -21010,10 +20786,6 @@ export default [
   [
     "excéntrico",
     "excéntricos"
-  ],
-  [
-    "descuidado",
-    "descuidadas"
   ],
   [
     "impulsivo",
@@ -21090,10 +20862,6 @@ export default [
   [
     "etarra",
     "etarras"
-  ],
-  [
-    "denunciado",
-    "denunciadas"
   ],
   [
     "quintillón",
@@ -21320,10 +21088,6 @@ export default [
     "huertanos"
   ],
   [
-    "sardinero",
-    "sardineras"
-  ],
-  [
     "pito",
     "pitos"
   ],
@@ -21346,10 +21110,6 @@ export default [
   [
     "interludio",
     "interludios"
-  ],
-  [
-    "señorito",
-    "señoritas"
   ],
   [
     "exageración",
@@ -21576,10 +21336,6 @@ export default [
     "quarks"
   ],
   [
-    "bielorruso",
-    "bielorrusas"
-  ],
-  [
     "toalla",
     "toallas"
   ],
@@ -21716,10 +21472,6 @@ export default [
     "calvinistas"
   ],
   [
-    "bucanero",
-    "bucaneras"
-  ],
-  [
     "mulato",
     "mulatos"
   ],
@@ -21766,10 +21518,6 @@ export default [
   [
     "exudado",
     "exudados"
-  ],
-  [
-    "discreto",
-    "discretas"
   ],
   [
     "coronaria",
@@ -21924,10 +21672,6 @@ export default [
     "galeras"
   ],
   [
-    "mameluco",
-    "mamelucas"
-  ],
-  [
     "indemnización",
     "indemnizaciones"
   ],
@@ -21978,10 +21722,6 @@ export default [
   [
     "balazo",
     "balazos"
-  ],
-  [
-    "viudo",
-    "viudas"
   ],
   [
     "izquierda",
@@ -22122,10 +21862,6 @@ export default [
   [
     "torpedo",
     "torpedos"
-  ],
-  [
-    "mota",
-    "motillas"
   ],
   [
     "flanco",
@@ -22270,10 +22006,6 @@ export default [
   [
     "sexta",
     "sextas"
-  ],
-  [
-    "séptimo",
-    "séptimas"
   ],
   [
     "improvisación",
@@ -22630,10 +22362,6 @@ export default [
   [
     "mentalidad",
     "mentalidades"
-  ],
-  [
-    "prusiano",
-    "prusianas"
   ],
   [
     "blindado",
@@ -23212,10 +22940,6 @@ export default [
     "cotos"
   ],
   [
-    "dicotiledóneo",
-    "dicotiledóneas"
-  ],
-  [
     "taxónomo",
     "taxónomos"
   ],
@@ -23308,10 +23032,6 @@ export default [
     "estucos"
   ],
   [
-    "calero",
-    "caleras"
-  ],
-  [
     "hoyuelo",
     "hoyuelos"
   ],
@@ -23384,16 +23104,8 @@ export default [
     "despidos"
   ],
   [
-    "sufrido",
-    "sufridas"
-  ],
-  [
     "escocés",
     "escoceses"
-  ],
-  [
-    "irlandés",
-    "irlandesas"
   ],
   [
     "melón",
@@ -23550,10 +23262,6 @@ export default [
   [
     "reelección",
     "reelecciones"
-  ],
-  [
-    "mandado",
-    "mandadas"
   ],
   [
     "defunción",
@@ -23784,10 +23492,6 @@ export default [
     "hebillas"
   ],
   [
-    "maquilador",
-    "maquiladoras"
-  ],
-  [
     "invernadero",
     "invernaderos"
   ],
@@ -23988,10 +23692,6 @@ export default [
     "púnicos"
   ],
   [
-    "levantino",
-    "levantinas"
-  ],
-  [
     "designación",
     "designaciones"
   ],
@@ -24006,10 +23706,6 @@ export default [
   [
     "purga",
     "purgas"
-  ],
-  [
-    "acusador",
-    "acusadoras"
   ],
   [
     "fusilamiento",
@@ -24082,10 +23778,6 @@ export default [
   [
     "capea",
     "capeas"
-  ],
-  [
-    "oriundo",
-    "oriundas"
   ],
   [
     "cuco",
@@ -24182,10 +23874,6 @@ export default [
   [
     "castañar",
     "castañares"
-  ],
-  [
-    "jara",
-    "jarillas"
   ],
   [
     "madroño",
@@ -24312,10 +24000,6 @@ export default [
     "barbacoas"
   ],
   [
-    "biso",
-    "bisones"
-  ],
-  [
     "giro",
     "giros"
   ],
@@ -24406,14 +24090,6 @@ export default [
   [
     "bordado",
     "bordados"
-  ],
-  [
-    "perdido",
-    "perdidas"
-  ],
-  [
-    "mayordomo",
-    "mayordomas"
   ],
   [
     "banasta",
@@ -24542,10 +24218,6 @@ export default [
   [
     "vendimia",
     "vendimias"
-  ],
-  [
-    "prisa",
-    "prisones"
   ],
   [
     "tope",
@@ -24848,10 +24520,6 @@ export default [
     "cubrecamas"
   ],
   [
-    "talega",
-    "talegones"
-  ],
-  [
     "telar",
     "telares"
   ],
@@ -24958,10 +24626,6 @@ export default [
   [
     "barrizal",
     "barrizales"
-  ],
-  [
-    "calla",
-    "callejas"
   ],
   [
     "gárgola",
@@ -25190,10 +24854,6 @@ export default [
   [
     "corchea",
     "corcheas"
-  ],
-  [
-    "cubano",
-    "cubanas"
   ],
   [
     "bailador",
@@ -25438,10 +25098,6 @@ export default [
   [
     "derrotero",
     "derroteros"
-  ],
-  [
-    "mamporro",
-    "mamporrazos"
   ],
   [
     "granuja",
@@ -26044,10 +25700,6 @@ export default [
     "canes"
   ],
   [
-    "cabañero",
-    "cabañeras"
-  ],
-  [
     "roturación",
     "roturaciones"
   ],
@@ -26234,10 +25886,6 @@ export default [
   [
     "perceptor",
     "perceptores"
-  ],
-  [
-    "leonés",
-    "leonesas"
   ],
   [
     "zarzal",
@@ -26436,10 +26084,6 @@ export default [
     "peones"
   ],
   [
-    "montero",
-    "monteruelos"
-  ],
-  [
     "sabotaje",
     "sabotajes"
   ],
@@ -26566,10 +26210,6 @@ export default [
   [
     "rail",
     "railes"
-  ],
-  [
-    "gitano",
-    "gitanas"
   ],
   [
     "alameda",
@@ -26714,10 +26354,6 @@ export default [
   [
     "modesto",
     "modestos"
-  ],
-  [
-    "soriano",
-    "sorianas"
   ],
   [
     "coreografía",
@@ -27192,10 +26828,6 @@ export default [
     "apuros"
   ],
   [
-    "seductor",
-    "seductoras"
-  ],
-  [
     "añadido",
     "añadidos"
   ],
@@ -27380,10 +27012,6 @@ export default [
     "cejas"
   ],
   [
-    "desmesurado",
-    "desmesuradas"
-  ],
-  [
     "cartelera",
     "carteleras"
   ],
@@ -27476,10 +27104,6 @@ export default [
     "tiquetes"
   ],
   [
-    "alimentador",
-    "alimentadoras"
-  ],
-  [
     "expreso",
     "expresos"
   ],
@@ -27490,10 +27114,6 @@ export default [
   [
     "exclusiva",
     "exclusivas"
-  ],
-  [
-    "sentada",
-    "sentadillas"
   ],
   [
     "claraboya",
@@ -27514,10 +27134,6 @@ export default [
   [
     "cierre",
     "cierres"
-  ],
-  [
-    "billetero",
-    "billeteras"
   ],
   [
     "transbordo",
@@ -27570,10 +27186,6 @@ export default [
   [
     "magiar",
     "magiares"
-  ],
-  [
-    "ruda",
-    "ruditas"
   ],
   [
     "torturador",
@@ -27802,10 +27414,6 @@ export default [
   [
     "pasaporte",
     "pasaportes"
-  ],
-  [
-    "indonesio",
-    "indonesias"
   ],
   [
     "canaco",
@@ -28088,10 +27696,6 @@ export default [
     "cojones"
   ],
   [
-    "mocito",
-    "mocitas"
-  ],
-  [
     "cómico",
     "cómicos"
   ],
@@ -28324,10 +27928,6 @@ export default [
     "eunucos"
   ],
   [
-    "reumático",
-    "reumáticas"
-  ],
-  [
     "neuromediador",
     "neuromediadores"
   ],
@@ -28478,10 +28078,6 @@ export default [
   [
     "prima",
     "primas"
-  ],
-  [
-    "presentador",
-    "presentadoras"
   ],
   [
     "reajuste",
@@ -28864,10 +28460,6 @@ export default [
     "llanas"
   ],
   [
-    "esdrújulo",
-    "esdrújulas"
-  ],
-  [
     "sobresdrújula",
     "sobresdrújulas"
   ],
@@ -28980,10 +28572,6 @@ export default [
     "tetraciclinas"
   ],
   [
-    "quínola",
-    "quinolonas"
-  ],
-  [
     "microsegundo",
     "microsegundos"
   ],
@@ -29046,10 +28634,6 @@ export default [
   [
     "cero",
     "ceros"
-  ],
-  [
-    "triplo",
-    "tripletas"
   ],
   [
     "triplete",
@@ -29190,10 +28774,6 @@ export default [
   [
     "torca",
     "torcas"
-  ],
-  [
-    "zapoteco",
-    "zapotecas"
   ],
   [
     "mixteco",
@@ -29464,10 +29044,6 @@ export default [
     "cuadernos"
   ],
   [
-    "majo",
-    "majas"
-  ],
-  [
     "drenaje",
     "drenajes"
   ],
@@ -29650,10 +29226,6 @@ export default [
   [
     "nasal",
     "nasales"
-  ],
-  [
-    "implosivo",
-    "implosivas"
   ],
   [
     "cementoblasto",
@@ -30088,10 +29660,6 @@ export default [
     "exacciones"
   ],
   [
-    "cantonero",
-    "cantoneras"
-  ],
-  [
     "santero",
     "santeros"
   ],
@@ -30320,10 +29888,6 @@ export default [
     "pimientas"
   ],
   [
-    "anglicano",
-    "anglicanas"
-  ],
-  [
     "etimólogo",
     "etimólogos"
   ],
@@ -30402,10 +29966,6 @@ export default [
   [
     "tecnicismo",
     "tecnicismos"
-  ],
-  [
-    "narrador",
-    "narradoras"
   ],
   [
     "premisa",
@@ -30572,10 +30132,6 @@ export default [
     "prestamistas"
   ],
   [
-    "malagueño",
-    "malagueñas"
-  ],
-  [
     "cofradía",
     "cofradías"
   ],
@@ -30598,10 +30154,6 @@ export default [
   [
     "microcito",
     "microcitos"
-  ],
-  [
-    "ánulo",
-    "anulocitos"
   ],
   [
     "reticulocito",
@@ -30762,10 +30314,6 @@ export default [
   [
     "estantería",
     "estanterías"
-  ],
-  [
-    "guineo",
-    "guineitos"
   ],
   [
     "homilía",
@@ -30982,10 +30530,6 @@ export default [
   [
     "pañol",
     "pañoles"
-  ],
-  [
-    "imaginero",
-    "imagineras"
   ],
   [
     "tijera",
@@ -31318,10 +30862,6 @@ export default [
   [
     "siempreviva",
     "siemprevivas"
-  ],
-  [
-    "fresero",
-    "freseras"
   ],
   [
     "pinzón",
@@ -31700,10 +31240,6 @@ export default [
     "ligaduras"
   ],
   [
-    "obligatorio",
-    "obligatorias"
-  ],
-  [
     "fructificación",
     "fructificaciones"
   ],
@@ -32016,10 +31552,6 @@ export default [
     "pulgares"
   ],
   [
-    "poblazo",
-    "poblazones"
-  ],
-  [
     "rotonda",
     "rotondas"
   ],
@@ -32198,10 +31730,6 @@ export default [
   [
     "camarín",
     "camarines"
-  ],
-  [
-    "salitrero",
-    "salitreras"
   ],
   [
     "flete",
@@ -32536,10 +32064,6 @@ export default [
     "pedagogos"
   ],
   [
-    "libertario",
-    "libertarias"
-  ],
-  [
     "desposado",
     "desposados"
   ],
@@ -32586,10 +32110,6 @@ export default [
   [
     "rejoneador",
     "rejoneadores"
-  ],
-  [
-    "sevillano",
-    "sevillanas"
   ],
   [
     "cigarrero",
@@ -32772,10 +32292,6 @@ export default [
     "cocciones"
   ],
   [
-    "toscano",
-    "toscanas"
-  ],
-  [
     "vajilla",
     "vajillas"
   ],
@@ -32802,10 +32318,6 @@ export default [
   [
     "terrícola",
     "terrícolas"
-  ],
-  [
-    "unitario",
-    "unitarias"
   ],
   [
     "benimerín",
@@ -33424,10 +32936,6 @@ export default [
     "concordancias"
   ],
   [
-    "té",
-    "tetes"
-  ],
-  [
     "subteoría",
     "subteorías"
   ],
@@ -33692,10 +33200,6 @@ export default [
     "piras"
   ],
   [
-    "mero",
-    "meritos"
-  ],
-  [
     "porte",
     "portes"
   ],
@@ -33738,10 +33242,6 @@ export default [
   [
     "pollero",
     "polleros"
-  ],
-  [
-    "faca",
-    "facones"
   ],
   [
     "resero",
@@ -34164,14 +33664,6 @@ export default [
     "azahares"
   ],
   [
-    "serpa",
-    "serpetas"
-  ],
-  [
-    "caparra",
-    "caparretas"
-  ],
-  [
     "piojo",
     "piojos"
   ],
@@ -34320,10 +33812,6 @@ export default [
     "unionistas"
   ],
   [
-    "norirlandés",
-    "norirlandesas"
-  ],
-  [
     "parentesco",
     "parentescos"
   ],
@@ -34436,10 +33924,6 @@ export default [
     "súplicas"
   ],
   [
-    "continuador",
-    "continuadoras"
-  ],
-  [
     "electrostática",
     "electrostáticas"
   ],
@@ -34450,10 +33934,6 @@ export default [
   [
     "usurpador",
     "usurpadores"
-  ],
-  [
-    "metropolitano",
-    "metropolitanas"
   ],
   [
     "mechón",
@@ -34552,10 +34032,6 @@ export default [
     "horadaciones"
   ],
   [
-    "radioemisor",
-    "radioemisoras"
-  ],
-  [
     "anglófono",
     "anglófonos"
   ],
@@ -34598,10 +34074,6 @@ export default [
   [
     "armiño",
     "armiños"
-  ],
-  [
-    "pirenaico",
-    "pirenaicas"
   ],
   [
     "esquí",
@@ -34666,10 +34138,6 @@ export default [
   [
     "cacto",
     "cactos"
-  ],
-  [
-    "solanáceo",
-    "solanáceas"
   ],
   [
     "chulo",
@@ -34780,10 +34248,6 @@ export default [
     "cantáridas"
   ],
   [
-    "cardiaco",
-    "cardíacas"
-  ],
-  [
     "púber",
     "púberes"
   ],
@@ -34834,10 +34298,6 @@ export default [
   [
     "yerno",
     "yernos"
-  ],
-  [
-    "luge",
-    "lugones"
   ],
   [
     "astur",
@@ -35190,10 +34650,6 @@ export default [
   [
     "cestodo",
     "cestodos"
-  ],
-  [
-    "chato",
-    "chatas"
   ],
   [
     "alfombrilla",
@@ -36020,10 +35476,6 @@ export default [
     "sobretensiones"
   ],
   [
-    "naviero",
-    "navieras"
-  ],
-  [
     "cronología",
     "cronologías"
   ],
@@ -36212,10 +35664,6 @@ export default [
     "pantomimas"
   ],
   [
-    "campano",
-    "campanazos"
-  ],
-  [
     "osco",
     "oscos"
   ],
@@ -36254,10 +35702,6 @@ export default [
   [
     "lumen",
     "lúmenes"
-  ],
-  [
-    "salicáceo",
-    "salicáceas"
   ],
   [
     "banqueta",
@@ -36346,10 +35790,6 @@ export default [
   [
     "neoliberal",
     "neoliberales"
-  ],
-  [
-    "gordo",
-    "gorditas"
   ],
   [
     "violeta",
@@ -36542,10 +35982,6 @@ export default [
   [
     "silano",
     "silanos"
-  ],
-  [
-    "tocón",
-    "toconotes"
   ],
   [
     "vendaval",
@@ -37356,14 +36792,6 @@ export default [
     "guadañas"
   ],
   [
-    "guaja",
-    "guajonas"
-  ],
-  [
-    "meigo",
-    "meigas"
-  ],
-  [
     "chucho",
     "chuchos"
   ],
@@ -37378,10 +36806,6 @@ export default [
   [
     "raptor",
     "raptores"
-  ],
-  [
-    "chupador",
-    "chupadoras"
   ],
   [
     "carcelero",
@@ -38180,10 +37604,6 @@ export default [
     "lianas"
   ],
   [
-    "ordinario",
-    "ordinarias"
-  ],
-  [
     "civeta",
     "civetas"
   ],
@@ -38524,16 +37944,8 @@ export default [
     "hospedajes"
   ],
   [
-    "casero",
-    "caseras"
-  ],
-  [
     "pradería",
     "praderías"
-  ],
-  [
-    "celador",
-    "celadoras"
   ],
   [
     "fíbula",
@@ -38724,10 +38136,6 @@ export default [
     "jotas"
   ],
   [
-    "giralda",
-    "giraldillas"
-  ],
-  [
     "latinización",
     "latinizaciones"
   ],
@@ -38750,10 +38158,6 @@ export default [
   [
     "francolín",
     "francolines"
-  ],
-  [
-    "caneco",
-    "canecillos"
   ],
   [
     "angostura",
@@ -38786,10 +38190,6 @@ export default [
   [
     "zarzaparrilla",
     "zarzaparrillas"
-  ],
-  [
-    "maderero",
-    "madereras"
   ],
   [
     "gaitero",
@@ -38952,14 +38352,6 @@ export default [
     "polisomas"
   ],
   [
-    "chapera",
-    "chaperonas"
-  ],
-  [
-    "cortador",
-    "cortadoras"
-  ],
-  [
     "pléyade",
     "pléyades"
   ],
@@ -39010,10 +38402,6 @@ export default [
   [
     "omóplato",
     "omóplatos"
-  ],
-  [
-    "ce",
-    "cones"
   ],
   [
     "memorial",
@@ -39284,10 +38672,6 @@ export default [
     "translaciones"
   ],
   [
-    "n",
-    "nazas"
-  ],
-  [
     "tolvanera",
     "tolvaneras"
   ],
@@ -39330,10 +38714,6 @@ export default [
   [
     "candileja",
     "candilejas"
-  ],
-  [
-    "prometido",
-    "prometidas"
   ],
   [
     "intercesor",
@@ -39638,10 +39018,6 @@ export default [
   [
     "henar",
     "henares"
-  ],
-  [
-    "hercio",
-    "hertzios"
   ],
   [
     "prepucio",
@@ -40000,10 +39376,6 @@ export default [
     "auras"
   ],
   [
-    "libre",
-    "libritos"
-  ],
-  [
     "metalúrgico",
     "metalúrgicos"
   ],
@@ -40212,10 +39584,6 @@ export default [
     "oscuridades"
   ],
   [
-    "braco",
-    "bracitos"
-  ],
-  [
     "arboladura",
     "arboladuras"
   ],
@@ -40336,10 +39704,6 @@ export default [
     "kermesses"
   ],
   [
-    "antojo",
-    "antojitos"
-  ],
-  [
     "transilvano",
     "transilvanos"
   ],
@@ -40384,10 +39748,6 @@ export default [
     "huesecillos"
   ],
   [
-    "cuaternio",
-    "cuaterniones"
-  ],
-  [
     "hipertexto",
     "hipertextos"
   ],
@@ -40430,10 +39790,6 @@ export default [
   [
     "zapatazo",
     "zapatazos"
-  ],
-  [
-    "ordeñador",
-    "ordeñadoras"
   ],
   [
     "ubre",
@@ -40828,10 +40184,6 @@ export default [
     "curtidores"
   ],
   [
-    "ilustrador",
-    "ilustradoras"
-  ],
-  [
     "basamento",
     "basamentos"
   ],
@@ -40976,10 +40328,6 @@ export default [
     "desfases"
   ],
   [
-    "ahijado",
-    "ahijadas"
-  ],
-  [
     "yoruba",
     "yorubas"
   ],
@@ -41094,10 +40442,6 @@ export default [
   [
     "fondista",
     "fondistas"
-  ],
-  [
-    "hila",
-    "hilotas"
   ],
   [
     "hegemonía",
@@ -41388,10 +40732,6 @@ export default [
     "necios"
   ],
   [
-    "vasco",
-    "vascas"
-  ],
-  [
     "afectación",
     "afectaciones"
   ],
@@ -41410,10 +40750,6 @@ export default [
   [
     "chiíta",
     "chiitas"
-  ],
-  [
-    "sunna",
-    "sunnitas"
   ],
   [
     "barandal",
@@ -41608,10 +40944,6 @@ export default [
     "arsácidas"
   ],
   [
-    "indoiranio",
-    "indoiranias"
-  ],
-  [
     "vado",
     "vados"
   ],
@@ -41738,10 +41070,6 @@ export default [
   [
     "levantisco",
     "levantiscos"
-  ],
-  [
-    "irmandiño",
-    "irmandiñas"
   ],
   [
     "pazo",
@@ -41890,10 +41218,6 @@ export default [
   [
     "encontronazo",
     "encontronazos"
-  ],
-  [
-    "quinceañero",
-    "quinceañeras"
   ],
   [
     "reconciliación",
@@ -42084,16 +41408,8 @@ export default [
     "cocoteras"
   ],
   [
-    "lejío",
-    "lejitos"
-  ],
-  [
     "cuantificador",
     "cuantificadores"
-  ],
-  [
-    "pana",
-    "panuchas"
   ],
   [
     "elipse",
@@ -42196,10 +41512,6 @@ export default [
     "jerseys"
   ],
   [
-    "colegial",
-    "colegialas"
-  ],
-  [
     "publicista",
     "publicistas"
   ],
@@ -42218,10 +41530,6 @@ export default [
   [
     "sauzal",
     "sauzales"
-  ],
-  [
-    "cervecero",
-    "cerveceras"
   ],
   [
     "castellonense",
@@ -42268,10 +41576,6 @@ export default [
     "samurais"
   ],
   [
-    "duplo",
-    "duplas"
-  ],
-  [
     "decodificador",
     "decodificadores"
   ],
@@ -42302,10 +41606,6 @@ export default [
   [
     "lunático",
     "lunáticos"
-  ],
-  [
-    "farmacéutico",
-    "farmacéuticas"
   ],
   [
     "meditación",
@@ -42668,10 +41968,6 @@ export default [
     "infografías"
   ],
   [
-    "siamés",
-    "siamesas"
-  ],
-  [
     "singapureño",
     "singapureños"
   ],
@@ -42814,10 +42110,6 @@ export default [
   [
     "vertedera",
     "vertederas"
-  ],
-  [
-    "violáceo",
-    "violáceas"
   ],
   [
     "calabozo",
@@ -43164,10 +42456,6 @@ export default [
     "tábanos"
   ],
   [
-    "m",
-    "mucas"
-  ],
-  [
     "novena",
     "novenas"
   ],
@@ -43218,10 +42506,6 @@ export default [
   [
     "indecisión",
     "indecisiones"
-  ],
-  [
-    "cacerola",
-    "cacerolazos"
   ],
   [
     "aprehensión",
@@ -43334,10 +42618,6 @@ export default [
   [
     "batracio",
     "batracios"
-  ],
-  [
-    "cha",
-    "chones"
   ],
   [
     "heráclida",
@@ -43546,10 +42826,6 @@ export default [
   [
     "deíctico",
     "deícticos"
-  ],
-  [
-    "no",
-    "nejos"
   ],
   [
     "inspirador",
@@ -43792,10 +43068,6 @@ export default [
     "atracones"
   ],
   [
-    "javanés",
-    "javanesas"
-  ],
-  [
     "rupia",
     "rupias"
   ],
@@ -43956,10 +43228,6 @@ export default [
     "sefardíes"
   ],
   [
-    "canilla",
-    "canillitas"
-  ],
-  [
     "iteración",
     "iteraciones"
   ],
@@ -44096,10 +43364,6 @@ export default [
     "papistas"
   ],
   [
-    "l",
-    "lucas"
-  ],
-  [
     "bestseller",
     "bestsellers"
   ],
@@ -44196,10 +43460,6 @@ export default [
     "inhibiciones"
   ],
   [
-    "profano",
-    "profanas"
-  ],
-  [
     "ábaco",
     "ábacos"
   ],
@@ -44264,24 +43524,12 @@ export default [
     "dalias"
   ],
   [
-    "amado",
-    "amadas"
-  ],
-  [
-    "alabastro",
-    "alabastrones"
-  ],
-  [
     "novísimo",
     "novísimos"
   ],
   [
     "fanfarria",
     "fanfarrias"
-  ],
-  [
-    "vienés",
-    "vienesas"
   ],
   [
     "sinfonista",
@@ -44384,10 +43632,6 @@ export default [
     "opúsculos"
   ],
   [
-    "quaestio",
-    "quaestiones"
-  ],
-  [
     "antisemita",
     "antisemitas"
   ],
@@ -44434,10 +43678,6 @@ export default [
   [
     "talismán",
     "talismanes"
-  ],
-  [
-    "taquillo",
-    "taquillazos"
   ],
   [
     "conscripto",
@@ -44544,10 +43784,6 @@ export default [
     "sindhis"
   ],
   [
-    "consignatario",
-    "consignatarias"
-  ],
-  [
     "mensualidad",
     "mensualidades"
   ],
@@ -44590,10 +43826,6 @@ export default [
   [
     "quinario",
     "quinarios"
-  ],
-  [
-    "penta",
-    "pentones"
   ],
   [
     "serigrafía",
@@ -45044,10 +44276,6 @@ export default [
     "cardinales"
   ],
   [
-    "hotelero",
-    "hoteleras"
-  ],
-  [
     "gépido",
     "gépidos"
   ],
@@ -45258,10 +44486,6 @@ export default [
   [
     "perforina",
     "perforinas"
-  ],
-  [
-    "orensano",
-    "orensanas"
   ],
   [
     "codeso",
@@ -45626,10 +44850,6 @@ export default [
   [
     "pasionaria",
     "pasionarias"
-  ],
-  [
-    "costalero",
-    "costaleras"
   ],
   [
     "palio",
@@ -46270,10 +45490,6 @@ export default [
   [
     "yubarta",
     "yubartas"
-  ],
-  [
-    "librado",
-    "libradas"
   ],
   [
     "bufonada",
@@ -46992,10 +46208,6 @@ export default [
     "legendarios"
   ],
   [
-    "confuciano",
-    "confucianas"
-  ],
-  [
     "martirio",
     "martirios"
   ],
@@ -47054,10 +46266,6 @@ export default [
   [
     "tajante",
     "tajantes"
-  ],
-  [
-    "apoderado",
-    "apoderadas"
   ],
   [
     "macroestructura",
@@ -47236,10 +46444,6 @@ export default [
     "dietarios"
   ],
   [
-    "pedófilo",
-    "pedófilas"
-  ],
-  [
     "estipendio",
     "estipendios"
   ],
@@ -47392,10 +46596,6 @@ export default [
     "toboganes"
   ],
   [
-    "flechero",
-    "flecheras"
-  ],
-  [
     "santandereano",
     "santandereanos"
   ],
@@ -47528,10 +46728,6 @@ export default [
     "codicias"
   ],
   [
-    "torio",
-    "toritos"
-  ],
-  [
     "langostino",
     "langostinos"
   ],
@@ -47580,10 +46776,6 @@ export default [
     "carcajes"
   ],
   [
-    "camal",
-    "camalotes"
-  ],
-  [
     "amatista",
     "amatistas"
   ],
@@ -47606,10 +46798,6 @@ export default [
   [
     "cantarilla",
     "cantarillas"
-  ],
-  [
-    "lob",
-    "lobitos"
   ],
   [
     "rompiente",
@@ -47672,10 +46860,6 @@ export default [
     "triciclos"
   ],
   [
-    "canana",
-    "cananitas"
-  ],
-  [
     "desconcentración",
     "desconcentraciones"
   ],
@@ -47710,10 +46894,6 @@ export default [
   [
     "luminiscencia",
     "luminiscencias"
-  ],
-  [
-    "marisquero",
-    "marisqueras"
   ],
   [
     "berberecho",
@@ -47818,10 +46998,6 @@ export default [
   [
     "paramecio",
     "paramecios"
-  ],
-  [
-    "helvético",
-    "helvéticas"
   ],
   [
     "barcarola",
@@ -48070,10 +47246,6 @@ export default [
   [
     "barniz",
     "barnices"
-  ],
-  [
-    "manco",
-    "mancas"
   ],
   [
     "enagua",
@@ -48608,10 +47780,6 @@ export default [
     "churrascos"
   ],
   [
-    "ranunculáceo",
-    "ranunculáceas"
-  ],
-  [
     "bejuco",
     "bejucos"
   ],
@@ -48666,10 +47834,6 @@ export default [
   [
     "lardizabalácea",
     "lardizabaláceas"
-  ],
-  [
-    "indiviso",
-    "indivisas"
   ],
   [
     "utrículo",
@@ -48922,10 +48086,6 @@ export default [
   [
     "pellizco",
     "pellizcos"
-  ],
-  [
-    "taque",
-    "taquitos"
   ],
   [
     "mahonesa",
@@ -49296,10 +48456,6 @@ export default [
     "pellejos"
   ],
   [
-    "batidor",
-    "batidoras"
-  ],
-  [
     "historicismo",
     "historicismos"
   ],
@@ -49338,10 +48494,6 @@ export default [
   [
     "ensanchamiento",
     "ensanchamientos"
-  ],
-  [
-    "clina",
-    "clinicas"
   ],
   [
     "pastura",
@@ -49402,10 +48554,6 @@ export default [
   [
     "tifo",
     "tifos"
-  ],
-  [
-    "vadeador",
-    "vadeadoras"
   ],
   [
     "rodador",
@@ -49642,10 +48790,6 @@ export default [
   [
     "solicitante",
     "solicitantes"
-  ],
-  [
-    "guija",
-    "guijones"
   ],
   [
     "calamón",
@@ -49928,10 +49072,6 @@ export default [
     "detallistas"
   ],
   [
-    "chasca",
-    "chascones"
-  ],
-  [
     "manager",
     "managers"
   ],
@@ -49974,10 +49114,6 @@ export default [
   [
     "consultoría",
     "consultorías"
-  ],
-  [
-    "prójimo",
-    "prójimas"
   ],
   [
     "comprensión",
@@ -50200,10 +49336,6 @@ export default [
     "imperativos"
   ],
   [
-    "endemoniado",
-    "endemoniadas"
-  ],
-  [
     "senado",
     "senados"
   ],
@@ -50238,10 +49370,6 @@ export default [
   [
     "radiodifusor",
     "radiodifusores"
-  ],
-  [
-    "planchador",
-    "planchadoras"
   ],
   [
     "pejesapo",
@@ -50350,10 +49478,6 @@ export default [
   [
     "frailejón",
     "frailejones"
-  ],
-  [
-    "truchero",
-    "trucheras"
   ],
   [
     "suntuosidad",
@@ -50536,10 +49660,6 @@ export default [
     "prímulas"
   ],
   [
-    "primuláceo",
-    "primuláceas"
-  ],
-  [
     "curativa",
     "curativas"
   ],
@@ -50600,10 +49720,6 @@ export default [
     "teleféricos"
   ],
   [
-    "mará",
-    "marones"
-  ],
-  [
     "cogido",
     "cogidos"
   ],
@@ -50638,10 +49754,6 @@ export default [
   [
     "reflujo",
     "reflujos"
-  ],
-  [
-    "fresador",
-    "fresadoras"
   ],
   [
     "brasilero",
@@ -51324,20 +50436,12 @@ export default [
     "infinidades"
   ],
   [
-    "partero",
-    "parteras"
-  ],
-  [
     "entuerto",
     "entuertos"
   ],
   [
     "divorciado",
     "divorciados"
-  ],
-  [
-    "euforbiáceo",
-    "euforbiáceas"
   ],
   [
     "savia",
@@ -51780,10 +50884,6 @@ export default [
     "cinípedos"
   ],
   [
-    "irreligioso",
-    "irreligiosas"
-  ],
-  [
     "feofícea",
     "feofíceas"
   ],
@@ -52000,10 +51100,6 @@ export default [
     "adanes"
   ],
   [
-    "ultimato",
-    "ultimatones"
-  ],
-  [
     "índigo",
     "índigos"
   ],
@@ -52212,10 +51308,6 @@ export default [
     "pulsadores"
   ],
   [
-    "preparador",
-    "preparadoras"
-  ],
-  [
     "fungicida",
     "fungicidas"
   ],
@@ -52294,10 +51386,6 @@ export default [
   [
     "valón",
     "valones"
-  ],
-  [
-    "rutáceo",
-    "rutáceas"
   ],
   [
     "cucurbitácea",
@@ -52498,10 +51586,6 @@ export default [
   [
     "deshidratadora",
     "deshidratadoras"
-  ],
-  [
-    "envasador",
-    "envasadoras"
   ],
   [
     "espigón",
@@ -52924,10 +52008,6 @@ export default [
     "coagulaciones"
   ],
   [
-    "cavernario",
-    "cavernarias"
-  ],
-  [
     "pelasgo",
     "pelasgos"
   ],
@@ -53030,10 +52110,6 @@ export default [
   [
     "subproyecto",
     "subproyectos"
-  ],
-  [
-    "cochino",
-    "cochinitos"
   ],
   [
     "colonialista",
@@ -53320,10 +52396,6 @@ export default [
     "brulotes"
   ],
   [
-    "atrevido",
-    "atrevidas"
-  ],
-  [
     "generatriz",
     "generatrices"
   ],
@@ -53342,10 +52414,6 @@ export default [
   [
     "distonía",
     "distonías"
-  ],
-  [
-    "tostador",
-    "tostadoras"
   ],
   [
     "peptidasa",
@@ -53520,10 +52588,6 @@ export default [
     "cachuelos"
   ],
   [
-    "escobero",
-    "escoberas"
-  ],
-  [
     "piorno",
     "piornos"
   ],
@@ -53688,10 +52752,6 @@ export default [
     "gramas"
   ],
   [
-    "contento",
-    "contentas"
-  ],
-  [
     "epóxido",
     "epóxidos"
   ],
@@ -53706,10 +52766,6 @@ export default [
   [
     "laconio",
     "laconios"
-  ],
-  [
-    "montenegrino",
-    "montenegrinas"
   ],
   [
     "pachá",
@@ -53754,10 +52810,6 @@ export default [
   [
     "tamarindo",
     "tamarindos"
-  ],
-  [
-    "extorsionador",
-    "extorsionadoras"
   ],
   [
     "fango",
@@ -54180,10 +53232,6 @@ export default [
     "contenciones"
   ],
   [
-    "saltador",
-    "saltadoras"
-  ],
-  [
     "búnker",
     "búnkeres"
   ],
@@ -54460,10 +53508,6 @@ export default [
     "enlatados"
   ],
   [
-    "llorón",
-    "lloronas"
-  ],
-  [
     "handicap",
     "handicaps"
   ],
@@ -54546,10 +53590,6 @@ export default [
   [
     "agrupador",
     "agrupadores"
-  ],
-  [
-    "erre",
-    "errones"
   ],
   [
     "envoltorio",
@@ -54732,20 +53772,12 @@ export default [
     "neanderthales"
   ],
   [
-    "perforador",
-    "perforadoras"
-  ],
-  [
     "percutor",
     "percutores"
   ],
   [
     "grueso",
     "gruesos"
-  ],
-  [
-    "heladero",
-    "heladeras"
   ],
   [
     "empadronador",
@@ -54826,10 +53858,6 @@ export default [
   [
     "hipogeo",
     "hipogeos"
-  ],
-  [
-    "interino",
-    "interinas"
   ],
   [
     "formalización",
@@ -55136,10 +54164,6 @@ export default [
     "lancetas"
   ],
   [
-    "taca",
-    "tacitas"
-  ],
-  [
     "dinamita",
     "dinamitas"
   ],
@@ -55214,10 +54238,6 @@ export default [
   [
     "callera",
     "calleras"
-  ],
-  [
-    "lotero",
-    "loteras"
   ],
   [
     "tiza",
@@ -55298,10 +54318,6 @@ export default [
   [
     "cilicio",
     "cilicios"
-  ],
-  [
-    "mirtáceo",
-    "mirtáceas"
   ],
   [
     "ñire",
@@ -55504,10 +54520,6 @@ export default [
     "bateyes"
   ],
   [
-    "cojo",
-    "cojas"
-  ],
-  [
     "vejigazo",
     "vejigazos"
   ],
@@ -55680,10 +54692,6 @@ export default [
     "indirectas"
   ],
   [
-    "ranchero",
-    "rancheras"
-  ],
-  [
     "derrape",
     "derrapes"
   ],
@@ -55744,10 +54752,6 @@ export default [
     "ajardinamientos"
   ],
   [
-    "medianero",
-    "medianeras"
-  ],
-  [
     "subclán",
     "subclanes"
   ],
@@ -55800,10 +54804,6 @@ export default [
     "filtrados"
   ],
   [
-    "gracioso",
-    "graciosas"
-  ],
-  [
     "acogida",
     "acogidas"
   ],
@@ -55842,10 +54842,6 @@ export default [
   [
     "jónico",
     "jónicos"
-  ],
-  [
-    "talle",
-    "tallitos"
   ],
   [
     "labiodental",
@@ -56108,10 +55104,6 @@ export default [
     "derramas"
   ],
   [
-    "r",
-    "rucas"
-  ],
-  [
     "interinato",
     "interinatos"
   ],
@@ -56276,10 +55268,6 @@ export default [
     "aldabones"
   ],
   [
-    "idéntico",
-    "idénticas"
-  ],
-  [
     "paralización",
     "paralizaciones"
   ],
@@ -56356,10 +55344,6 @@ export default [
     "oestes"
   ],
   [
-    "botón",
-    "botoncillos"
-  ],
-  [
     "copón",
     "copones"
   ],
@@ -56402,14 +55386,6 @@ export default [
   [
     "cuartilla",
     "cuartillas"
-  ],
-  [
-    "tosco",
-    "toscas"
-  ],
-  [
-    "trillizo",
-    "trillizas"
   ],
   [
     "enfado",
@@ -56534,10 +55510,6 @@ export default [
   [
     "regicida",
     "regicidas"
-  ],
-  [
-    "bostoniano",
-    "bostonianas"
   ],
   [
     "alumbre",
@@ -56786,10 +55758,6 @@ export default [
   [
     "juglandácea",
     "juglandáceas"
-  ],
-  [
-    "cerero",
-    "cereras"
   ],
   [
     "palier",
@@ -57058,10 +56026,6 @@ export default [
   [
     "pegote",
     "pegotes"
-  ],
-  [
-    "raspa",
-    "raspones"
   ],
   [
     "ochava",
@@ -57362,10 +56326,6 @@ export default [
   [
     "pólder",
     "pólderes"
-  ],
-  [
-    "frisón",
-    "frisonas"
   ],
   [
     "asediador",
@@ -57672,10 +56632,6 @@ export default [
     "flageladas"
   ],
   [
-    "arqueo",
-    "arqueocitos"
-  ],
-  [
     "soro",
     "soros"
   ],
@@ -57720,10 +56676,6 @@ export default [
     "aerobuses"
   ],
   [
-    "acarreador",
-    "acarreadoras"
-  ],
-  [
     "potrillo",
     "potrillos"
   ],
@@ -57758,10 +56710,6 @@ export default [
   [
     "birria",
     "birrias"
-  ],
-  [
-    "jopo",
-    "jopillos"
   ],
   [
     "cigarrera",
@@ -57996,10 +56944,6 @@ export default [
     "algodonales"
   ],
   [
-    "porquerizo",
-    "porquerizas"
-  ],
-  [
     "palizada",
     "palizadas"
   ],
@@ -58132,10 +57076,6 @@ export default [
     "sotas"
   ],
   [
-    "truque",
-    "truquitos"
-  ],
-  [
     "zanca",
     "zancas"
   ],
@@ -58244,10 +57184,6 @@ export default [
     "hostigamientos"
   ],
   [
-    "fatuo",
-    "fatuas"
-  ],
-  [
     "banderillero",
     "banderilleros"
   ],
@@ -58328,10 +57264,6 @@ export default [
     "defectivos"
   ],
   [
-    "callao",
-    "callaicos"
-  ],
-  [
     "sistemática",
     "sistemáticas"
   ],
@@ -58346,10 +57278,6 @@ export default [
   [
     "tíquet",
     "tíquets"
-  ],
-  [
-    "expendedor",
-    "expendedoras"
   ],
   [
     "fotomatón",
@@ -58520,10 +57448,6 @@ export default [
     "amagos"
   ],
   [
-    "guapo",
-    "guapas"
-  ],
-  [
     "prendimiento",
     "prendimientos"
   ],
@@ -58610,14 +57534,6 @@ export default [
   [
     "probador",
     "probadores"
-  ],
-  [
-    "ulmáceo",
-    "ulmáceas"
-  ],
-  [
-    "platanáceo",
-    "platanáceas"
   ],
   [
     "polemista",
@@ -58746,10 +57662,6 @@ export default [
   [
     "colorín",
     "colorines"
-  ],
-  [
-    "guata",
-    "guatones"
   ],
   [
     "ponderación",

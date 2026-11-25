@@ -12,6 +12,8 @@ const fromGerund = function (str) {
   return convert(str, m.fromGerund)
 }
 const toGerund = function (str) {
+  // 'acostarse' conjugates as 'acostar'
+  str = str.replace(/([aeií]r)se$/, '$1')
   return convert(str, m.toGerund)
 }
 

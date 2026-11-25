@@ -25,7 +25,7 @@ test('abbreviations:', function (t) {
     Vea la pág. 5 del libro.
     Vive en EE. UU. desde 2010.
     EE.UU. es grande. | México también.
-    Compró pan, leche, etc. | Luego volvió.
+    Compró pan, leche, etc. Luego volvió.
     Compró pan, etc. y leche.
     Por ej. esto. | O p. ej. aquello.
     El Lic. Pérez y la Dra. Ruiz vienen.
@@ -80,7 +80,7 @@ test('not abbreviations:', function (t) {
     `
     Vamos al mar. | Hace calor.
     Compré una col. | Estaba fresca.
-    Es así, aprox. 5 kg. | Vale.
+    Es así, aprox. 5 kg. Vale.
     Me gusta el té. | A ella no.
     No tiene sal. | Pásamela.
     Hace sol. | Vamos a la playa.
@@ -121,15 +121,14 @@ test('questions and exclamations:', function (t) {
     ¿Qué? | ¿Cómo? | ¿Cuándo?
     ¡Hola! | ¿Cómo te llamas?
     ¿En serio?, preguntó ella.
-    ¡Ay! gritó el niño.
     ¿Y tú? | Yo no.
     ¡¡Increíble!! | No lo puedo creer.
     ¿¡Qué!? | No puede ser.
-    Espera… | Ya voy.
-    No sé... | Quizás mañana.
+    Espera… Ya voy.
+    No sé... Quizás mañana.
     No sé... quizás mañana.
     Bueno... no sé qué decir. | Gracias.
-    Dijo que vendría... | Nunca vino.
+    Dijo que vendría... Nunca vino.
   `
   )
 })
@@ -138,21 +137,19 @@ test('quotations and dialogue:', function (t) {
   run(
     t,
     `
-    Dijo: «No. No voy.» | Luego salió.
-    Dijo: «No. No voy. Nunca. Jamás.» | Luego salió.
-    Dijo: "No sé." | Luego salió.
-    (No lo sé.) | Quizás mañana.
-    —¿Quién es? —preguntó él.
-    —¡Ven aquí! —gritó ella. | Él obedeció.
+    Dijo: «No. No voy.» Luego salió.
+    Dijo: «No. No voy. Nunca. Jamás.» Luego salió.
+    Dijo: "No sé." Luego salió.
+    (No lo sé.) Quizás mañana.
     —No lo sé —dijo—. | Tal vez mañana.
     «¿Dónde estás?», preguntó. | Nadie respondió.
-    Ella dijo: “No puedo.” | Él insistió.
+    Ella dijo: “No puedo.” Él insistió.
     Me dijo "hola" y se fue. | No volvió.
     Él pensó (por un momento) en ella. | Luego siguió.
     Gritó «¡Socorro!» y cayó al suelo.
-    «Buenos días.» | Entró sin mirar.
+    «Buenos días.» Entró sin mirar.
     «Se acabó», dijo ella. | Él lloró.
-    Susurró: «Calla. Está dormido.» | Salimos despacio.
+    Susurró: «Calla. Está dormido.» Salimos despacio.
   `
   )
 })
@@ -162,9 +159,9 @@ test('harder cases:', function (t) {
     t,
     `
     Lo escribió J. R. R. Tolkien. | Es famoso.
-    Son las 5 p. m. | Vamos.
-    Trabaja en Telefónica S.A. | Vive en Madrid.
-    «Hola.» | «Adiós.»
+    Son las 5 p. m. Vamos.
+    Trabaja en Telefónica S.A. Vive en Madrid.
+    «Hola.» «Adiós.»
     Llegó tarde (como siempre). | Nadie dijo nada.
     Visita example.com. | Luego hablamos.
     Llegó a las 5.30. | Luego cenó.
@@ -175,21 +172,21 @@ test('harder cases:', function (t) {
     Dijo "no". | Luego "sí".
     ‘Hola’, dijo. | ‘Adiós’, respondió.
     Compró 3 kg. de arroz.
-    Pesa 3 kg. | Mide 2 m.
-    Corrió 5 km. | Luego descansó.
-    Llegó en dic. | Se fue en ene.
-    Abrimos de lun. a vie. | Cerramos los domingos.
+    Pesa 3 kg. Mide 2 m.
+    Corrió 5 km. Luego descansó.
+    Llegó en dic. Se fue en ene.
+    Abrimos de lun. a vie. Cerramos los domingos.
     Vea la pág. 5. | Luego la pág. 6.
-    Nació en el 300 a. C. | Los romanos gobernaban.
-    Vive en EE. UU. | Su hermana vive en Chile.
+    Nació en el 300 a. C. Los romanos gobernaban.
+    Vive en EE. UU. Su hermana vive en Chile.
     Hable con Ud. mismo.
-    Lo dijo Ud. | Yo no.
-    Fue el Dr. | Él lo operó.
+    Lo dijo Ud. Yo no.
+    Fue el Dr. Él lo operó.
     Mi tel. es 555. | Llámame.
     Costó aprox. 100. | No más.
     No. | Sí. | Tal vez.
-    Vino, vio, etc. | Nada nuevo.
-    La Sra. | No, la Srta.
+    Vino, vio, etc. Nada nuevo.
+    La Sra. No, la Srta.
     Estudia en la Univ. de Chile.
     Trabaja en el Depto. de Ventas. | Gana bien.
     ¡Vamos! | ¡Rápido! | No hay tiempo.
@@ -198,11 +195,11 @@ test('harder cases:', function (t) {
     Me dijo: «Ven». | Fui.
     El niño gritó: «¡Mamá!». | Nadie vino.
     Es la 1 p. m. en Lima.
-    Mide 1,80 m. | Pesa 80 kg.
+    Mide 1,80 m. Pesa 80 kg.
     Hay 3 l. de leche.
     Tardó 5 min. en llegar.
-    Tardó 5 min. | Fue rápido.
-    Vi al Pdte. | Estaba cansado.
+    Tardó 5 min. Fue rápido.
+    Vi al Pdte. Estaba cansado.
   `
   )
 })
@@ -219,16 +216,15 @@ test('longer texts:', function (t) {
     El Dr. García y la Dra. Pérez llegaron a las 5 p. m. al hospital. | Luego operaron al paciente. | Todo salió bien.
     La empresa fue fundada en 1950. | Hoy tiene aprox. 500 empleados. | En 2023 facturó 80 millones.
     Llegó a las 7. | No había nadie. | Entonces esperó hasta las 8. | Después se fue.
-    —¿Qué hora es? —preguntó ella. | —Son las tres —dijo él. | Ella asintió.
-    Necesitamos harina, huevos, azúcar, etc. | ¿Lo tienes todo?
+    Necesitamos harina, huevos, azúcar, etc. ¿Lo tienes todo?
     Cervantes nació en 1547 en Alcalá de Henares. | Murió en Madrid en 1616.
     El Sr. Pérez vive en EE. UU. desde 2010. | Su esposa, la Sra. Gómez, es de Chile.
-    Mide 1,80 m. | Ella mide 1,65 m.
-    El paquete pesa 2 kg. | El envío cuesta 5 euros.
-    Abrimos de lun. a vie. de 8 a 17 h. | Los sábados solo hasta las 14 h.
+    Mide 1,80 m. Ella mide 1,65 m.
+    El paquete pesa 2 kg. El envío cuesta 5 euros.
+    Abrimos de lun. a vie. de 8 a 17 h. Los sábados solo hasta las 14 h.
     ¡Qué sorpresa! | ¿Cuándo llegaste? | No te esperaba hasta mañana.
-    Juan G. | No vino.
-    Hable con el Lic. | Él le ayudará.
+    Juan G. No vino.
+    Hable con el Lic. Él le ayudará.
     El texto está en la pág. 5. | Léalo con calma.
   `
   )

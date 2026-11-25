@@ -13,6 +13,8 @@ const fromPerfecto = function (str) {
   return convert(str, m.fromPerfecto)
 }
 const toPerfecto = function (str) {
+  // 'acostarse' conjugates as 'acostar'
+  str = str.replace(/([aeií]r)se$/, '$1')
   return convert(str, m.toPerfecto)
 }
 

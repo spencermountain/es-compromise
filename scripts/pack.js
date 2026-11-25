@@ -43,19 +43,11 @@ const steps = [
         plurals
       }
       console.log('adjectives')
+      // only the feminine is learned - the plurals are done by rule
+      const f = models.adjectives.map((a) => [a[0], a[1]])
       packed.adjectives = {
-        f: [],
-        mp: [],
-        fp: []
+        f: compress(learn(f))
       }
-      models.adjectives.forEach((a) => {
-        packed.adjectives.f.push([a[0], a[1]])
-        packed.adjectives.mp.push([a[0], a[2]])
-        packed.adjectives.fp.push([a[0], a[3]])
-      })
-      Object.keys(packed.adjectives).forEach((k) => {
-        packed.adjectives[k] = compress(learn(packed.adjectives[k]))
-      })
       console.log('verbs')
       Object.keys(models.verbs).forEach((k) => {
         packed[k] = {}

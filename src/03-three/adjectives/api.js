@@ -3,14 +3,15 @@ export const getNth = (doc, n) => (typeof n === 'number' ? doc.eq(n) : doc)
 // get root form of adjective
 const getRoot = function (m, methods) {
   const str = m.text('normal')
+  const lexicon = m.model.one.lexicon
   const isPlural = m.has('#PluralAdjective')
   const isFemale = m.has('#FemaleAdjective')
   if (isPlural && isFemale) {
-    return methods.fromFemalePlural(str)
+    return methods.fromFemalePlural(str, lexicon)
   } else if (isFemale) {
-    return methods.fromFemale(str)
+    return methods.fromFemale(str, lexicon)
   } else if (isPlural) {
-    return methods.toSingular(str)
+    return methods.toSingular(str, lexicon)
   }
   return str
 }

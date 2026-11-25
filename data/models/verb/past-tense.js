@@ -61,16 +61,7 @@ export default {
     'compusisteis',
     'compusieron',
   ],
-  moverse: ['moví', 'moviste', 'movió', 'movimos', 'movisteis', 'movieron'],
   oponer: ['opuse', 'opusiste', 'opuso', 'opusimos', 'opusisteis', 'opusieron'],
-  oponerse: [
-    'opuse',
-    'opusiste',
-    'opuso',
-    'opusimos',
-    'opusisteis',
-    'opusieron',
-  ],
   comenzar: [
     'comencé',
     'comenzaste',
@@ -87,16 +78,7 @@ export default {
     'graduasteis',
     'graduaron',
   ],
-  graduarse: [
-    'gradué',
-    'graduaste',
-    'graduó',
-    'graduamos',
-    'graduasteis',
-    'graduaron',
-  ],
   ir: ['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'],
-  irse: ['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'],
   ser: ['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'],
   florecer: [
     'florecí',
@@ -124,15 +106,7 @@ export default {
     'divertisteis',
     'divirtieron',
   ],
-  divertirse: [
-    'divertí',
-    'divertiste',
-    'divirtió',
-    'divertimos',
-    'divertisteis',
-    'divirtieron',
-  ],
-  enterarse: [
+  enterar: [
     'enteré',
     'enteraste',
     'enteró',
@@ -149,7 +123,6 @@ export default {
     'presintieron',
   ],
   negar: ['negué', 'negaste', 'negó', 'negamos', 'negasteis', 'negaron'],
-  negarse: ['negué', 'negaste', 'negó', 'negamos', 'negasteis', 'negaron'],
   deprimir: [
     'deprimí',
     'deprimiste',
@@ -232,14 +205,6 @@ export default {
     'despertasteis',
     'despertaron',
   ],
-  despertarse: [
-    'desperté',
-    'despertaste',
-    'despertó',
-    'despertamos',
-    'despertasteis',
-    'despertaron',
-  ],
   educar: ['eduqué', 'educaste', 'educó', 'educamos', 'educasteis', 'educaron'],
   destruir: [
     'destruí',
@@ -267,14 +232,6 @@ export default {
     'colonizaron',
   ],
   enamorar: [
-    'enamoré',
-    'enamoraste',
-    'enamoró',
-    'enamoramos',
-    'enamorasteis',
-    'enamoraron',
-  ],
-  enamorarse: [
     'enamoré',
     'enamoraste',
     'enamoró',
@@ -341,14 +298,6 @@ export default {
   pensar: ['pensé', 'pensaste', 'pensó', 'pensamos', 'pensasteis', 'pensaron'],
   votar: ['voté', 'votaste', 'votó', 'votamos', 'votasteis', 'votaron'],
   cansar: ['cansé', 'cansaste', 'cansó', 'cansamos', 'cansasteis', 'cansaron'],
-  cansarse: [
-    'cansé',
-    'cansaste',
-    'cansó',
-    'cansamos',
-    'cansasteis',
-    'cansaron',
-  ],
   parecer: [
     'parecí',
     'pareciste',
@@ -424,14 +373,6 @@ export default {
     'empezaron',
   ],
   costar: ['costé', 'costaste', 'costó', 'costamos', 'costasteis', 'costaron'],
-  quedarse: [
-    'quedé',
-    'quedaste',
-    'quedó',
-    'quedamos',
-    'quedasteis',
-    'quedaron',
-  ],
   repasar: [
     'repasé',
     'repasaste',
@@ -464,14 +405,6 @@ export default {
     'dormisteis',
     'durmieron',
   ],
-  dormirse: [
-    'dormí',
-    'dormiste',
-    'durmió',
-    'dormimos',
-    'dormisteis',
-    'durmieron',
-  ],
   derretir: [
     'derretí',
     'derretiste',
@@ -481,14 +414,6 @@ export default {
     'derritieron',
   ],
   callar: ['callé', 'callaste', 'calló', 'callamos', 'callasteis', 'callaron'],
-  callarse: [
-    'callé',
-    'callaste',
-    'calló',
-    'callamos',
-    'callasteis',
-    'callaron',
-  ],
   tropezar: [
     'tropecé',
     'tropezaste',
@@ -530,14 +455,6 @@ export default {
     'engañaron',
   ],
   burlar: ['burlé', 'burlaste', 'burló', 'burlamos', 'burlasteis', 'burlaron'],
-  burlarse: [
-    'burlé',
-    'burlaste',
-    'burló',
-    'burlamos',
-    'burlasteis',
-    'burlaron',
-  ],
   enviar: ['envié', 'enviaste', 'envió', 'enviamos', 'enviasteis', 'enviaron'],
   unir: ['uní', 'uniste', 'unió', 'unimos', 'unisteis', 'unieron'],
   gobernar: [
@@ -548,7 +465,7 @@ export default {
     'gobernasteis',
     'gobernaron',
   ],
-  broncearse: [
+  broncear: [
     'bronceé',
     'bronceaste',
     'bronceó',
@@ -588,14 +505,6 @@ export default {
     'quebrasteis',
     'quebraron',
   ],
-  quebrarse: [
-    'quebré',
-    'quebraste',
-    'quebró',
-    'quebramos',
-    'quebrasteis',
-    'quebraron',
-  ],
   llorar: ['lloré', 'lloraste', 'lloró', 'lloramos', 'llorasteis', 'lloraron'],
   extinguir: [
     'extinguí',
@@ -607,14 +516,6 @@ export default {
   ],
   querer: ['quise', 'quisiste', 'quiso', 'quisimos', 'quisisteis', 'quisieron'],
   enfadar: [
-    'enfadé',
-    'enfadaste',
-    'enfadó',
-    'enfadamos',
-    'enfadasteis',
-    'enfadaron',
-  ],
-  enfadarse: [
     'enfadé',
     'enfadaste',
     'enfadó',
@@ -680,7 +581,6 @@ export default {
     'disgustasteis',
     'disgustaron',
   ],
-  secarse: ['sequé', 'secaste', 'secó', 'secamos', 'secasteis', 'secaron'],
   abrazar: [
     'abracé',
     'abrazaste',
@@ -766,14 +666,6 @@ export default {
   ],
   errar: ['erré', 'erraste', 'erró', 'erramos', 'errasteis', 'erraron'],
   acordar: [
-    'acordé',
-    'acordaste',
-    'acordó',
-    'acordamos',
-    'acordasteis',
-    'acordaron',
-  ],
-  acordarse: [
     'acordé',
     'acordaste',
     'acordó',
@@ -870,14 +762,6 @@ export default {
     'emborrachasteis',
     'emborracharon',
   ],
-  emborracharse: [
-    'emborraché',
-    'emborrachaste',
-    'emborrachó',
-    'emborrachamos',
-    'emborrachasteis',
-    'emborracharon',
-  ],
   pertenecer: [
     'pertenecí',
     'perteneciste',
@@ -894,14 +778,6 @@ export default {
     'decidisteis',
     'decidieron',
   ],
-  decidirse: [
-    'decidí',
-    'decidiste',
-    'decidió',
-    'decidimos',
-    'decidisteis',
-    'decidieron',
-  ],
   desaparecer: [
     'desaparecí',
     'desapareciste',
@@ -911,7 +787,6 @@ export default {
     'desaparecieron',
   ],
   criar: ['crié', 'criaste', 'crio', 'criamos', 'criasteis', 'criaron'],
-  criarse: ['crié', 'criaste', 'crio', 'criamos', 'criasteis', 'criaron'],
   comprar: [
     'compré',
     'compraste',
@@ -930,7 +805,7 @@ export default {
     'ahorraron',
   ],
   teñir: ['teñí', 'teñiste', 'tiñó', 'teñimos', 'teñisteis', 'tiñeron'],
-  atreverse: [
+  atrever: [
     'atreví',
     'atreviste',
     'atrevió',
@@ -947,14 +822,6 @@ export default {
     'extendimos',
     'extendisteis',
     'extendieron',
-  ],
-  juntarse: [
-    'junté',
-    'juntaste',
-    'juntó',
-    'juntamos',
-    'juntasteis',
-    'juntaron',
   ],
   apostar: [
     'aposté',
@@ -1020,14 +887,6 @@ export default {
   ],
   saltar: ['salté', 'saltaste', 'saltó', 'saltamos', 'saltasteis', 'saltaron'],
   sentar: ['senté', 'sentaste', 'sentó', 'sentamos', 'sentasteis', 'sentaron'],
-  sentarse: [
-    'senté',
-    'sentaste',
-    'sentó',
-    'sentamos',
-    'sentasteis',
-    'sentaron',
-  ],
   participar: [
     'participé',
     'participaste',
@@ -1055,14 +914,6 @@ export default {
     'regulasteis',
     'regularon',
   ],
-  prepararse: [
-    'preparé',
-    'preparaste',
-    'preparó',
-    'preparamos',
-    'preparasteis',
-    'prepararon',
-  ],
   volar: ['volé', 'volaste', 'voló', 'volamos', 'volasteis', 'volaron'],
   obligar: [
     'obligué',
@@ -1081,16 +932,7 @@ export default {
     'contaminaron',
   ],
   casar: ['casé', 'casaste', 'casó', 'casamos', 'casasteis', 'casaron'],
-  casarse: ['casé', 'casaste', 'casó', 'casamos', 'casasteis', 'casaron'],
   juntar: ['junté', 'juntaste', 'juntó', 'juntamos', 'juntasteis', 'juntaron'],
-  llamarse: [
-    'llamé',
-    'llamaste',
-    'llamó',
-    'llamamos',
-    'llamasteis',
-    'llamaron',
-  ],
   explotar: [
     'exploté',
     'explotaste',
@@ -1160,14 +1002,6 @@ export default {
     'asustasteis',
     'asustaron',
   ],
-  asustarse: [
-    'asusté',
-    'asustaste',
-    'asustó',
-    'asustamos',
-    'asustasteis',
-    'asustaron',
-  ],
   limpiar: [
     'limpié',
     'limpiaste',
@@ -1193,24 +1027,8 @@ export default {
     'equivocasteis',
     'equivocaron',
   ],
-  equivocarse: [
-    'equivoqué',
-    'equivocaste',
-    'equivocó',
-    'equivocamos',
-    'equivocasteis',
-    'equivocaron',
-  ],
   montar: ['monté', 'montaste', 'montó', 'montamos', 'montasteis', 'montaron'],
   calentar: [
-    'calenté',
-    'calentaste',
-    'calentó',
-    'calentamos',
-    'calentasteis',
-    'calentaron',
-  ],
-  calentarse: [
     'calenté',
     'calentaste',
     'calentó',
@@ -1253,14 +1071,6 @@ export default {
   desear: ['deseé', 'deseaste', 'deseó', 'deseamos', 'deseasteis', 'desearon'],
   pelear: ['peleé', 'peleaste', 'peleó', 'peleamos', 'peleasteis', 'pelearon'],
   enriquecer: [
-    'enriquecí',
-    'enriqueciste',
-    'enriqueció',
-    'enriquecimos',
-    'enriquecisteis',
-    'enriquecieron',
-  ],
-  enriquecerse: [
     'enriquecí',
     'enriqueciste',
     'enriqueció',
@@ -1477,14 +1287,6 @@ export default {
     'alegrasteis',
     'alegraron',
   ],
-  alegrarse: [
-    'alegré',
-    'alegraste',
-    'alegró',
-    'alegramos',
-    'alegrasteis',
-    'alegraron',
-  ],
   vaciar: ['vacié', 'vaciaste', 'vació', 'vaciamos', 'vaciasteis', 'vaciaron'],
   prever: [
     'preví',
@@ -1538,14 +1340,6 @@ export default {
     'dedicasteis',
     'dedicaron',
   ],
-  dedicarse: [
-    'dediqué',
-    'dedicaste',
-    'dedicó',
-    'dedicamos',
-    'dedicasteis',
-    'dedicaron',
-  ],
   mezclar: [
     'mezclé',
     'mezclaste',
@@ -1570,7 +1364,6 @@ export default {
     'condujisteis',
     'condujeron',
   ],
-  mudarse: ['mudé', 'mudaste', 'mudó', 'mudamos', 'mudasteis', 'mudaron'],
   nacer: ['nací', 'naciste', 'nació', 'nacimos', 'nacisteis', 'nacieron'],
   traer: ['traje', 'trajiste', 'trajo', 'trajimos', 'trajisteis', 'trajeron'],
   describir: [
@@ -1600,15 +1393,7 @@ export default {
     'maquillasteis',
     'maquillaron',
   ],
-  maquillarse: [
-    'maquillé',
-    'maquillaste',
-    'maquilló',
-    'maquillamos',
-    'maquillasteis',
-    'maquillaron',
-  ],
-  jactarse: [
+  jactar: [
     'jacté',
     'jactaste',
     'jactó',
@@ -1625,14 +1410,6 @@ export default {
     'renacieron',
   ],
   acercar: [
-    'acerqué',
-    'acercaste',
-    'acercó',
-    'acercamos',
-    'acercasteis',
-    'acercaron',
-  ],
-  acercarse: [
     'acerqué',
     'acercaste',
     'acercó',
@@ -1668,14 +1445,6 @@ export default {
   creer: ['creí', 'creíste', 'creyó', 'creímos', 'creísteis', 'creyeron'],
   violar: ['violé', 'violaste', 'violó', 'violamos', 'violasteis', 'violaron'],
   calmar: ['calmé', 'calmaste', 'calmó', 'calmamos', 'calmasteis', 'calmaron'],
-  calmarse: [
-    'calmé',
-    'calmaste',
-    'calmó',
-    'calmamos',
-    'calmasteis',
-    'calmaron',
-  ],
   generalizar: [
     'generalicé',
     'generalizaste',
@@ -1764,7 +1533,6 @@ export default {
   ],
   chocar: ['choqué', 'chocaste', 'chocó', 'chocamos', 'chocasteis', 'chocaron'],
   bañar: ['bañé', 'bañaste', 'bañó', 'bañamos', 'bañasteis', 'bañaron'],
-  bañarse: ['bañé', 'bañaste', 'bañó', 'bañamos', 'bañasteis', 'bañaron'],
   gruñir: ['gruñí', 'gruñiste', 'gruñó', 'gruñimos', 'gruñisteis', 'gruñeron'],
   avanzar: [
     'avancé',
@@ -1816,14 +1584,6 @@ export default {
     'condenaron',
   ],
   quemar: ['quemé', 'quemaste', 'quemó', 'quemamos', 'quemasteis', 'quemaron'],
-  quemarse: [
-    'quemé',
-    'quemaste',
-    'quemó',
-    'quemamos',
-    'quemasteis',
-    'quemaron',
-  ],
   escoger: [
     'escogí',
     'escogiste',
@@ -1850,14 +1610,6 @@ export default {
   ],
   coger: ['cogí', 'cogiste', 'cogió', 'cogimos', 'cogisteis', 'cogieron'],
   preguntar: [
-    'pregunté',
-    'preguntaste',
-    'preguntó',
-    'preguntamos',
-    'preguntasteis',
-    'preguntaron',
-  ],
-  preguntarse: [
     'pregunté',
     'preguntaste',
     'preguntó',
@@ -1913,14 +1665,6 @@ export default {
     'desarrollasteis',
     'desarrollaron',
   ],
-  desarrollarse: [
-    'desarrollé',
-    'desarrollaste',
-    'desarrolló',
-    'desarrollamos',
-    'desarrollasteis',
-    'desarrollaron',
-  ],
   sustituir: [
     'sustituí',
     'sustituiste',
@@ -1965,14 +1709,6 @@ export default {
   ],
   picar: ['piqué', 'picaste', 'picó', 'picamos', 'picasteis', 'picaron'],
   peinar: ['peiné', 'peinaste', 'peinó', 'peinamos', 'peinasteis', 'peinaron'],
-  peinarse: [
-    'peiné',
-    'peinaste',
-    'peinó',
-    'peinamos',
-    'peinasteis',
-    'peinaron',
-  ],
   curar: ['curé', 'curaste', 'curó', 'curamos', 'curasteis', 'curaron'],
   entregar: [
     'entregué',
@@ -2057,7 +1793,6 @@ export default {
     'arrojaron',
   ],
   echar: ['eché', 'echaste', 'echó', 'echamos', 'echasteis', 'echaron'],
-  echarse: ['eché', 'echaste', 'echó', 'echamos', 'echasteis', 'echaron'],
   competir: [
     'competí',
     'competiste',
@@ -2082,14 +1817,6 @@ export default {
     'comunicasteis',
     'comunicaron',
   ],
-  comunicarse: [
-    'comuniqué',
-    'comunicaste',
-    'comunicó',
-    'comunicamos',
-    'comunicasteis',
-    'comunicaron',
-  ],
   dibujar: [
     'dibujé',
     'dibujaste',
@@ -2105,14 +1832,6 @@ export default {
     'saludamos',
     'saludasteis',
     'saludaron',
-  ],
-  hallarse: [
-    'hallé',
-    'hallaste',
-    'halló',
-    'hallamos',
-    'hallasteis',
-    'hallaron',
   ],
   devolver: [
     'devolví',
@@ -2150,14 +1869,6 @@ export default {
   ],
   fijar: ['fijé', 'fijaste', 'fijó', 'fijamos', 'fijasteis', 'fijaron'],
   enojar: ['enojé', 'enojaste', 'enojó', 'enojamos', 'enojasteis', 'enojaron'],
-  enojarse: [
-    'enojé',
-    'enojaste',
-    'enojó',
-    'enojamos',
-    'enojasteis',
-    'enojaron',
-  ],
   inventar: [
     'inventé',
     'inventaste',
@@ -2173,14 +1884,6 @@ export default {
     'presentamos',
     'presentasteis',
     'presentaron',
-  ],
-  afeitarse: [
-    'afeité',
-    'afeitaste',
-    'afeitó',
-    'afeitamos',
-    'afeitasteis',
-    'afeitaron',
   ],
   tirar: ['tiré', 'tiraste', 'tiró', 'tiramos', 'tirasteis', 'tiraron'],
   revelar: [
@@ -2235,7 +1938,7 @@ export default {
     'conservasteis',
     'conservaron',
   ],
-  arrepentirse: [
+  arrepentir: [
     'arrepentí',
     'arrepentiste',
     'arrepintió',
@@ -2255,14 +1958,6 @@ export default {
     'imprimieron',
   ],
   acostumbrar: [
-    'acostumbré',
-    'acostumbraste',
-    'acostumbró',
-    'acostumbramos',
-    'acostumbrasteis',
-    'acostumbraron',
-  ],
-  acostumbrarse: [
     'acostumbré',
     'acostumbraste',
     'acostumbró',
@@ -2295,7 +1990,6 @@ export default {
     'tradujeron',
   ],
   poner: ['puse', 'pusiste', 'puso', 'pusimos', 'pusisteis', 'pusieron'],
-  ponerse: ['puse', 'pusiste', 'puso', 'pusimos', 'pusisteis', 'pusieron'],
   asociar: [
     'asocié',
     'asociaste',
@@ -2306,14 +2000,6 @@ export default {
   ],
   salir: ['salí', 'saliste', 'salió', 'salimos', 'salisteis', 'salieron'],
   esconder: [
-    'escondí',
-    'escondiste',
-    'escondió',
-    'escondimos',
-    'escondisteis',
-    'escondieron',
-  ],
-  esconderse: [
     'escondí',
     'escondiste',
     'escondió',
@@ -2346,24 +2032,8 @@ export default {
     'aburristeis',
     'aburrieron',
   ],
-  aburrirse: [
-    'aburrí',
-    'aburriste',
-    'aburrió',
-    'aburrimos',
-    'aburristeis',
-    'aburrieron',
-  ],
   lograr: ['logré', 'lograste', 'logró', 'logramos', 'lograsteis', 'lograron'],
   entusiasmar: [
-    'entusiasmé',
-    'entusiasmaste',
-    'entusiasmó',
-    'entusiasmamos',
-    'entusiasmasteis',
-    'entusiasmaron',
-  ],
-  entusiasmarse: [
     'entusiasmé',
     'entusiasmaste',
     'entusiasmó',
@@ -2390,14 +2060,6 @@ export default {
   ],
   morir: ['morí', 'moriste', 'murió', 'morimos', 'moristeis', 'murieron'],
   envejecer: [
-    'envejecí',
-    'envejeciste',
-    'envejeció',
-    'envejecimos',
-    'envejecisteis',
-    'envejecieron',
-  ],
-  envejecerse: [
     'envejecí',
     'envejeciste',
     'envejeció',
@@ -2490,7 +2152,7 @@ export default {
     'contuvisteis',
     'contuvieron',
   ],
-  zambullirse: [
+  zambullir: [
     'zambullí',
     'zambulliste',
     'zambulló',
@@ -2499,14 +2161,6 @@ export default {
     'zambulleron',
   ],
   luchar: ['luché', 'luchaste', 'luchó', 'luchamos', 'luchasteis', 'lucharon'],
-  sentirse: [
-    'sentí',
-    'sentiste',
-    'sintió',
-    'sentimos',
-    'sentisteis',
-    'sintieron',
-  ],
   madurar: [
     'maduré',
     'maduraste',
@@ -2534,7 +2188,6 @@ export default {
   ],
   ganar: ['gané', 'ganaste', 'ganó', 'ganamos', 'ganasteis', 'ganaron'],
   lavar: ['lavé', 'lavaste', 'lavó', 'lavamos', 'lavasteis', 'lavaron'],
-  lavarse: ['lavé', 'lavaste', 'lavó', 'lavamos', 'lavasteis', 'lavaron'],
   lastimar: [
     'lastimé',
     'lastimaste',
@@ -2544,14 +2197,6 @@ export default {
     'lastimaron',
   ],
   enfermar: [
-    'enfermé',
-    'enfermaste',
-    'enfermó',
-    'enfermamos',
-    'enfermasteis',
-    'enfermaron',
-  ],
-  enfermarse: [
     'enfermé',
     'enfermaste',
     'enfermó',
@@ -2620,14 +2265,6 @@ export default {
     'matriculasteis',
     'matricularon',
   ],
-  matricularse: [
-    'matriculé',
-    'matriculaste',
-    'matriculó',
-    'matriculamos',
-    'matriculasteis',
-    'matricularon',
-  ],
   freír: ['freí', 'freíste', 'frió', 'freímos', 'freísteis', 'frieron'],
   almorzar: [
     'almorcé',
@@ -2645,15 +2282,7 @@ export default {
     'acostasteis',
     'acostaron',
   ],
-  acostarse: [
-    'acosté',
-    'acostaste',
-    'acostó',
-    'acostamos',
-    'acostasteis',
-    'acostaron',
-  ],
-  quejarse: [
+  quejar: [
     'quejé',
     'quejaste',
     'quejó',
@@ -2723,14 +2352,6 @@ export default {
     'detuvisteis',
     'detuvieron',
   ],
-  detenerse: [
-    'detuve',
-    'detuviste',
-    'detuvo',
-    'detuvimos',
-    'detuvisteis',
-    'detuvieron',
-  ],
   seguir: [
     'seguí',
     'seguiste',
@@ -2785,14 +2406,6 @@ export default {
     'soportaron',
   ],
   duchar: ['duché', 'duchaste', 'duchó', 'duchamos', 'duchasteis', 'ducharon'],
-  ducharse: [
-    'duché',
-    'duchaste',
-    'duchó',
-    'duchamos',
-    'duchasteis',
-    'ducharon',
-  ],
   afligir: [
     'afligí',
     'afligiste',
@@ -3228,14 +2841,6 @@ export default {
     'registrasteis',
     'registraron',
   ],
-  registrarse: [
-    'registré',
-    'registraste',
-    'registró',
-    'registramos',
-    'registrasteis',
-    'registraron',
-  ],
   explorar: [
     'exploré',
     'exploraste',
@@ -3254,14 +2859,6 @@ export default {
     'recomendaron',
   ],
   divorciar: [
-    'divorcié',
-    'divorciaste',
-    'divorció',
-    'divorciamos',
-    'divorciasteis',
-    'divorciaron',
-  ],
-  divorciarse: [
     'divorcié',
     'divorciaste',
     'divorció',
@@ -3301,14 +2898,6 @@ export default {
     'enflaquecisteis',
     'enflaquecieron',
   ],
-  enflaquecerse: [
-    'enflaquecí',
-    'enflaqueciste',
-    'enflaqueció',
-    'enflaquecimos',
-    'enflaquecisteis',
-    'enflaquecieron',
-  ],
   contar: ['conté', 'contaste', 'contó', 'contamos', 'contasteis', 'contaron'],
   cortar: ['corté', 'cortaste', 'cortó', 'cortamos', 'cortasteis', 'cortaron'],
   probar: ['probé', 'probaste', 'probó', 'probamos', 'probasteis', 'probaron'],
@@ -3323,14 +2912,6 @@ export default {
   adorar: ['adoré', 'adoraste', 'adoró', 'adoramos', 'adorasteis', 'adoraron'],
   acabar: ['acabé', 'acabaste', 'acabó', 'acabamos', 'acabasteis', 'acabaron'],
   olvidar: [
-    'olvidé',
-    'olvidaste',
-    'olvidó',
-    'olvidamos',
-    'olvidasteis',
-    'olvidaron',
-  ],
-  olvidarse: [
     'olvidé',
     'olvidaste',
     'olvidó',
@@ -3422,14 +3003,6 @@ export default {
     'vestisteis',
     'vistieron',
   ],
-  vestirse: [
-    'vestí',
-    'vestiste',
-    'vistió',
-    'vestimos',
-    'vestisteis',
-    'vistieron',
-  ],
   crucificar: [
     'crucifiqué',
     'crucificaste',
@@ -3496,14 +3069,6 @@ export default {
     'defendieron',
   ],
   levantar: [
-    'levanté',
-    'levantaste',
-    'levantó',
-    'levantamos',
-    'levantasteis',
-    'levantaron',
-  ],
-  levantarse: [
     'levanté',
     'levantaste',
     'levantó',
